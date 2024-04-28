@@ -24,3 +24,11 @@ cd reticulum-webchat
 python web.py
 ```
 
+## TODO
+
+- [ ] serve `index.html` from `web.py` on the same port as websocket
+- [ ] allow passing in a custom Reticulum config file via cli args
+- [ ] create/import/export identities in the web ui
+- [ ] ui to configure custom name to send in announcement app data
+- [ ] ui to view announcements, with names from app data
+- [ ] support saving conversation history across page reloads
