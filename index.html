@@ -96,7 +96,7 @@
                                     <img @click="openImage(`data:image/${field.image_type};base64,${field.image_bytes}`)" :src="`data:image/${field.image_type};base64,${field.image_bytes}`" class="w-full rounded-md shadow-md cursor-pointer"/>
                                 </div>
                             </div>
-                            <div v-for="field of chatItem.message.fields.filter((f) => f.type === 'file_attachments')">
+                            <div v-for="field of chatItem.message.fields?.filter((f) => f.type === 'file_attachments') ?? []">
                                 <a target="_blank" :download="file_attachment.file_name" :href="`data:application/octet-stream;base64,${file_attachment.file_bytes}`" v-for="file_attachment of field.file_attachments" class="flex border border-gray-200 hover:bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 font-semibold cursor-pointer">
                                     <div class="mr-2 my-auto">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
