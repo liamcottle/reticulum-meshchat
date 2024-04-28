@@ -132,20 +132,6 @@ def lxmf_delivery(message):
                     "image_bytes": image_bytes,
                 }
 
-            # handle commands field
-            if field_type == LXMF.FIELD_COMMANDS:
-
-                # process commands
-                commands = []
-                for command in value:
-                    command_string = command[0]
-                    commands.append({
-                        "command_string": command_string,
-                    })
-
-                # add to fields
-                fields["commands"] = commands
-
         # send received lxmf message data to all websocket clients
         websocket_broadcast(json.dumps({
             "type": "lxmf.delivery",
