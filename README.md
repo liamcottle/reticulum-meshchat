@@ -32,3 +32,7 @@ python web.py
 - [ ] ui to configure custom name to send in announcement app data
 - [ ] ui to view announcements, with names from app data
 - [ ] support saving conversation history across page reloads
+- [ ] send images from web ui
+- [ ] send file attachments from web ui
+- [ ] support for multiple (but separated) identities via the same websocket server
+  - possibly allow multiple identities to simultaneously send/receiev in multiple browser tabs?
