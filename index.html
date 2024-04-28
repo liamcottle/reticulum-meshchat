@@ -140,6 +140,7 @@
             return {
 
                 isWebsocketConnected: false,
+                autoReconnectWebsocket: true,
 
                 sendToDestinationHash: "bebfd1f0635a7f6129ee3b30c05328f3",
 
@@ -166,6 +167,11 @@
 
                 this.ws.addEventListener('close', () => {
                     this.isWebsocketConnected = false;
+                    if(this.autoReconnectWebsocket){
+                        setTimeout(() => {
+                            this.connectWebsocket();
+                        }, 1000);
+                    }
                 });
 
                 // handle data from reticulum
