@@ -1,0 +1,266 @@
+<html>
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Reticulum WebChat</title>
+
+    <!-- tailwind css -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+
+    <!-- scripts -->
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+
+</head>
+<body class="bg-gray-100">
+<div id="app" class="h-full flex flex-col">
+
+    <!-- header -->
+    <div class="flex bg-white p-2 border-gray-300 border-b">
+        <div class="max-w-xl mx-auto flex w-full">
+            <div class="flex my-auto border border-gray-300 rounded-md w-10 h-10 mr-3 shadow">
+                <div class="flex mx-auto my-auto">
+                    <img class="w-9 h-9" src="https://reticulum.network/gfx/reticulum_logo_512.png"/>
+                </div>
+            </div>
+            <div class="my-auto">
+                <div class="font-bold">Reticulum WebChat</div>
+                <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500">Liam Cottle</a></div>
+            </div>
+            <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
+                <a @click="sendAnnounce" href="javascript:void(0)" class="rounded-full">
+                    <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+                            </svg>
+                        </div>
+                        <div class="my-auto mx-1 text-sm">Announce</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- chat items -->
+    <div id="messages" class="h-full overflow-y-scroll px-3 sm:px-0">
+        <div class="max-w-xl mx-auto">
+            <div v-if="messages.length > 0" class="flex flex-col space-y-3 py-4">
+                <div v-for="message of messages">
+                    <div  class="flex space-x-2 border border-gray-300 rounded-lg shadow px-2 py-1.5 bg-white">
+                        <div>
+
+                            <!-- error -->
+                            <div v-if="message.source_hash === 'error'" class="bg-red-500 text-white rounded-full p-1 shadow-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                </svg>
+                            </div>
+
+                            <!-- user -->
+                            <div v-else class="bg-blue-500 text-white rounded-full p-1 shadow-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                </svg>
+                            </div>
+
+                        </div>
+                        <div>
+                            <div class="font-semibold leading-5">
+                                <span v-if="message.is_outbound">You</span>
+                                <span v-else-if="message.source_hash === 'error'">Error</span>
+                                <span v-else>@<{{ message.source_hash }}></span>
+                            </div>
+                            <div v-if="message.type === 'text'" style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;">{{ message.text }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- send message -->
+    <div class="bg-white border-gray-300 border-t p-2">
+        <div class="max-w-xl mx-auto">
+
+            <!-- message composer -->
+            <div>
+                <textarea id="message-input" :readonly="isSendingMessage" v-model="newMessageText" @keydown.enter.exact.native.prevent="onEnterPressed" @keydown.enter.shift.exact.native.prevent="onShiftEnterPressed" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" rows="3" placeholder="Send a message..."></textarea>
+                <div class="flex">
+                    <button @click="sendMessage" type="button" class="ml-auto mt-2 my-auto inline-flex items-center gap-x-1 rounded-md bg-blue-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500">
+                        Send
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<script>
+    Vue.createApp({
+        data() {
+            return {
+
+                isWebsocketConnected: false,
+
+                newMessageText: "",
+                isSendingMessage: false,
+                autoScrollOnNewMessage: true,
+
+                messages: [],
+
+            };
+        },
+        mounted: function() {
+            this.connectWebsocket();
+        },
+        methods: {
+            connectWebsocket: function() {
+
+                // connect to websocket
+                this.ws = new WebSocket("ws://localhost:8000");
+
+                this.ws.addEventListener('open', () => {
+                    this.isWebsocketConnected = true;
+                });
+
+                this.ws.addEventListener('close', () => {
+                    this.isWebsocketConnected = false;
+                });
+
+                // handle data from reticulum
+                this.ws.onmessage = (message) => {
+                    const json = JSON.parse(message.data);
+                    switch(json.type){
+                        case 'lxmf.delivery': {
+                            this.messages.push({
+                                "type": "text",
+                                "source_hash": json.source_hash,
+                                "text": json.message,
+                            })
+                            if(this.autoScrollOnNewMessage){
+                                this.scrollMessagesToBottom();
+                            }
+                            break;
+                        }
+                    }
+                };
+
+            },
+            disconnectWebsocket: function() {
+                if(this.ws){
+                    this.ws.close();
+                }
+            },
+            scrollMessagesToBottom: function() {
+                Vue.nextTick(() => {
+                    const container = document.getElementById("messages");
+                    container.scrollTop = container.scrollHeight;
+                });
+            },
+            async sendAnnounce() {
+
+                // do nothing if not connected to websocket
+                if(!this.isWebsocketConnected){
+                    alert("Not connected to WebSocket!");
+                    return;
+                }
+
+                try {
+
+                    // ask reticulum to announce
+                    this.ws.send(JSON.stringify({
+                        "type": "announce",
+                    }));
+
+                } catch(e) {
+                    console.error(e);
+                }
+
+            },
+            async sendMessage() {
+
+                // do nothing if empty message
+                const messageText = this.newMessageText.trim();
+                if(messageText == null || messageText === ""){
+                    return;
+                }
+
+                // do nothing if not connected to websocket
+                if(!this.isWebsocketConnected){
+                    alert("Not connected to WebSocket!");
+                    return;
+                }
+
+                this.isSendingMessage = true;
+
+                try {
+
+                    // send message to reticulum via websocket
+                    this.ws.send(JSON.stringify({
+                        "type": "lxmf.delivery",
+                        "destination_hash": "42973ba338620b6319384fef3ae4f0d8", // FIXME
+                        "message": messageText,
+                    }));
+
+                    // add sent message to ui
+                    this.messages.push({
+                        "is_outbound": true,
+                        "source_hash": "todo", // FIXME
+                        "type": "text",
+                        "text": messageText,
+                    });
+
+                    // clear message input
+                    this.newMessageText = "";
+
+                } catch(e) {
+
+                    console.error(e);
+
+                    this.messages.push({
+                        "source_hash": "error",
+                        "type": "text",
+                        "text": e.message ?? e ?? "Unknown Error...",
+                    });
+
+                } finally {
+                    this.isSendingMessage = false;
+                }
+
+                // scroll to bottom
+                this.scrollMessagesToBottom();
+
+            },
+            addNewLine: function() {
+                this.newMessageText += "\n";
+            },
+            onEnterPressed: function() {
+
+                // add new line on mobile
+                if(this.isMobile){
+                    this.addNewLine();
+                    return;
+                }
+
+                // send message on desktop
+                this.sendMessage();
+
+            },
+            onShiftEnterPressed: function() {
+                this.addNewLine();
+            },
+        },
+        computed: {
+            isMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            },
+        },
+    }).mount('#app');
+</script>
+</body>
+</html>
