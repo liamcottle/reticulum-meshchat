@@ -101,7 +101,7 @@ def lxmf_delivery(message):
         message_content = message.content.decode('utf-8')
         source_hash_text = RNS.hexrep(message.source_hash, delimit=False)
 
-        fields = []
+        fields = {}
         message_fields = message.get_fields()
         for field_type in message_fields:
 
@@ -121,20 +121,16 @@ def lxmf_delivery(message):
                     })
 
                 # add to fields
-                fields.append({
-                    "type": "file_attachments",
-                    "file_attachments": file_attachments,
-                })
+                fields["file_attachments"] = file_attachments
 
             # handle image field
             if field_type == LXMF.FIELD_IMAGE:
                 image_type = value[0]
                 image_bytes = base64.b64encode(value[1]).decode("utf-8")
-                fields.append({
-                    "type": "image",
+                fields["image"] = {
                     "image_type": image_type,
                     "image_bytes": image_bytes,
-                })
+                }
 
             # handle commands field
             if field_type == LXMF.FIELD_COMMANDS:
@@ -148,10 +144,7 @@ def lxmf_delivery(message):
                     })
 
                 # add to fields
-                fields.append({
-                    "type": "commands",
-                    "commands": commands,
-                })
+                fields["commands"] = commands
 
         # send received lxmf message data to all websocket clients
         websocket_broadcast(json.dumps({
