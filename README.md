@@ -27,6 +27,7 @@ python web.py
 ## TODO
 
 - [ ] serve `index.html` from `web.py` on the same port as websocket
+- [ ] conversations/contacts list ui with unread indicators
 - [ ] allow passing in a custom Reticulum config file via cli args
 - [ ] create/import/export identities in the web ui
 - [ ] ui to configure custom name to send in announcement app data
