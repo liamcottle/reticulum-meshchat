@@ -48,13 +48,13 @@
     <!-- chat items -->
     <div id="messages" class="h-full overflow-y-scroll px-3 sm:px-0">
         <div class="max-w-xl mx-auto">
-            <div v-if="messages.length > 0" class="flex flex-col space-y-3 py-4">
-                <div v-for="message of messages">
+            <div v-if="chatItems.length > 0" class="flex flex-col space-y-3 py-4">
+                <div v-for="chatItem of chatItems">
                     <div  class="flex space-x-2 border border-gray-300 rounded-lg shadow px-2 py-1.5 bg-white">
                         <div>
 
                             <!-- error -->
-                            <div v-if="message.source_hash === 'error'" class="bg-red-500 text-white rounded-full p-1 shadow-md">
+                            <div v-if="chatItem.source_hash === 'error'" class="bg-red-500 text-white rounded-full p-1 shadow-md">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                                 </svg>
@@ -70,11 +70,16 @@
                         </div>
                         <div>
                             <div class="font-semibold leading-5">
-                                <span v-if="message.is_outbound">You</span>
-                                <span v-else-if="message.source_hash === 'error'">Error</span>
-                                <span v-else>@<{{ message.source_hash }}></span>
+                                <span v-if="chatItem.is_outbound">You</span>
+                                <span v-else-if="chatItem.source_hash === 'error'">Error</span>
+                                <span v-else>@<{{ chatItem.source_hash }}></span>
                             </div>
-                            <div v-if="message.type === 'text'" style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;">{{ message.text }}</div>
+                            <div v-if="chatItem.message.content" style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;">{{ chatItem.message.content }}</div>
+                            <div v-if="chatItem.message.fields && chatItem.message.fields.map((field) => field.type).includes('image')" class="grid grid-cols-3 gap-2">
+                                <div v-for="field of chatItem.message.fields.filter((f) => f.type === 'image')">
+                                    <img @click="openImage(`data:image/${field.image_type};base64,${field.image_bytes}`)" :src="`data:image/${field.image_type};base64,${field.image_bytes}`" class="w-full rounded-md shadow-md cursor-pointer"/>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,7 +116,7 @@
                 isSendingMessage: false,
                 autoScrollOnNewMessage: true,
 
-                messages: [],
+                chatItems: [],
 
             };
         },
@@ -137,10 +142,9 @@
                     const json = JSON.parse(message.data);
                     switch(json.type){
                         case 'lxmf.delivery': {
-                            this.messages.push({
-                                "type": "text",
+                            this.chatItems.push({
                                 "source_hash": json.source_hash,
-                                "text": json.message,
+                                "message": json.message,
                             })
                             if(this.autoScrollOnNewMessage){
                                 this.scrollMessagesToBottom();
@@ -208,11 +212,12 @@
                     }));
 
                     // add sent message to ui
-                    this.messages.push({
+                    this.chatItems.push({
                         "is_outbound": true,
                         "source_hash": "todo", // FIXME
-                        "type": "text",
-                        "text": messageText,
+                        "message": {
+                            "content": messageText,
+                        },
                     });
 
                     // clear message input
@@ -222,7 +227,7 @@
 
                     console.error(e);
 
-                    this.messages.push({
+                    this.chatItems.push({
                         "source_hash": "error",
                         "type": "text",
                         "text": e.message ?? e ?? "Unknown Error...",
@@ -253,6 +258,18 @@
             },
             onShiftEnterPressed: function() {
                 this.addNewLine();
+            },
+            openImage: async function(url) {
+
+                // convert data uri to blob
+                const blob = await (await fetch(url)).blob();
+
+                // create blob url
+                const fileUrl = window.URL.createObjectURL(blob);
+
+                // open new tab
+                window.open(fileUrl);
+
             },
         },
         computed: {

@@ -101,16 +101,35 @@ def lxmf_delivery(message):
         message_content = message.content.decode('utf-8')
         source_hash_text = RNS.hexrep(message.source_hash, delimit=False)
 
+        fields = []
+        message_fields = message.get_fields()
+        for field_type in message_fields:
+
+            value = message_fields[field_type]
+
+            # handle image field
+            if field_type == LXMF.FIELD_IMAGE:
+                image_type = value[0]
+                image_bytes = base64.b64encode(value[1]).decode("utf-8")
+                fields.append({
+                    "type": "image",
+                    "image_type": image_type,
+                    "image_bytes": image_bytes,
+                })
+
         # send received lxmf message data to all websocket clients
         websocket_broadcast(json.dumps({
             "type": "lxmf.delivery",
             "source_hash": source_hash_text,
-            "message": message_content,
+            "message": {
+                "content": message_content,
+                "fields": fields,
+            },
         }))
 
     except Exception as e:
         # do nothing on error
-        print(e)
+        print("lxmf_delivery error: {}".format(e))
 
 
 def send_message(destination_hash, message_content):
