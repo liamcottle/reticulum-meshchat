@@ -14,4 +14,13 @@ A simple web based [LXMF](https://github.com/markqvist/lxmf) client for [Reticul
 - The web page sends and receives lxmf packets encoded in json via the WebSocket.
 - Web Browser -> WebSocket -> Python Reticulum -> (configured interfaces) -> (destination)
 
+## How to use it?
+
+You will need to clone the repo, and run `web.py`.
+
+```
+git clone https://github.com/liamcottle/reticulum-webchat
+cd reticulum-webchat
+python web.py
+```
 
