@@ -141,6 +141,8 @@
 
                 isWebsocketConnected: false,
 
+                sendToDestinationHash: "bebfd1f0635a7f6129ee3b30c05328f3",
+
                 newMessageText: "",
                 isSendingMessage: false,
                 autoScrollOnNewMessage: true,
@@ -236,7 +238,7 @@
                     // send message to reticulum via websocket
                     this.ws.send(JSON.stringify({
                         "type": "lxmf.delivery",
-                        "destination_hash": "42973ba338620b6319384fef3ae4f0d8", // FIXME
+                        "destination_hash": this.sendToDestinationHash,
                         "message": messageText,
                     }));
 
