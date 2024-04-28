@@ -107,6 +107,25 @@ def lxmf_delivery(message):
 
             value = message_fields[field_type]
 
+            # handle file attachments field
+            if field_type == LXMF.FIELD_FILE_ATTACHMENTS:
+
+                # process file attachments
+                file_attachments = []
+                for file_attachment in value:
+                    file_name = file_attachment[0]
+                    file_bytes = base64.b64encode(file_attachment[1]).decode("utf-8")
+                    file_attachments.append({
+                        "file_name": file_name,
+                        "file_bytes": file_bytes,
+                    })
+
+                # add to fields
+                fields.append({
+                    "type": "file_attachments",
+                    "file_attachments": file_attachments,
+                })
+
             # handle image field
             if field_type == LXMF.FIELD_IMAGE:
                 image_type = value[0]
