@@ -3,6 +3,8 @@
 import argparse
 import http
 import json
+import mimetypes
+import os
 
 import RNS
 import LXMF
@@ -43,7 +45,7 @@ class ReticulumWebChat:
 
     # handle serving custom http paths
     async def process_request(self, path, request_headers):
-        
+
         # serve index.html
         if path == "/":
             with open("index.html") as f:
@@ -51,10 +53,20 @@ class ReticulumWebChat:
                 return http.HTTPStatus.OK, [
                     ('Content-Type', 'text/html')
                 ], file_content.encode("utf-8")
+
+        # serve anything in public folder
+        public_file_path = os.path.join("public", path.lstrip("/"))
+        if os.path.isfile(public_file_path):
+            mime_type, _ = mimetypes.guess_type(public_file_path)
+            with open(public_file_path, "rb") as f:
+                file_content = f.read()
+                return http.HTTPStatus.OK, [
+                    ('Content-Type', mime_type)
+                ], file_content
         
         # by default, websocket is always served, but we only want it to be available at /ws
         # so we will return 404 for everything other than /ws
-        elif path != "/ws":
+        if path != "/ws":
             return http.HTTPStatus.NOT_FOUND, [
                 ('Content-Type', 'text/html')
             ], b"Not Found"
