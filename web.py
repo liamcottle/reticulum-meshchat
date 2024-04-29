@@ -77,6 +77,9 @@ class ReticulumWebChat:
         # add client to connected clients list
         self.websocket_clients.append(client)
 
+        # send config to all clients
+        self.send_config_to_websocket_clients()
+
         # handle client messages until disconnected
         while True:
             try:
@@ -126,7 +129,17 @@ class ReticulumWebChat:
     # broadcast provided data to all connected websocket clients
     def websocket_broadcast(self, data):
         for websocket_client in self.websocket_clients:
-            asyncio.run(websocket_client.send(data))
+            asyncio.create_task(websocket_client.send(data))
+
+    # broadcasts config to all websocket clients
+    def send_config_to_websocket_clients(self):
+        self.websocket_broadcast(json.dumps({
+            "type": "config",
+            "config": {
+                "identity_hash": self.identity.hexhash,
+                "lxmf_address_hash": self.local_lxmf_destination.hexhash,
+            },
+        }))
 
     # handle an lxmf delivery from reticulum
     def on_lxmf_delivery(self, message):
