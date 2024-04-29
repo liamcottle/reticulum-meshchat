@@ -11,24 +11,15 @@ import base64
 
 from sanic import Sanic, Request, Websocket, file
 
-# create sanic app
-app = Sanic("ReticulumWebChat")
-
-# init reticulum
-reticulum = RNS.Reticulum(None)
-
-# create a new identity and log as base64
-identity = RNS.Identity()
-print(base64.b64encode(identity.get_private_key()))
-
-# init lxmf router
-message_router = LXMF.LXMRouter(identity=identity, storagepath="storage/lxmf")
-
-# register lxmf identity
-local_lxmf_destination = message_router.register_delivery_identity(identity, display_name="ReticulumWebChat")
-
-# global reference to all connected websocket clients
+# global references
+app_name = "ReticulumWebChat"
+reticulum: RNS.Reticulum
+message_router: LXMF.LXMRouter
+local_lxmf_destination: RNS.Destination
 websocket_clients = []
+
+# create sanic app
+app = Sanic(app_name)
 
 
 async def main():
@@ -45,8 +36,32 @@ async def main():
         port=args.port,
     )
 
+
+def start_reticulum():
+
+    # init reticulum
+    global reticulum
+    reticulum = RNS.Reticulum(None)
+    
+    # create a new identity and log as base64
+    identity = RNS.Identity()
+    print(base64.b64encode(identity.get_private_key()))
+    
+    # init lxmf router
+    global message_router
+    message_router = LXMF.LXMRouter(identity=identity, storagepath="storage/lxmf")
+    
+    # register lxmf identity
+    global local_lxmf_destination
+    local_lxmf_destination = message_router.register_delivery_identity(identity, display_name="ReticulumWebChat")
+
     # set a callback for when an lxmf message is received
     message_router.register_delivery_callback(lxmf_delivery)
+
+
+@app.after_server_start
+async def after_server_start(*_):
+    start_reticulum()
 
 
 @app.get("/")
