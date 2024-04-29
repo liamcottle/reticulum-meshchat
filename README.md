@@ -55,10 +55,8 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 ## TODO
 
-- [ ] don't start Reticulum before cli args have been parsed
 - [ ] allow passing in a custom Reticulum config file via cli args
 - [ ] conversations/contacts list ui with unread indicators
-- [ ] create/import/export identities in the web ui
 - [ ] ui to configure custom name to send in announcement app data
 - [ ] ui to view announcements, with names from app data
 - [ ] support saving conversation history across page reloads
