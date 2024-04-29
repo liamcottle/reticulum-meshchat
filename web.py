@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import http
 import json
 
 import RNS
@@ -9,240 +10,217 @@ import asyncio
 import websockets
 import base64
 
-from sanic import Sanic, Request, Websocket, file
 
-# global references
-app_name = "ReticulumWebChat"
-reticulum: RNS.Reticulum | None = None
-identity: RNS.Identity | None = None
-message_router: LXMF.LXMRouter | None = None
-local_lxmf_destination: RNS.Destination | None = None
-websocket_clients = []
+class ReticulumWebChat:
 
-# create sanic app
-app = Sanic(app_name)
+    def __init__(self, identity: RNS.Identity):
 
+        # init reticulum
+        self.reticulum = RNS.Reticulum(None)
+        self.identity = identity
 
-def main():
+        # init lxmf router
+        self.message_router = LXMF.LXMRouter(identity=self.identity, storagepath="storage/lxmf")
 
-    # parse command line args
-    parser = argparse.ArgumentParser(description="ReticulumWebChat")
-    parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str, help="The address the web server should listen on.")
-    parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
-    parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
-    parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
-    args = parser.parse_args()
+        # register lxmf identity
+        self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity, display_name="ReticulumWebChat")
 
-    # use provided identity, or fallback to a random one
-    global identity
-    if args.identity_file is not None:
-        identity = RNS.Identity(create_keys=False)
-        identity.load(args.identity_file)
-        print("Reticulum Identity has been loaded from file.")
-        print(identity)
-    elif args.identity_base64 is not None:
-        identity = RNS.Identity(create_keys=False)
-        identity.load_private_key(base64.b64decode(args.identity_base64))
-        print("Reticulum Identity has been loaded from base64.")
-        print(identity)
-    else:
-        identity = RNS.Identity(create_keys=True)
-        print("Reticulum Identity has been randomly generated.")
-        print(identity)
+        # set a callback for when an lxmf message is received
+        self.message_router.register_delivery_callback(self.on_lxmf_delivery)
 
-    # init reticulum
-    global reticulum
-    reticulum = RNS.Reticulum(None)
+        # set a callback for when an lxmf announce is received
+        RNS.Transport.register_announce_handler(LXMFAnnounceHandler(self.on_lxmf_announce_received))
 
-    # init lxmf router
-    global message_router
-    message_router = LXMF.LXMRouter(identity=identity, storagepath="storage/lxmf")
+        # remember websocket clients
+        self.websocket_clients = []
 
-    # register lxmf identity
-    global local_lxmf_destination
-    local_lxmf_destination = message_router.register_delivery_identity(identity, display_name="ReticulumWebChat")
+    async def run(self, host, port):
 
-    # set a callback for when an lxmf message is received
-    message_router.register_delivery_callback(lxmf_delivery)
+        # start websocket server
+        async with websockets.serve(self.on_websocket_client_connected, host, port, process_request=self.process_request):
+            print("ReticulumWebChat server running at http://{}:{}".format(host, port))
+            await asyncio.Future()  # run forever
 
-    # set a callback for when an lxmf announce is received
-    RNS.Transport.register_announce_handler(LXMFAnnounceHandler(on_lxmf_announce_received))
+    # handle serving custom http paths
+    async def process_request(self, path, request_headers):
+        
+        # serve index.html
+        if path == "/":
+            with open("index.html") as f:
+                file_content = f.read()
+                return http.HTTPStatus.OK, [
+                    ('Content-Type', 'text/html')
+                ], file_content.encode("utf-8")
+        
+        # by default, websocket is always served, but we only want it to be available at /ws
+        # so we will return 404 for everything other than /ws
+        elif path != "/ws":
+            return http.HTTPStatus.NOT_FOUND, [
+                ('Content-Type', 'text/html')
+            ], b"Not Found"
 
-    # run sanic app
-    app.run(
-        host=args.host,
-        port=args.port,
-    )
+    # handle new client connecting to websocket
+    async def on_websocket_client_connected(self, client):
 
+        # add client to connected clients list
+        self.websocket_clients.append(client)
 
-@app.get("/")
-async def hello_world(request):
-    return await file("index.html")
+        # handle client messages until disconnected
+        while True:
+            try:
+                message = await client.recv()
+                data = json.loads(message)
+                await self.on_websocket_data_received(client, data)
+            except websockets.ConnectionClosedOK:
+                # client disconnected, we can stop looping
+                break
+            except Exception as e:
+                # ignore errors while handling message
+                print("failed to process client message")
+                print(e)
 
+        # loop finished, client is no longer connected
+        self.websocket_clients.remove(client)
 
-# handle websocket messages
-@app.websocket("/ws")
-async def on_websocket_client_connected(request: Request, client: Websocket):
+    # handle data received from websocket client
+    async def on_websocket_data_received(self, client, data):
 
-    # add client to connected clients list
-    websocket_clients.append(client)
+        # get type from client data
+        _type = data["type"]
 
-    # handle client messages until disconnected
-    while True:
-        try:
-            message = await client.recv()
-            data = json.loads(message)
-            await on_data(client, data)
-        except websockets.ConnectionClosedOK:
-            # client disconnected, we can stop looping
-            break
-        except Exception as e:
-            # ignore errors while handling message
-            print("failed to process client message")
-            print(e)
+        # handle sending an lxmf message
+        if _type == "lxmf.delivery":
 
-    # loop finished, client is no longer connected
-    websocket_clients.remove(client)
+            # send lxmf message to destination
+            destination_hash = data["destination_hash"]
+            message = data["message"]
+            self.send_message(destination_hash, message)
 
+            # # TODO: send response to client when marked as delivered?
+            # await client.send(json.dumps({
+            #     "type": "lxmf.sent",
+            # }))
 
-async def on_data(client, data):
+        # handle sending an announce
+        elif _type == "announce":
 
-    # get type from client data
-    _type = data["type"]
+            # send announce for lxmf
+            self.local_lxmf_destination.announce()
 
-    # handle sending an lxmf message
-    if _type == "lxmf.delivery":
+        # unhandled type
+        else:
+            print("unhandled client message type: " + _type)
 
-        # send lxmf message to destination
-        destination_hash = data["destination_hash"]
-        message = data["message"]
-        send_message(destination_hash, message)
-
-        # # TODO: send response to client when marked as delivered?
-        # await client.send(json.dumps({
-        #     "type": "lxmf.sent",
-        # }))
-
-    # handle sending an announce
-    elif _type == "announce":
-
-        # send announce for lxmf
-        local_lxmf_destination.announce()
-
-    # unhandled type
-    else:
-        print("unhandled client message type: " + _type)
-
-
-def websocket_broadcast(data):
     # broadcast provided data to all connected websocket clients
-    for websocket_client in websocket_clients:
-        asyncio.run(websocket_client.send(data))
+    def websocket_broadcast(self, data):
+        for websocket_client in self.websocket_clients:
+            asyncio.run(websocket_client.send(data))
 
+    # handle an lxmf delivery from reticulum
+    def on_lxmf_delivery(self, message):
+        try:
 
-def lxmf_delivery(message):
-    try:
+            # get message data
+            message_content = message.content.decode('utf-8')
+            source_hash_text = RNS.hexrep(message.source_hash, delimit=False)
 
-        # get message data
-        message_content = message.content.decode('utf-8')
-        source_hash_text = RNS.hexrep(message.source_hash, delimit=False)
+            fields = {}
+            message_fields = message.get_fields()
+            for field_type in message_fields:
 
-        fields = {}
-        message_fields = message.get_fields()
-        for field_type in message_fields:
+                value = message_fields[field_type]
 
-            value = message_fields[field_type]
+                # handle file attachments field
+                if field_type == LXMF.FIELD_FILE_ATTACHMENTS:
 
-            # handle file attachments field
-            if field_type == LXMF.FIELD_FILE_ATTACHMENTS:
+                    # process file attachments
+                    file_attachments = []
+                    for file_attachment in value:
+                        file_name = file_attachment[0]
+                        file_bytes = base64.b64encode(file_attachment[1]).decode("utf-8")
+                        file_attachments.append({
+                            "file_name": file_name,
+                            "file_bytes": file_bytes,
+                        })
 
-                # process file attachments
-                file_attachments = []
-                for file_attachment in value:
-                    file_name = file_attachment[0]
-                    file_bytes = base64.b64encode(file_attachment[1]).decode("utf-8")
-                    file_attachments.append({
-                        "file_name": file_name,
-                        "file_bytes": file_bytes,
-                    })
+                    # add to fields
+                    fields["file_attachments"] = file_attachments
 
-                # add to fields
-                fields["file_attachments"] = file_attachments
+                # handle image field
+                if field_type == LXMF.FIELD_IMAGE:
+                    image_type = value[0]
+                    image_bytes = base64.b64encode(value[1]).decode("utf-8")
+                    fields["image"] = {
+                        "image_type": image_type,
+                        "image_bytes": image_bytes,
+                    }
 
-            # handle image field
-            if field_type == LXMF.FIELD_IMAGE:
-                image_type = value[0]
-                image_bytes = base64.b64encode(value[1]).decode("utf-8")
-                fields["image"] = {
-                    "image_type": image_type,
-                    "image_bytes": image_bytes,
-                }
+            # send received lxmf message data to all websocket clients
+            self.websocket_broadcast(json.dumps({
+                "type": "lxmf.delivery",
+                "source_hash": source_hash_text,
+                "message": {
+                    "content": message_content,
+                    "fields": fields,
+                },
+            }))
 
-        # send received lxmf message data to all websocket clients
-        websocket_broadcast(json.dumps({
-            "type": "lxmf.delivery",
-            "source_hash": source_hash_text,
-            "message": {
-                "content": message_content,
-                "fields": fields,
-            },
+        except Exception as e:
+            # do nothing on error
+            print("lxmf_delivery error: {}".format(e))
+
+    # handle sending an lxmf message to reticulum
+    def send_message(self, destination_hash, message_content):
+
+        try:
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # find destination identity from hash
+            destination_identity = RNS.Identity.recall(destination_hash)
+            if destination_identity is None:
+
+                # we don't know the path/identity for this destination hash, we will request it
+                RNS.Transport.request_path(destination_hash)
+
+                # we have to bail out of sending, since we don't have the path yet
+                return
+
+            # create destination for recipients lxmf delivery address
+            lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery")
+
+            # create lxmf message
+            lxm = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, message_content, desired_method=LXMF.LXMessage.DIRECT)
+            lxm.try_propagation_on_fail = True
+
+            # send lxmf message to be routed to destination
+            self.message_router.handle_outbound(lxm)
+
+        except:
+            # FIXME send error to websocket?
+            print("failed to send lxmf message")
+
+    # handle an announce received from reticulum, for an lxmf address
+    def on_lxmf_announce_received(self, destination_hash, announced_identity, app_data):
+
+        # log received announce
+        RNS.log("Received an announce from " + RNS.prettyhexrep(destination_hash))
+
+        # parse app data
+        parsed_app_data = None
+        if app_data is not None:
+            parsed_app_data = app_data.decode("utf-8")
+
+        # send received lxmf announce to all websocket clients
+        self.websocket_broadcast(json.dumps({
+            "type": "announce",
+            "destination_hash": destination_hash.hex(),
+            "app_data": parsed_app_data,
         }))
 
-    except Exception as e:
-        # do nothing on error
-        print("lxmf_delivery error: {}".format(e))
 
-
-def send_message(destination_hash, message_content):
-
-    try:
-
-        # convert destination hash to bytes
-        destination_hash = bytes.fromhex(destination_hash)
-
-        # find destination identity from hash
-        destination_identity = RNS.Identity.recall(destination_hash)
-        if destination_identity is None:
-
-            # we don't know the path/identity for this destination hash, we will request it
-            RNS.Transport.request_path(destination_hash)
-
-            # we have to bail out of sending, since we don't have the path yet
-            return
-
-        # create destination for recipients lxmf delivery address
-        lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery")
-
-        # create lxmf message
-        lxm = LXMF.LXMessage(lxmf_destination, local_lxmf_destination, message_content, desired_method=LXMF.LXMessage.DIRECT)
-        lxm.try_propagation_on_fail = True
-
-        # send lxmf message to be routed to destination
-        message_router.handle_outbound(lxm)
-
-    except:
-        # FIXME send error to websocket?
-        print("failed to send lxmf message")
-
-
-def on_lxmf_announce_received(destination_hash, announced_identity, app_data):
-
-    # log received announce
-    RNS.log("Received an announce from " + RNS.prettyhexrep(destination_hash))
-
-    # parse app data
-    parsed_app_data = None
-    if app_data is not None:
-        parsed_app_data = app_data.decode("utf-8")
-
-    # send received lxmf announce to all websocket clients
-    websocket_broadcast(json.dumps({
-        "type": "announce",
-        "destination_hash": destination_hash.hex(),
-        "app_data": parsed_app_data,
-    }))
-
-
+# an announce handler for lxmf.delivery aspect that just forwards to a provided callback
 class LXMFAnnounceHandler:
 
     def __init__(self, received_announce_callback):
@@ -258,7 +236,36 @@ class LXMFAnnounceHandler:
             # ignore failure to handle received announce
             pass
 
+async def main():
 
+    # parse command line args
+    parser = argparse.ArgumentParser(description="ReticulumWebChat")
+    parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str, help="The address the web server should listen on.")
+    parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
+    parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
+    parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
+    args = parser.parse_args()
 
+    # use provided identity, or fallback to a random one
+    if args.identity_file is not None:
+        identity = RNS.Identity(create_keys=False)
+        identity.load(args.identity_file)
+        print("Reticulum Identity has been loaded from file.")
+        print(identity)
+    elif args.identity_base64 is not None:
+        identity = RNS.Identity(create_keys=False)
+        identity.load_private_key(base64.b64decode(args.identity_base64))
+        print("Reticulum Identity has been loaded from base64.")
+        print(identity)
+    else:
+        identity = RNS.Identity(create_keys=True)
+        print("Reticulum Identity has been randomly generated.")
+        print(identity)
+
+    # init app
+    reticulum_webchat = ReticulumWebChat(identity)
+    await reticulum_webchat.run(args.host, args.port)
+    
+    
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
