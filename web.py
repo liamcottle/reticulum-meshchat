@@ -26,8 +26,8 @@ async def main():
 
     # parse command line args
     parser = argparse.ArgumentParser(description="ReticulumWebChat")
-    parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str)
-    parser.add_argument("--port", nargs='?', default="8000", type=int)
+    parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str, help="The address the web server should listen on.")
+    parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
     args = parser.parse_args()
 
     # run sanic app
