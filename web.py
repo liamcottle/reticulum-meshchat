@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import json
 
 import RNS
@@ -32,8 +33,17 @@ websocket_clients = []
 
 async def main():
 
+    # parse command line args
+    parser = argparse.ArgumentParser(description="ReticulumWebChat")
+    parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str)
+    parser.add_argument("--port", nargs='?', default="8000", type=int)
+    args = parser.parse_args()
+
     # run sanic app
-    app.run()
+    app.run(
+        host=args.host,
+        port=args.port,
+    )
 
     # set a callback for when an lxmf message is received
     message_router.register_delivery_callback(lxmf_delivery)

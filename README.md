@@ -29,7 +29,7 @@ python web.py
 
 ## TODO
 
-- [ ] allow passing in a custom port to serve on via cli args
+- [ ] don't start Reticulum before cli args have been parsed
 - [ ] allow passing in a custom Reticulum config file via cli args
 - [ ] conversations/contacts list ui with unread indicators
 - [ ] create/import/export identities in the web ui
