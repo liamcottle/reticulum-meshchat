@@ -68,7 +68,7 @@
         <div class="flex flex-col w-80 h-full py-2 space-y-2">
 
             <!-- peers -->
-            <div class="border rounded-xl bg-white h-full shadow">
+            <div class="flex flex-col border rounded-xl bg-white h-full shadow">
                 <div class="flex border-b border-gray-300 text-gray-700 p-2">
                     <div class="mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -77,7 +77,7 @@
                     </div>
                     <div>Peers Discovered ({{ Object.keys(peers).length }})</div>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div v-if="Object.keys(peers).length > 0" class="divide-y divide-gray-100">
                     <div @click="onPeerClick(peer)" v-for="peer of Object.values(peers)" class="flex cursor-pointer p-2" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100' : 'bg-white hover:bg-gray-50' ]">
                         <div class="my-auto mr-2">
                             <img class="w-9 h-9 rounded-full" src="assets/images/user.png"/>
@@ -87,6 +87,15 @@
                             <div class="text-gray-500 text-sm">@<{{ peer.destination_hash.substring(0, 8) }}></div>
                         </div>
                     </div>
+                </div>
+                <div v-else class="flex flex-col mx-auto my-auto text-center leading-5">
+                    <div class="mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                        </svg>
+                    </div>
+                    <div class="font-semibold">No Peers</div>
+                    <div>Waiting for someone to announce!</div>
                 </div>
             </div>
 
