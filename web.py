@@ -173,7 +173,7 @@ class ReticulumWebChat:
             # send lxmf message to destination
             destination_hash = data["destination_hash"]
             message = data["message"]
-            self.send_message(destination_hash, message)
+            await self.send_message(destination_hash, message)
 
             # # TODO: send response to client when marked as delivered?
             # await client.send(json.dumps({
@@ -205,6 +205,71 @@ class ReticulumWebChat:
                 "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             },
         }))
+
+    # convert an lxmf message to a dictionary, for sending over websocket
+    def convert_lxmf_message_to_dict(self, lxmf_message: LXMF.LXMessage):
+
+        # handle fields
+        fields = {}
+        message_fields = lxmf_message.get_fields()
+        for field_type in message_fields:
+
+            value = message_fields[field_type]
+
+            # handle file attachments field
+            if field_type == LXMF.FIELD_FILE_ATTACHMENTS:
+
+                # process file attachments
+                file_attachments = []
+                for file_attachment in value:
+                    file_name = file_attachment[0]
+                    file_bytes = base64.b64encode(file_attachment[1]).decode("utf-8")
+                    file_attachments.append({
+                        "file_name": file_name,
+                        "file_bytes": file_bytes,
+                    })
+
+                # add to fields
+                fields["file_attachments"] = file_attachments
+
+            # handle image field
+            if field_type == LXMF.FIELD_IMAGE:
+                image_type = value[0]
+                image_bytes = base64.b64encode(value[1]).decode("utf-8")
+                fields["image"] = {
+                    "image_type": image_type,
+                    "image_bytes": image_bytes,
+                }
+
+        return {
+            "hash": lxmf_message.hash.hex(),
+            "source_hash": lxmf_message.source_hash.hex(),
+            "destination_hash": lxmf_message.destination_hash.hex(),
+            "state": self.convert_lxmf_state_to_string(lxmf_message),
+            "progress": lxmf_message.progress,
+            "content": lxmf_message.content.decode('utf-8'),
+            "fields": fields,
+        }
+
+    # convert lxmf state to a human friendly string
+    def convert_lxmf_state_to_string(self, lxmf_message: LXMF.LXMessage):
+
+        # convert state to string
+        lxmf_message_state = "unknown"
+        if lxmf_message.state == LXMF.LXMessage.DRAFT:
+            lxmf_message_state = "draft"
+        elif lxmf_message.state == LXMF.LXMessage.OUTBOUND:
+            lxmf_message_state = "outbound"
+        elif lxmf_message.state == LXMF.LXMessage.SENDING:
+            lxmf_message_state = "sending"
+        elif lxmf_message.state == LXMF.LXMessage.SENT:
+            lxmf_message_state = "sent"
+        elif lxmf_message.state == LXMF.LXMessage.DELIVERED:
+            lxmf_message_state = "delivered"
+        elif lxmf_message.state == LXMF.LXMessage.FAILED:
+            lxmf_message_state = "failed"
+        
+        return lxmf_message_state
 
     # handle an lxmf delivery from reticulum
     # NOTE: cant be async, as Reticulum doesn't await it
@@ -249,25 +314,36 @@ class ReticulumWebChat:
             # send received lxmf message data to all websocket clients
             asyncio.run(self.websocket_broadcast(json.dumps({
                 "type": "lxmf.delivery",
-                "source_hash": source_hash_text,
-                "message": {
-                    "content": message_content,
-                    "fields": fields,
-                },
+                "lxmf_message": self.convert_lxmf_message_to_dict(message),
             })))
 
         except Exception as e:
             # do nothing on error
             print("lxmf_delivery error: {}".format(e))
 
+    # handle delivery status update for an outbound lxmf message
+    def on_lxmf_sending_state_updated(self, lxmf_message):
+    
+        # send lxmf message state to all websocket clients
+        asyncio.run(self.websocket_broadcast(json.dumps({
+            "type": "lxmf_message_state_updated",
+            "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
+        })))
+
+    # handle delivery failed for an outbound lxmf message
+    def on_lxmf_sending_failed(self, lxmf_message):
+        # just pass this on, we don't need to do anything special
+        self.on_lxmf_sending_state_updated(lxmf_message)
+
     # handle sending an lxmf message to reticulum
-    def send_message(self, destination_hash, message_content):
+    async def send_message(self, destination_hash, message_content):
 
         try:
 
             # convert destination hash to bytes
             destination_hash = bytes.fromhex(destination_hash)
 
+            # FIXME: can this be removed, and just rely on the router to check paths?
             # find destination identity from hash
             destination_identity = RNS.Identity.recall(destination_hash)
             if destination_identity is None:
@@ -282,11 +358,19 @@ class ReticulumWebChat:
             lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery")
 
             # create lxmf message
-            lxm = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, message_content, desired_method=LXMF.LXMessage.DIRECT)
-            lxm.try_propagation_on_fail = True
+            lxmf_message = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, message_content, desired_method=LXMF.LXMessage.DIRECT)
+            lxmf_message.try_propagation_on_fail = True
+            lxmf_message.register_delivery_callback(self.on_lxmf_sending_state_updated)
+            lxmf_message.register_failed_callback(self.on_lxmf_sending_failed)
 
             # send lxmf message to be routed to destination
-            self.message_router.handle_outbound(lxm)
+            self.message_router.handle_outbound(lxmf_message)
+            
+            # send outbound lxmf message to websocket (after passing to router so hash is available)
+            await self.websocket_broadcast(json.dumps({
+                "type": "lxmf_outbound_message_created",
+                "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
+            }))
 
         except:
             # FIXME send error to websocket?
