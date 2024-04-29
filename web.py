@@ -73,6 +73,9 @@ def start_reticulum():
 
     # set a callback for when an lxmf message is received
     message_router.register_delivery_callback(lxmf_delivery)
+    
+    # set a callback for when an lxmf announce is received
+    RNS.Transport.register_announce_handler(LXMFAnnounceHandler(on_lxmf_announce_received))
 
 
 @app.after_server_start
@@ -228,6 +231,41 @@ def send_message(destination_hash, message_content):
     except:
         # FIXME send error to websocket?
         print("failed to send lxmf message")
+
+
+def on_lxmf_announce_received(destination_hash, announced_identity, app_data):
+
+    # log received announce
+    RNS.log("Received an announce from " + RNS.prettyhexrep(destination_hash))
+
+    # parse app data
+    parsed_app_data = None
+    if app_data is not None:
+        parsed_app_data = app_data.decode("utf-8")
+
+    # send received lxmf announce to all websocket clients
+    websocket_broadcast(json.dumps({
+        "type": "announce",
+        "destination_hash": destination_hash.hex(),
+        "app_data": parsed_app_data,
+    }))
+
+
+class LXMFAnnounceHandler:
+
+    def __init__(self, received_announce_callback):
+        self.aspect_filter = "lxmf.delivery"
+        self.received_announce_callback = received_announce_callback
+
+    # we will just pass the received announce back to the provided callback
+    def received_announce(self, destination_hash, announced_identity, app_data):
+        try:
+            # handle received announce
+            self.received_announce_callback(destination_hash, announced_identity, app_data)
+        except:
+            # ignore failure to handle received announce
+            pass
+
 
 
 if __name__ == "__main__":
