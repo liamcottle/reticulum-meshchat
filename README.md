@@ -24,11 +24,13 @@ cd reticulum-webchat
 python web.py
 ```
 
+> NOTE: You should now be able to access the web interface at http://localhost:8000
+
 ## TODO
 
-- [ ] serve `index.html` from `web.py` on the same port as websocket
-- [ ] conversations/contacts list ui with unread indicators
+- [ ] allow passing in a custom port to serve on via cli args
 - [ ] allow passing in a custom Reticulum config file via cli args
+- [ ] conversations/contacts list ui with unread indicators
 - [ ] create/import/export identities in the web ui
 - [ ] ui to configure custom name to send in announcement app data
 - [ ] ui to view announcements, with names from app data
@@ -36,4 +38,4 @@ python web.py
 - [ ] send images from web ui
 - [ ] send file attachments from web ui
 - [ ] support for multiple (but separated) identities via the same websocket server
-  - possibly allow multiple identities to simultaneously send/receiev in multiple browser tabs?
+  - possibly allow multiple identities to simultaneously send/receive in multiple browser tabs?
