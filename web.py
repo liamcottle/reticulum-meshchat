@@ -32,7 +32,7 @@ class ReticulumWebChat:
         self.message_router = LXMF.LXMRouter(identity=self.identity, storagepath="storage/lxmf")
 
         # register lxmf identity
-        self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity, display_name=self.display_name)
+        self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity)
 
         # set a callback for when an lxmf message is received
         self.message_router.register_delivery_callback(self.on_lxmf_delivery)
@@ -63,7 +63,6 @@ class ReticulumWebChat:
         # update display name from config
         if "display_name" in config:
             self.display_name = config["display_name"]
-            self.set_lxmf_display_name(self.display_name)
 
         # return loaded config
         return config
@@ -185,7 +184,7 @@ class ReticulumWebChat:
         elif _type == "announce":
 
             # send announce for lxmf
-            self.local_lxmf_destination.announce()
+            self.local_lxmf_destination.announce(app_data=self.display_name.encode("utf-8"))
 
         # unhandled type
         else:
@@ -312,12 +311,6 @@ class ReticulumWebChat:
             "app_data": parsed_app_data,
         })))
 
-    # sets the app data for the lxmf destination to be the provided display name
-    def set_lxmf_display_name(self, display_name):
-        # could be called before destination is configured, so lets check it exists
-        if hasattr(self, "local_lxmf_destination"):
-            # set app data to display name
-            self.local_lxmf_destination.set_default_app_data(self.display_name.encode("utf-8"))
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback
 class LXMFAnnounceHandler:
