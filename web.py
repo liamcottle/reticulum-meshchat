@@ -125,7 +125,7 @@ class ReticulumWebChat:
         self.websocket_clients.append(client)
 
         # send config to all clients
-        self.send_config_to_websocket_clients()
+        await self.send_config_to_websocket_clients()
 
         # handle client messages until disconnected
         while True:
@@ -165,7 +165,7 @@ class ReticulumWebChat:
             self.save_config()
 
             # send config to websocket clients
-            self.send_config_to_websocket_clients()
+            await self.send_config_to_websocket_clients()
 
         # handle sending an lxmf message
         elif _type == "lxmf.delivery":
@@ -191,13 +191,13 @@ class ReticulumWebChat:
             print("unhandled client message type: " + _type)
 
     # broadcast provided data to all connected websocket clients
-    def websocket_broadcast(self, data):
+    async def websocket_broadcast(self, data):
         for websocket_client in self.websocket_clients:
-            asyncio.create_task(websocket_client.send(data))
+            await websocket_client.send(data)
 
     # broadcasts config to all websocket clients
-    def send_config_to_websocket_clients(self):
-        self.websocket_broadcast(json.dumps({
+    async def send_config_to_websocket_clients(self):
+        await self.websocket_broadcast(json.dumps({
             "type": "config",
             "config": {
                 "display_name": self.display_name,
@@ -207,6 +207,7 @@ class ReticulumWebChat:
         }))
 
     # handle an lxmf delivery from reticulum
+    # NOTE: cant be async, as Reticulum doesn't await it
     def on_lxmf_delivery(self, message):
         try:
 
@@ -246,14 +247,14 @@ class ReticulumWebChat:
                     }
 
             # send received lxmf message data to all websocket clients
-            self.websocket_broadcast(json.dumps({
+            asyncio.run(self.websocket_broadcast(json.dumps({
                 "type": "lxmf.delivery",
                 "source_hash": source_hash_text,
                 "message": {
                     "content": message_content,
                     "fields": fields,
                 },
-            }))
+            })))
 
         except Exception as e:
             # do nothing on error
@@ -292,6 +293,7 @@ class ReticulumWebChat:
             print("failed to send lxmf message")
 
     # handle an announce received from reticulum, for an lxmf address
+    # NOTE: cant be async, as Reticulum doesn't await it
     def on_lxmf_announce_received(self, destination_hash, announced_identity, app_data):
 
         # log received announce
@@ -303,11 +305,11 @@ class ReticulumWebChat:
             parsed_app_data = app_data.decode("utf-8")
 
         # send received lxmf announce to all websocket clients
-        self.websocket_broadcast(json.dumps({
+        asyncio.run(self.websocket_broadcast(json.dumps({
             "type": "announce",
             "destination_hash": destination_hash.hex(),
             "app_data": parsed_app_data,
-        }))
+        })))
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback
