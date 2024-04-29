@@ -13,22 +13,36 @@ from sanic import Sanic, Request, Websocket, file
 
 # global references
 app_name = "ReticulumWebChat"
-reticulum: RNS.Reticulum
-message_router: LXMF.LXMRouter
-local_lxmf_destination: RNS.Destination
+reticulum: RNS.Reticulum | None = None
+identity: RNS.Identity | None = None
+message_router: LXMF.LXMRouter | None = None
+local_lxmf_destination: RNS.Destination | None = None
 websocket_clients = []
 
 # create sanic app
 app = Sanic(app_name)
 
 
-async def main():
+def main():
 
     # parse command line args
     parser = argparse.ArgumentParser(description="ReticulumWebChat")
     parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str, help="The address the web server should listen on.")
     parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
+    parser.add_argument("--identity-private-key", type=str, help="A base64 encoded private key for a Reticulum Identity to use as your LXMF address.")
     args = parser.parse_args()
+
+    # use provided identity, or fallback to a random one
+    global identity
+    if args.identity_private_key is not None:
+        identity = RNS.Identity(create_keys=False)
+        identity.load_private_key(base64.b64decode(args.identity_private_key))
+        print("Reticulum Identity has been loaded.")
+        print(identity)
+    else:
+        identity = RNS.Identity(create_keys=True)
+        print("Reticulum Identity has been generated.")
+        print(identity)
 
     # run sanic app
     app.run(
@@ -42,10 +56,6 @@ def start_reticulum():
     # init reticulum
     global reticulum
     reticulum = RNS.Reticulum(None)
-    
-    # create a new identity and log as base64
-    identity = RNS.Identity()
-    print(base64.b64encode(identity.get_private_key()))
     
     # init lxmf router
     global message_router
@@ -215,4 +225,4 @@ def send_message(destination_hash, message_content):
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
