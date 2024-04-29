@@ -17,6 +17,13 @@ class ReticulumWebChat:
 
     def __init__(self, identity: RNS.Identity):
 
+        # default values before loading config
+        self.display_name = "Anonymous Peer"
+
+        # load config
+        self.config_file = "storage/config.json"
+        self.load_config()
+
         # init reticulum
         self.reticulum = RNS.Reticulum(None)
         self.identity = identity
@@ -25,7 +32,7 @@ class ReticulumWebChat:
         self.message_router = LXMF.LXMRouter(identity=self.identity, storagepath="storage/lxmf")
 
         # register lxmf identity
-        self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity, display_name="ReticulumWebChat")
+        self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity, display_name=self.display_name)
 
         # set a callback for when an lxmf message is received
         self.message_router.register_delivery_callback(self.on_lxmf_delivery)
@@ -35,6 +42,46 @@ class ReticulumWebChat:
 
         # remember websocket clients
         self.websocket_clients = []
+
+    def load_config(self):
+
+        # default config
+        config = {
+
+        }
+
+        # attempt to load config and override default values
+        try:
+            with open(self.config_file, 'r') as f:
+                custom_config = json.load(f)
+                config |= custom_config
+
+        # config is broken, fallback to defaults
+        except:
+            print("failed to load config, defaults will be used")
+
+        # update display name from config
+        if "display_name" in config:
+            self.display_name = config["display_name"]
+
+        # return loaded config
+        return config
+
+    def save_config(self):
+
+        # build config
+        config = {
+            "display_name": self.display_name,
+        }
+
+        # attempt to save config
+        try:
+            with open(self.config_file, 'w') as f:
+                json.dump(config, f, indent=4)
+
+        # config is broken, fallback to defaults
+        except:
+            print("failed to save config")
 
     async def run(self, host, port):
 
@@ -103,8 +150,25 @@ class ReticulumWebChat:
         # get type from client data
         _type = data["type"]
 
+        # handle updating config
+        if _type == "config.set":
+
+            # send lxmf message to destination
+            config = data["config"]
+
+            # update display name in state
+            if "display_name" in config and config["display_name"] != "":
+                self.display_name = config["display_name"]
+                print("updated display name to: " + self.display_name)
+
+            # save config
+            self.save_config()
+
+            # send config to websocket clients
+            self.send_config_to_websocket_clients()
+
         # handle sending an lxmf message
-        if _type == "lxmf.delivery":
+        elif _type == "lxmf.delivery":
 
             # send lxmf message to destination
             destination_hash = data["destination_hash"]
@@ -136,6 +200,7 @@ class ReticulumWebChat:
         self.websocket_broadcast(json.dumps({
             "type": "config",
             "config": {
+                "display_name": self.display_name,
                 "identity_hash": self.identity.hexhash,
                 "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             },

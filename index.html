@@ -93,14 +93,22 @@
             <!-- my identity -->
             <div v-if="config" class="border rounded-xl bg-white shadow">
                 <div class="flex border-b border-gray-300 text-gray-700 p-2">
-                    <div class="mr-2">
+                    <div class="my-auto mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                         </svg>
                     </div>
-                    <div>My Identity</div>
+                    <div class="my-auto">My Identity</div>
+                    <div class="ml-auto">
+                        <button @click="saveDisplayName" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            Save
+                        </button>
+                    </div>
                 </div>
                 <div class="divide-y text-gray-900">
+                    <div class="p-1">
+                        <input v-model="displayName" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    </div>
                     <div class="p-1">
                         <div>Identity Hash</div>
                         <div class="text-sm text-gray-700">{{ config.identity_hash }}</div>
@@ -246,6 +254,7 @@
                 isSendingMessage: false,
                 autoScrollOnNewMessage: true,
 
+                displayName: "Anonymous Peer",
                 config: null,
 
                 peers: {},
@@ -282,6 +291,7 @@
                     switch(json.type){
                         case 'config': {
                             this.config = json.config;
+                            this.displayName = json.config.display_name;
                             break;
                         }
                         case 'announce': {
@@ -395,6 +405,28 @@
                 // scroll to bottom
                 this.scrollMessagesToBottom();
 
+            },
+            async updateConfig(config) {
+
+                // do nothing if not connected to websocket
+                if(!this.isWebsocketConnected){
+                    return;
+                }
+
+                try {
+                    this.ws.send(JSON.stringify({
+                        "type": "config.set",
+                        "config": config,
+                    }));
+                } catch(e) {
+                    console.error(e);
+                }
+
+            },
+            async saveDisplayName() {
+                await this.updateConfig({
+                    "display_name": this.displayName,
+                });
             },
             addNewLine: function() {
                 this.newMessageText += "\n";
