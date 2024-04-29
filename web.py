@@ -50,37 +50,29 @@ def main():
         print("Reticulum Identity has been randomly generated.")
         print(identity)
 
-    # run sanic app
-    app.run(
-        host=args.host,
-        port=args.port,
-    )
-
-
-def start_reticulum():
-
     # init reticulum
     global reticulum
     reticulum = RNS.Reticulum(None)
-    
+
     # init lxmf router
     global message_router
     message_router = LXMF.LXMRouter(identity=identity, storagepath="storage/lxmf")
-    
+
     # register lxmf identity
     global local_lxmf_destination
     local_lxmf_destination = message_router.register_delivery_identity(identity, display_name="ReticulumWebChat")
 
     # set a callback for when an lxmf message is received
     message_router.register_delivery_callback(lxmf_delivery)
-    
+
     # set a callback for when an lxmf announce is received
     RNS.Transport.register_announce_handler(LXMFAnnounceHandler(on_lxmf_announce_received))
 
-
-@app.after_server_start
-async def after_server_start(*_):
-    start_reticulum()
+    # run sanic app
+    app.run(
+        host=args.host,
+        port=args.port,
+    )
 
 
 @app.get("/")
