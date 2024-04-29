@@ -191,11 +191,40 @@
                                             </div>
                                         </a>
                                     </div>
+
                                 </div>
                             </div>
 
                             <!-- message state -->
-                            <div v-if="chatItem.is_outbound" class="text-gray-500 text-right">{{ chatItem.lxmf_message.state }}</div>
+                            <div v-if="chatItem.is_outbound" class="flex text-gray-500 text-right">
+                                <div class="flex ml-auto space-x-1">
+
+                                    <!-- state label -->
+                                    <div class="my-auto">{{ chatItem.lxmf_message.state }}</div>
+
+                                    <!-- delivered icon -->
+                                    <div v-if="chatItem.lxmf_message.state === 'delivered'" class="my-auto">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                            <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+
+                                    <!-- failed icon -->
+                                    <div v-else-if="chatItem.lxmf_message.state === 'failed'" class="my-auto">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                                        </svg>
+                                    </div>
+
+                                    <!-- fallback icon -->
+                                    <div v-else class="my-auto">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                    </div>
+
+                                </div>
+                            </div>
 
                         </div>
                     </div>
