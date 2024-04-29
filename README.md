@@ -85,5 +85,3 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 - [ ] support saving conversation history across page reloads
 - [ ] send images from web ui
 - [ ] send file attachments from web ui
-- [ ] support for multiple (but separated) identities via the same websocket server
-  - possibly allow multiple identities to simultaneously send/receive in multiple browser tabs?
