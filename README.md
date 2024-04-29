@@ -27,6 +27,27 @@ python web.py
 
 > NOTE: You should now be able to access the web interface at http://localhost:8000
 
+For a full list of command line options, you can run;
+
+```
+python web.py --help
+```
+
+```
+usage: web.py [-h] [--host [HOST]] [--port [PORT]] [--identity-file IDENTITY_FILE] [--identity-base64 IDENTITY_BASE64]
+
+ReticulumWebChat
+
+options:
+  -h, --help            show this help message and exit
+  --host [HOST]         The address the web server should listen on.
+  --port [PORT]         The port the web server should listen on.
+  --identity-file IDENTITY_FILE
+                        Path to a Reticulum Identity file to use as your LXMF address.
+  --identity-base64 IDENTITY_BASE64
+                        A base64 encoded Reticulum Identity to use as your LXMF address.
+```
+
 ## Using an existing Reticulum Identity
 
 By default, a random identity is generated every time you run the script.
