@@ -379,7 +379,8 @@
                     // add sent message to ui
                     this.chatItems.push({
                         "is_outbound": true,
-                        "source_hash": "todo", // FIXME
+                        "source_hash": this.config.lxmf_address_hash, // from us
+                        "destination_hash": this.selectedPeer.destination_hash, // to them
                         "message": {
                             "content": messageText,
                         },
