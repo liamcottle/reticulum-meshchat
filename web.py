@@ -29,19 +29,25 @@ def main():
     parser = argparse.ArgumentParser(description="ReticulumWebChat")
     parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str, help="The address the web server should listen on.")
     parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
-    parser.add_argument("--identity-private-key", type=str, help="A base64 encoded private key for a Reticulum Identity to use as your LXMF address.")
+    parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
+    parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
     args = parser.parse_args()
 
     # use provided identity, or fallback to a random one
     global identity
-    if args.identity_private_key is not None:
+    if args.identity_file is not None:
         identity = RNS.Identity(create_keys=False)
-        identity.load_private_key(base64.b64decode(args.identity_private_key))
-        print("Reticulum Identity has been loaded.")
+        identity.load(args.identity_file)
+        print("Reticulum Identity has been loaded from file.")
+        print(identity)
+    elif args.identity_base64 is not None:
+        identity = RNS.Identity(create_keys=False)
+        identity.load_private_key(base64.b64decode(args.identity_base64))
+        print("Reticulum Identity has been loaded from base64.")
         print(identity)
     else:
         identity = RNS.Identity(create_keys=True)
-        print("Reticulum Identity has been generated.")
+        print("Reticulum Identity has been randomly generated.")
         print(identity)
 
     # run sanic app
