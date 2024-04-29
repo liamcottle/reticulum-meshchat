@@ -21,6 +21,7 @@ You will need to clone the repo, and run `web.py`.
 ```
 git clone https://github.com/liamcottle/reticulum-webchat
 cd reticulum-webchat
+pip install -r requirements.txt
 python web.py
 ```
 
