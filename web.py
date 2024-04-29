@@ -15,13 +15,13 @@ import base64
 
 class ReticulumWebChat:
 
-    def __init__(self, identity: RNS.Identity):
+    def __init__(self, webchat_config_file, identity: RNS.Identity):
 
         # default values before loading config
         self.display_name = "Anonymous Peer"
 
         # load config
-        self.config_file = "storage/config.json"
+        self.config_file = webchat_config_file or "storage/config.json"
         self.load_config()
 
         # init reticulum
@@ -336,6 +336,7 @@ async def main():
     parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
     parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
     parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
+    parser.add_argument("--webchat-config-file", type=str, help="Path to a ReticulumWebChat config file for saving user preferences.")
     args = parser.parse_args()
 
     # use provided identity, or fallback to a random one
@@ -355,7 +356,7 @@ async def main():
         print(identity)
 
     # init app
-    reticulum_webchat = ReticulumWebChat(identity)
+    reticulum_webchat = ReticulumWebChat(args.webchat_config_file, identity)
     await reticulum_webchat.run(args.host, args.port)
     
     
