@@ -155,8 +155,8 @@
                 <!-- chat items -->
                 <div id="messages" class="h-full overflow-y-scroll px-3 sm:px-0">
                     <div class="max-w-xl mx-auto">
-                        <div v-if="chatItems.length > 0" class="flex flex-col space-y-3 py-4">
-                            <div v-for="chatItem of chatItems">
+                        <div v-if="selectedPeerChatItems.length > 0" class="flex flex-col space-y-3 py-4">
+                            <div v-for="chatItem of selectedPeerChatItems">
                                 <div  class="flex space-x-2 border border-gray-300 rounded-lg shadow px-2 py-1.5 bg-white">
                                     <div>
 
@@ -466,6 +466,21 @@
             isMobile() {
                 return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             },
+            selectedPeerChatItems() {
+
+                // get all chat items related to the selected peer
+                if(this.selectedPeer){
+                    return this.chatItems.filter((chatItem) => {
+                        const isFromSelectedPeer = chatItem.source_hash === this.selectedPeer.destination_hash;
+                        const isToSelectedPeer = chatItem.destination_hash === this.selectedPeer.destination_hash;
+                        return isFromSelectedPeer || isToSelectedPeer;
+                    });
+                }
+
+                // no peer, so no chat items!
+                return [];
+
+            }
         },
     }).mount('#app');
 </script>
