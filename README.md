@@ -77,6 +77,8 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 ## TODO
 
 - [ ] allow passing in a custom Reticulum config file via cli args
+- [ ] allow generating identity in python if rnid util is not available
+- [ ] make sure web ui can run in offline environment, so host tailwind/vue locally
 - [ ] conversations/contacts list ui with unread indicators
 - [ ] ui to configure custom name to send in announcement app data
 - [ ] ui to view announcements, with names from app data
