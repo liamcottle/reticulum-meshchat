@@ -61,6 +61,12 @@
         </div>
     </div>
 
+    <div>
+        <div @click="onPeerClick(peer)" v-for="peer of Object.values(peers)" class="cursor-pointer">
+            <span><{{ peer.destination_hash }}> {{ peer.app_data }}</span>
+        </div>
+    </div>
+
     <!-- chat items -->
     <div id="messages" class="h-full overflow-y-scroll px-3 sm:px-0">
         <div class="max-w-xl mx-auto">
@@ -142,12 +148,12 @@
                 isWebsocketConnected: false,
                 autoReconnectWebsocket: true,
 
-                sendToDestinationHash: "bebfd1f0635a7f6129ee3b30c05328f3",
-
                 newMessageText: "",
                 isSendingMessage: false,
                 autoScrollOnNewMessage: true,
 
+                peers: {},
+                selectedPeer: null,
                 chatItems: [],
 
             };
@@ -178,6 +184,13 @@
                 this.ws.onmessage = (message) => {
                     const json = JSON.parse(message.data);
                     switch(json.type){
+                        case 'announce': {
+                            this.peers[json.destination_hash] = {
+                                destination_hash: json.destination_hash,
+                                app_data: json.app_data,
+                            }
+                            break;
+                        }
                         case 'lxmf.delivery': {
                             this.chatItems.push({
                                 "source_hash": json.source_hash,
@@ -237,6 +250,11 @@
                     return;
                 }
 
+                // do nothing if no peer selected
+                if(!this.selectedPeer){
+                    return;
+                }
+
                 this.isSendingMessage = true;
 
                 try {
@@ -244,7 +262,7 @@
                     // send message to reticulum via websocket
                     this.ws.send(JSON.stringify({
                         "type": "lxmf.delivery",
-                        "destination_hash": this.sendToDestinationHash,
+                        "destination_hash": this.selectedPeer.destination_hash,
                         "message": messageText,
                     }));
 
@@ -307,6 +325,9 @@
                 // open new tab
                 window.open(fileUrl);
 
+            },
+            onPeerClick: function(peer) {
+                this.selectedPeer = peer;
             },
         },
         computed: {
