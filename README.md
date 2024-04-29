@@ -27,6 +27,20 @@ python web.py
 
 > NOTE: You should now be able to access the web interface at http://localhost:8000
 
+## Using an existing Reticulum Identity
+
+By default, a new identity is generated every time you run the script.
+
+This is handy for quickly testing out the web ui, however you may want to use an existing identity when chatting to others.
+
+To do this, you can provide a base64 encoded private key, like so;
+
+```
+python web.py --identity-private-key "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQIF8VOjXwNNem3CUOJZCQQpJuc/4U94VSsC39Phw=="
+```
+
+> NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
+
 ## TODO
 
 - [ ] don't start Reticulum before cli args have been parsed
