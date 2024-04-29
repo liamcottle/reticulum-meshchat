@@ -8,6 +8,11 @@ import asyncio
 import websockets
 import base64
 
+from sanic import Sanic, Request, Websocket, file
+
+# create sanic app
+app = Sanic("ReticulumWebChat")
+
 # init reticulum
 reticulum = RNS.Reticulum(None)
 
@@ -27,16 +32,21 @@ websocket_clients = []
 
 async def main():
 
+    # run sanic app
+    app.run()
+
     # set a callback for when an lxmf message is received
     message_router.register_delivery_callback(lxmf_delivery)
 
-    # start websocket server
-    async with websockets.serve(on_websocket_client_connected, "", 8000):
-        await asyncio.Future()  # run forever
+
+@app.get("/")
+async def hello_world(request):
+    return await file("index.html")
 
 
 # handle websocket messages
-async def on_websocket_client_connected(client):
+@app.websocket("/ws")
+async def on_websocket_client_connected(request: Request, client: Websocket):
 
     # add client to connected clients list
     websocket_clients.append(client)

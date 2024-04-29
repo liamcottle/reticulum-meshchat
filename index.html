@@ -159,7 +159,7 @@
             connectWebsocket: function() {
 
                 // connect to websocket
-                this.ws = new WebSocket("ws://localhost:8000");
+                this.ws = new WebSocket(location.origin.replace(/^http/, 'ws') + "/ws");
 
                 this.ws.addEventListener('open', () => {
                     this.isWebsocketConnected = true;
