@@ -544,11 +544,7 @@
                     return parsedSeconds.minutes + " minutes ago";
                 }
 
-                if(parsedSeconds.seconds > 0){
-                    return parsedSeconds.seconds + " seconds ago";
-                }
-
-                return "right now";
+                return parsedSeconds.seconds + " seconds ago";
 
             },
         },
