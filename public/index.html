@@ -12,7 +12,7 @@
 
 </head>
 <body class="bg-gray-100">
-<div id="app" class="h-full w-full flex flex-col">
+<div id="app" class="h-screen w-full flex flex-col">
 
     <!-- header -->
     <div class="flex bg-white p-2 border-gray-300 border-b">
@@ -58,13 +58,13 @@
     </div>
 
     <!-- middle -->
-    <div class="flex h-full w-full px-2 space-x-2">
+    <div class="flex h-full w-full px-2 space-x-2 overflow-auto">
 
         <!-- sidebar -->
         <div class="flex flex-col w-80 h-full py-2 space-y-2">
 
             <!-- peers -->
-            <div class="flex flex-col border rounded-xl bg-white h-full shadow">
+            <div class="flex flex-col border rounded-xl bg-white shadow overflow-hidden">
                 <div class="flex border-b border-gray-300 text-gray-700 p-2">
                     <div class="mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -73,7 +73,7 @@
                     </div>
                     <div>Peers Discovered ({{ Object.keys(peers).length }})</div>
                 </div>
-                <div v-if="Object.keys(peers).length > 0">
+                <div v-if="Object.keys(peers).length > 0" class="overflow-y-scroll">
                     <div @click="onPeerClick(peer)" v-for="peer of Object.values(peers)" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
                         <div class="my-auto mr-2">
                             <img class="w-9 h-9 rounded-full" src="assets/images/user.png"/>
