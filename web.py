@@ -133,7 +133,7 @@ class ReticulumWebChat:
                 message = await client.recv()
                 data = json.loads(message)
                 await self.on_websocket_data_received(client, data)
-            except websockets.ConnectionClosedOK:
+            except (websockets.ConnectionClosed, websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
                 # client disconnected, we can stop looping
                 break
             except Exception as e:
