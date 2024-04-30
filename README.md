@@ -1,4 +1,10 @@
-# Reticulum WebChat
+<p align="center">
+<a href="https://github.com/liamcottle/reticulum-webchat"><img src="./logo/logo-chat-bubble.png" width="150"></a>
+</p>
+
+<h2 align="center">Reticulum WebChat</h2>
+
+## What is Reticulum WebChat?
 
 A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client for [Reticulum](https://github.com/markqvist/Reticulum).
 
