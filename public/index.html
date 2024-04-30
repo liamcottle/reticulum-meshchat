@@ -64,7 +64,7 @@
         <div class="flex flex-col w-80 h-full py-2 space-y-2">
 
             <!-- peers -->
-            <div class="flex flex-col border rounded-xl bg-white shadow overflow-hidden">
+            <div class="flex-1 flex flex-col border rounded-xl bg-white shadow overflow-hidden">
                 <div class="flex border-b border-gray-300 text-gray-700 p-2">
                     <div class="mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -73,8 +73,11 @@
                     </div>
                     <div>Peers Discovered ({{ peersCount }})</div>
                 </div>
-                <div v-if="peersCount > 0" class="overflow-y-scroll">
-                    <div @click="onPeerClick(peer)" v-for="peer of peersOrderedByLatestAnnounce" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
+                <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
+                    <input v-model="peersSearchTerm" type="text" placeholder="Search peers..." class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
+                <div v-if="searchedPeers.length > 0" class="overflow-y-scroll">
+                    <div @click="onPeerClick(peer)" v-for="peer of searchedPeers" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
                         <div class="my-auto mr-2">
                             <img class="w-9 h-9 rounded-full" src="assets/images/user.png"/>
                         </div>
@@ -84,14 +87,31 @@
                         </div>
                     </div>
                 </div>
-                <div v-else class="flex flex-col mx-auto my-auto text-center leading-5">
-                    <div class="mx-auto mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                        </svg>
+                <div v-else class="mx-auto my-auto text-center leading-5">
+
+                    <!-- no peers at all -->
+                    <div v-if="peersCount === 0" class="flex flex-col">
+                        <div class="mx-auto mb-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                            </svg>
+                        </div>
+                        <div class="font-semibold">No Peers Discovered</div>
+                        <div>Waiting for someone to announce!</div>
                     </div>
-                    <div class="font-semibold">No Peers Discovered</div>
-                    <div>Waiting for someone to announce!</div>
+
+                    <!-- is searching, but no results -->
+                    <div v-if="peersSearchTerm !== '' && peersCount > 0" class="flex flex-col">
+                        <div class="mx-auto mb-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </div>
+                        <div class="font-semibold">No Search Results</div>
+                        <div>Your search didn't match any Peers!</div>
+                    </div>
+
+
                 </div>
             </div>
 
@@ -277,6 +297,7 @@
                 config: null,
 
                 peers: {},
+                peersSearchTerm: "",
                 selectedPeer: null,
                 chatItems: [],
 
@@ -560,6 +581,13 @@
                 return peers.sort(function(peerA, peerB) {
                     // order by last_announce_timestamp desc
                     return peerB.last_announce_timestamp - peerA.last_announce_timestamp;
+                });
+            },
+            searchedPeers() {
+                return this.peersOrderedByLatestAnnounce.filter((peer) => {
+                    const search = this.peersSearchTerm.toLowerCase();
+                    const matchesAppData = (peer.app_data || "").toLowerCase().includes(search);
+                    return matchesAppData;
                 });
             },
             selectedPeerChatItems() {
