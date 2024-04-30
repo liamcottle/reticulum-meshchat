@@ -92,6 +92,7 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 ## TODO
 
+- [ ] search peers by name and address
 - [ ] add screenshot of web ui to readme
 - [ ] send images from web ui
 - [ ] send file attachments from web ui
