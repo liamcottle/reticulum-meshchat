@@ -443,7 +443,7 @@ async def main():
         return
 
     # util to generate reticulum identity as base64 without using rnid
-    if args.generate_identity_base64 is not None:
+    if args.generate_identity_base64 is True:
         identity = RNS.Identity(create_keys=True)
         print(base64.b64encode(identity.get_private_key()).decode("utf-8"))
         return
