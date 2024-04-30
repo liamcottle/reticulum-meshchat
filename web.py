@@ -95,7 +95,7 @@ class ReticulumWebChat:
 
         # serve index.html
         if path == "/":
-            with open("index.html") as f:
+            with open("public/index.html") as f:
                 file_content = f.read()
                 return http.HTTPStatus.OK, [
                     ('Content-Type', 'text/html')
