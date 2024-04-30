@@ -428,9 +428,17 @@ async def main():
 
     # util to generate reticulum identity and save to file without using rnid
     if args.generate_identity_file is not None:
+
+        # do not overwrite existing files, otherwise user could lose existing keys
+        if os.path.exists(args.generate_identity_file):
+            print("DANGER: the provided identity file path already exists, not overwriting!")
+            return
+
+        # generate a new identity and save to provided file path
         identity = RNS.Identity(create_keys=True)
         with open(args.generate_identity_file, "wb") as file:
             file.write(identity.get_private_key())
+
         print("A new Reticulum Identity has been saved to: {}".format(args.generate_identity_file))
         return
 
