@@ -74,7 +74,7 @@
                     <div>Peers Discovered ({{ Object.keys(peers).length }})</div>
                 </div>
                 <div v-if="Object.keys(peers).length > 0" class="overflow-y-scroll">
-                    <div @click="onPeerClick(peer)" v-for="peer of Object.values(peers)" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
+                    <div @click="onPeerClick(peer)" v-for="peer of peersOrderedByLatestAnnounce" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
                         <div class="my-auto mr-2">
                             <img class="w-9 h-9 rounded-full" src="assets/images/user.png"/>
                         </div>
@@ -555,6 +555,13 @@
         computed: {
             isMobile() {
                 return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            },
+            peersOrderedByLatestAnnounce() {
+                const peers = Object.values(this.peers);
+                return peers.sort(function(peerA, peerB) {
+                    // order by last_announce_timestamp desc
+                    return peerB.last_announce_timestamp - peerA.last_announce_timestamp;
+                });
             },
             selectedPeerChatItems() {
 
