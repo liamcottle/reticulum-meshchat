@@ -102,3 +102,4 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 - [ ] allow setting a custom name to show for a contact
 - [ ] button to forget peers and contacts
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
+- [ ] support for exploring/navigating a nodes micron pages
