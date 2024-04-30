@@ -321,6 +321,16 @@
                             }
                             break;
                         }
+                        case 'known_peers': {
+                            for(const known_peer of json.known_peers){
+                                this.peers[known_peer.destination_hash] = {
+                                    destination_hash: known_peer.destination_hash,
+                                    app_data: known_peer.app_data,
+                                    last_announce_timestamp: known_peer.last_announce_timestamp,
+                                }
+                            }
+                            break;
+                        }
                         case 'lxmf.delivery': {
 
                             // add inbound message to ui
