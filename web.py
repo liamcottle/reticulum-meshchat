@@ -15,7 +15,7 @@ import base64
 
 class ReticulumWebChat:
 
-    def __init__(self, webchat_config_file, identity: RNS.Identity):
+    def __init__(self, webchat_config_file, reticulum_config_dir, identity: RNS.Identity):
 
         # default values before loading config
         self.display_name = "Anonymous Peer"
@@ -25,7 +25,7 @@ class ReticulumWebChat:
         self.load_config()
 
         # init reticulum
-        self.reticulum = RNS.Reticulum(None)
+        self.reticulum = RNS.Reticulum(reticulum_config_dir)
         self.identity = identity
 
         # init lxmf router
@@ -420,6 +420,7 @@ async def main():
     parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
     parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
     parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
+    parser.add_argument("--reticulum-config-dir", type=str, help="Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)")
     parser.add_argument("--webchat-config-file", type=str, help="Path to a ReticulumWebChat config file for saving user preferences.")
     args = parser.parse_args()
 
@@ -440,7 +441,7 @@ async def main():
         print(identity)
 
     # init app
-    reticulum_webchat = ReticulumWebChat(args.webchat_config_file, identity)
+    reticulum_webchat = ReticulumWebChat(args.webchat_config_file, args.reticulum_config_dir, identity)
     await reticulum_webchat.run(args.host, args.port)
     
     
