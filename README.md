@@ -24,7 +24,7 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 - Supports receiving and saving images and attachments sent from Sideband.
 - Supports sending an announce to the network.
 - Supports setting a custom display name to send in your announce.
-- Supports viewing peers discovered from announces.
+- Supports viewing and searching peers discovered from announces.
 
 ## How does it work?
 
