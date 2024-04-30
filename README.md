@@ -1,12 +1,14 @@
 # Reticulum WebChat
 
-A simple web based [LXMF](https://github.com/markqvist/lxmf) client for [Reticulum](https://github.com/markqvist/Reticulum).
+A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client for [Reticulum](https://github.com/markqvist/Reticulum).
 
 ## Features
 
-- Supports sending to and receiving messages from [Sideband](https://github.com/markqvist/Sideband/) and [Nomadnet](https://github.com/markqvist/nomadnet).
-- Supports receiving images sent from Sideband.
-- Supports receiving file attachments sent from Sideband.
+- Supports sending and receiving messages from [Reticulum WebChat](https://github.com/liamcottle/reticulum-webchat), [Sideband](https://github.com/markqvist/Sideband/) and [Nomadnet](https://github.com/markqvist/nomadnet).
+- Supports receiving and saving images and attachments sent from Sideband.
+- Supports sending an announce to the network.
+- Supports setting a custom display name to send in your announce.
+- Supports viewing peers discovered from announces.
 
 ## How does it work?
 
@@ -83,3 +85,6 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 - [ ] support saving conversation history across page reloads, maybe an sqlite database
 - [ ] send images from web ui
 - [ ] send file attachments from web ui
+- [ ] button to add peer to contacts, and show a tab for contacts
+- [ ] allow setting a custom name to show for a contact
+- [ ] button to forget peers and contacts
