@@ -80,7 +80,7 @@ To generate a new identity, you can use the [rnid](https://reticulum.network/man
 rnid --generate ./new_identity
 ```
 
-You can then use following to run the web ui with your new identity file;
+You can then use the following to run the web ui with your new identity file;
 
 ```
 python web.py --identity-file ./new_identity
