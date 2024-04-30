@@ -77,8 +77,8 @@
                     </div>
                     <div>Peers Discovered ({{ Object.keys(peers).length }})</div>
                 </div>
-                <div v-if="Object.keys(peers).length > 0" class="divide-y divide-gray-100">
-                    <div @click="onPeerClick(peer)" v-for="peer of Object.values(peers)" class="flex cursor-pointer p-2" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100' : 'bg-white hover:bg-gray-50' ]">
+                <div v-if="Object.keys(peers).length > 0">
+                    <div @click="onPeerClick(peer)" v-for="peer of Object.values(peers)" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
                         <div class="my-auto mr-2">
                             <img class="w-9 h-9 rounded-full" src="assets/images/user.png"/>
                         </div>
