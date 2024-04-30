@@ -29,7 +29,7 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 ## How does it work?
 
 - A python script ([web.py](./web.py)) runs a Reticulum instance and a WebSocket server.
-- The web page sends and receives lxmf packets encoded in json via the WebSocket.
+- The web page sends and receives LXMF packets encoded in json via the WebSocket.
 - Web Browser -> WebSocket -> Python Reticulum -> (configured interfaces) -> (destination)
 
 ## How to use it?
