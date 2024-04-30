@@ -420,9 +420,25 @@ async def main():
     parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
     parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
     parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
+    parser.add_argument("--generate-identity-file", type=str, help="Generates and saves a new Reticulum Identity to the provided file path and then exits.")
+    parser.add_argument("--generate-identity-base64", action='store_true', help="Outputs a randomly generated Reticulum Identity as base64 and then exits.")
     parser.add_argument("--reticulum-config-dir", type=str, help="Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)")
     parser.add_argument("--webchat-config-file", type=str, help="Path to a ReticulumWebChat config file for saving user preferences.")
     args = parser.parse_args()
+
+    # util to generate reticulum identity and save to file without using rnid
+    if args.generate_identity_file is not None:
+        identity = RNS.Identity(create_keys=True)
+        with open(args.generate_identity_file, "wb") as file:
+            file.write(identity.get_private_key())
+        print("A new Reticulum Identity has been saved to: {}".format(args.generate_identity_file))
+        return
+
+    # util to generate reticulum identity as base64 without using rnid
+    if args.generate_identity_base64 is not None:
+        identity = RNS.Identity(create_keys=True)
+        print(base64.b64encode(identity.get_private_key()).decode("utf-8"))
+        return
 
     # use provided identity, or fallback to a random one
     if args.identity_file is not None:
