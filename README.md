@@ -92,7 +92,6 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 ## TODO
 
-- [ ] make sure web ui can run in offline environment, so host tailwind/vue locally
 - [ ] allow passing in a custom Reticulum config file via cli args
 - [ ] allow generating identity in python if rnid util is not available
 - [ ] send images from web ui
