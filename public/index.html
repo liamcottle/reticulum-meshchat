@@ -314,9 +314,10 @@
                             break;
                         }
                         case 'announce': {
-                            this.peers[json.destination_hash] = {
-                                destination_hash: json.destination_hash,
-                                app_data: json.app_data,
+                            this.peers[json.announce.destination_hash] = {
+                                destination_hash: json.announce.destination_hash,
+                                app_data: json.announce.app_data,
+                                last_announce_timestamp: json.announce.last_announce_timestamp,
                             }
                             break;
                         }

@@ -5,6 +5,7 @@ import http
 import json
 import mimetypes
 import os
+import time
 
 import RNS
 import LXMF
@@ -127,6 +128,9 @@ class ReticulumWebChat:
         # send config to all clients
         await self.send_config_to_websocket_clients()
 
+        # send known peers to all clients
+        await self.send_known_peers_to_websocket_clients()
+
         # handle client messages until disconnected
         while True:
             try:
@@ -205,6 +209,41 @@ class ReticulumWebChat:
                 "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             },
         }))
+
+    # broadcasts known peers to all websocket clients
+    async def send_known_peers_to_websocket_clients(self):
+
+        # process known peers
+        known_peers = []
+        for destination_hash in RNS.Identity.known_destinations:
+            known_destination = RNS.Identity.known_destinations[destination_hash]
+            last_announce_timestamp = known_destination[0]
+            known_peers.append({
+                "destination_hash": destination_hash.hex(),
+                "app_data": self.convert_app_data_to_string(RNS.Identity.recall_app_data(destination_hash)),
+                "last_announce_timestamp": last_announce_timestamp,
+            })
+
+        # send known peers to websocket clients
+        await self.websocket_broadcast(json.dumps({
+            "type": "known_peers",
+            "known_peers": known_peers,
+        }))
+
+    # convert app data to string, or return none unable to do so
+    def convert_app_data_to_string(self, app_data):
+
+        # attempt to convert to utf-8 string
+        if app_data is not None:
+            try:
+                return app_data.decode("utf-8")
+            except:
+                # ignore failure to convert to string
+                pass
+
+        # unable to convert to string
+        return None
+
 
     # convert an lxmf message to a dictionary, for sending over websocket
     def convert_lxmf_message_to_dict(self, lxmf_message: LXMF.LXMessage):
@@ -391,8 +430,11 @@ class ReticulumWebChat:
         # send received lxmf announce to all websocket clients
         asyncio.run(self.websocket_broadcast(json.dumps({
             "type": "announce",
-            "destination_hash": destination_hash.hex(),
-            "app_data": parsed_app_data,
+            "announce": {
+                "destination_hash": destination_hash.hex(),
+                "app_data": parsed_app_data,
+                "last_announce_timestamp": time.time(),
+            },
         })))
 
 
