@@ -80,7 +80,7 @@
                         </div>
                         <div>
                             <div class="text-gray-900">{{ peer.app_data || "Anonymous Peer" }}</div>
-                            <div class="text-gray-500 text-sm">@<{{ peer.destination_hash.substring(0, 8) }}></div>
+                            <div class="text-gray-500 text-sm">{{ formatTimeAgo(peer.last_announce_timestamp) }}</div>
                         </div>
                     </div>
                 </div>
@@ -513,6 +513,43 @@
             },
             onPeerClick: function(peer) {
                 this.selectedPeer = peer;
+            },
+            parseSeconds: function(secondsToFormat) {
+                secondsToFormat = Number(secondsToFormat);
+                var days = Math.floor(secondsToFormat / (3600 * 24));
+                var hours = Math.floor((secondsToFormat % (3600 * 24)) / 3600);
+                var minutes = Math.floor((secondsToFormat % 3600) / 60);
+                var seconds = Math.floor(secondsToFormat % 60);
+                return {
+                    days: days,
+                    hours: hours,
+                    minutes: minutes,
+                    seconds: seconds,
+                };
+            },
+            formatTimeAgo: function(seconds) {
+
+                const secondsAgo = Math.round((Date.now() / 1000) - seconds);
+                const parsedSeconds = this.parseSeconds(secondsAgo);
+
+                if(parsedSeconds.days > 0){
+                    return parsedSeconds.days + " days ago";
+                }
+
+                if(parsedSeconds.hours > 0){
+                    return parsedSeconds.hours + " hours ago";
+                }
+
+                if(parsedSeconds.minutes > 0){
+                    return parsedSeconds.minutes + " minutes ago";
+                }
+
+                if(parsedSeconds.seconds > 0){
+                    return parsedSeconds.seconds + " seconds ago";
+                }
+
+                return "right now";
+
             },
         },
         computed: {
