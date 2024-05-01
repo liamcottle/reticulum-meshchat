@@ -301,6 +301,9 @@
                 selectedPeer: null,
                 chatItems: [],
 
+                nomadnetPageDownloadCallbacks: {},
+                nomadnetFileDownloadCallbacks: {},
+
             };
         },
         mounted: function() {
@@ -395,6 +398,68 @@
 
                             // update lxmf message from server, while ensuring ui updates from nested object change
                             this.chatItems[chatItemIndex].lxmf_message = json.lxmf_message;
+
+                            break;
+
+                        }
+                        case 'nomadnet.page.download': {
+
+                            // get data from server
+                            const nomadnetPageDownload = json.nomadnet_page_download;
+
+                            // find download callbacks
+                            const getNomadnetPageDownloadCallbackKey = this.getNomadnetPageDownloadCallbackKey(nomadnetPageDownload.destination_hash, nomadnetPageDownload.page_path);
+                            const nomadnetPageDownloadCallback = this.nomadnetPageDownloadCallbacks[getNomadnetPageDownloadCallbackKey];
+                            if(!nomadnetPageDownloadCallback){
+                                console.log("did not find nomadnet page download callback for key: " + getNomadnetPageDownloadCallbackKey);
+                                return;
+                            }
+
+                            // handle success
+                            if(nomadnetPageDownload.status === "success" && nomadnetPageDownloadCallback.onSuccessCallback){
+                                nomadnetPageDownloadCallback.onSuccessCallback(nomadnetPageDownload.page_content);
+                                return;
+                            }
+
+                            // handle failure
+                            if(nomadnetPageDownload.status === "failure" && nomadnetPageDownloadCallback.onFailureCallback){
+                                nomadnetPageDownloadCallback.onFailureCallback(nomadnetPageDownload.failure_reason);
+                                return;
+                            }
+
+                            // forget callbacks for this page download
+                            delete this.nomadnetPageDownloadCallbacks[getNomadnetPageDownloadCallbackKey];
+
+                            break;
+
+                        }
+                        case 'nomadnet.file.download': {
+
+                            // get data from server
+                            const nomadnetFileDownload = json.nomadnet_file_download;
+
+                            // find download callbacks
+                            const getNomadnetFileDownloadCallbackKey = this.getNomadnetFileDownloadCallbackKey(nomadnetFileDownload.destination_hash, nomadnetFileDownload.file_path);
+                            const nomadnetFileDownloadCallback = this.nomadnetFileDownloadCallbacks[getNomadnetFileDownloadCallbackKey];
+                            if(!nomadnetFileDownloadCallback){
+                                console.log("did not find nomadnet file download callback for key: " + getNomadnetFileDownloadCallbackKey);
+                                return;
+                            }
+
+                            // handle success
+                            if(nomadnetFileDownload.status === "success" && nomadnetFileDownloadCallback.onSuccessCallback){
+                                nomadnetFileDownloadCallback.onSuccessCallback(nomadnetFileDownload.file_name, nomadnetFileDownload.file_bytes);
+                                return;
+                            }
+
+                            // handle failure
+                            if(nomadnetFileDownload.status === "failure" && nomadnetFileDownloadCallback.onFailureCallback){
+                                nomadnetFileDownloadCallback.onFailureCallback(nomadnetFileDownload.failure_reason);
+                                return;
+                            }
+
+                            // forget callbacks for this file download
+                            delete this.nomadnetFileDownloadCallbacks[getNomadnetFileDownloadCallbackKey];
 
                             break;
 
@@ -502,6 +567,66 @@
                     "display_name": this.displayName,
                 });
             },
+            async downloadNomadNetFile(destinationHash, filePath, onSuccessCallback, onFailureCallback) {
+
+                // do nothing if not connected to websocket
+                if(!this.isWebsocketConnected){
+                    alert("Not connected to WebSocket!");
+                    return;
+                }
+
+                try {
+
+                    // set callbacks for nomadnet filePath download
+                    this.nomadnetFileDownloadCallbacks[this.getNomadnetFileDownloadCallbackKey(destinationHash, filePath)] = {
+                        onSuccessCallback: onSuccessCallback,
+                        onFailureCallback: onFailureCallback,
+                    };
+
+                    // ask reticulum to download file from nomadnet
+                    this.ws.send(JSON.stringify({
+                        "type": "nomadnet.file.download",
+                        "nomadnet_file_download": {
+                            "destination_hash": destinationHash,
+                            "file_path": filePath,
+                        },
+                    }));
+
+                } catch(e) {
+                    console.error(e);
+                }
+
+            },
+            async downloadNomadNetPage(destinationHash, pagePath, onSuccessCallback, onFailureCallback) {
+
+                // do nothing if not connected to websocket
+                if(!this.isWebsocketConnected){
+                    alert("Not connected to WebSocket!");
+                    return;
+                }
+
+                try {
+
+                    // set callbacks for nomadnet page download
+                    this.nomadnetPageDownloadCallbacks[this.getNomadnetPageDownloadCallbackKey(destinationHash, pagePath)] = {
+                        onSuccessCallback: onSuccessCallback,
+                        onFailureCallback: onFailureCallback,
+                    };
+
+                    // ask reticulum to download page from nomadnet
+                    this.ws.send(JSON.stringify({
+                        "type": "nomadnet.page.download",
+                        "nomadnet_page_download": {
+                            "destination_hash": destinationHash,
+                            "page_path": pagePath,
+                        },
+                    }));
+
+                } catch(e) {
+                    console.error(e);
+                }
+
+            },
             addNewLine: function() {
                 this.newMessageText += "\n";
             },
@@ -567,6 +692,12 @@
 
                 return parsedSeconds.seconds + " seconds ago";
 
+            },
+            getNomadnetPageDownloadCallbackKey: function(destinationHash, pagePath) {
+                return `${destinationHash}:${pagePath}`;
+            },
+            getNomadnetFileDownloadCallbackKey: function(destinationHash, filePath) {
+                return `${destinationHash}:${filePath}`;
             },
         },
         computed: {
