@@ -6,6 +6,7 @@ import json
 import mimetypes
 import os
 import time
+from typing import Callable
 
 import RNS
 import LXMF
@@ -190,6 +191,85 @@ class ReticulumWebChat:
             # send announce for lxmf
             self.local_lxmf_destination.announce(app_data=self.display_name.encode("utf-8"))
 
+        # handle downloading a file from a nomadnet node
+        elif _type == "nomadnet.file.download":
+
+            # get data from websocket client
+            destination_hash = data["nomadnet_file_download"]["destination_hash"]
+            file_path = data["nomadnet_file_download"]["file_path"]
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # handle successful file download
+            def on_file_download_success(file_name, file_bytes):
+                asyncio.run(client.send(json.dumps({
+                    "type": "nomadnet.file.download",
+                    "nomadnet_file_download": {
+                        "status": "success",
+                        "destination_hash": destination_hash.hex(),
+                        "file_path": file_path,
+                        "file_name": file_name,
+                        "file_bytes": base64.b64encode(file_bytes).decode("utf-8"),
+                    },
+                })))
+
+            # handle file download failure
+            def on_file_download_failure(failure_reason):
+                asyncio.run(client.send(json.dumps({
+                    "type": "nomadnet.file.download",
+                    "nomadnet_file_download": {
+                        "status": "error",
+                        "failure_reason": failure_reason,
+                        "destination_hash": destination_hash.hex(),
+                        "file_path": file_path,
+                    },
+                })))
+
+            # todo: handle file download progress
+
+            # download the file
+            NomadnetFileDownloader(destination_hash, file_path, on_file_download_success, on_file_download_failure)
+
+        # handle downloading a page from a nomadnet node
+        elif _type == "nomadnet.page.download":
+
+            # get data from websocket client
+            destination_hash = data["nomadnet_page_download"]["destination_hash"]
+            page_path = data["nomadnet_page_download"]["page_path"]
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # handle successful page download
+            def on_page_download_success(page_content):
+                asyncio.run(client.send(json.dumps({
+                    "type": "nomadnet.page.download",
+                    "nomadnet_page_download": {
+                        "status": "success",
+                        "destination_hash": destination_hash.hex(),
+                        "page_path": page_path,
+                        "page_content": page_content,
+                    },
+                })))
+
+            # handle page download failure
+            def on_page_download_failure(failure_reason):
+                asyncio.run(client.send(json.dumps({
+                    "type": "nomadnet.page.download",
+                    "nomadnet_page_download": {
+                        "status": "error",
+                        "failure_reason": failure_reason,
+                        "destination_hash": destination_hash.hex(),
+                        "page_path": page_path,
+                    },
+                })))
+
+            # todo: handle page download progress
+
+            # download the page
+            NomadnetPageDownloader(destination_hash, page_path, on_page_download_success, on_page_download_failure)
+
         # unhandled type
         else:
             print("unhandled client message type: " + _type)
@@ -243,7 +323,6 @@ class ReticulumWebChat:
 
         # unable to convert to string
         return None
-
 
     # convert an lxmf message to a dictionary, for sending over websocket
     def convert_lxmf_message_to_dict(self, lxmf_message: LXMF.LXMessage):
@@ -453,6 +532,107 @@ class LXMFAnnounceHandler:
         except:
             # ignore failure to handle received announce
             pass
+
+
+class NomadnetDownloader:
+
+    def __init__(self, destination_hash: bytes, path: str, on_download_success: Callable[[bytes], None], on_download_failure: Callable[[str], None], timeout: int|None = None, auto_download=True):
+        self.app_name = "nomadnetwork"
+        self.aspects = "node"
+        self.destination_hash = destination_hash
+        self.path = path
+        self.timeout = timeout
+        self.on_download_success = on_download_success
+        self.on_download_failure = on_download_failure
+        if auto_download:
+            self.download()
+
+    # setup link to destination and request download
+    def download(self):
+
+        # request path to destination
+        RNS.Transport.request_path(self.destination_hash)
+
+        # find existing identity
+        identity = RNS.Identity.recall(self.destination_hash)
+        if identity is None:
+            self.on_download_failure("identity not found")
+            return
+
+        # create destination to nomadnet node
+        destination = RNS.Destination(
+            identity,
+            RNS.Destination.OUT,
+            RNS.Destination.SINGLE,
+            self.app_name,
+            self.aspects,
+        )
+
+        # create link to destination
+        RNS.Link(destination, established_callback=self.link_established)
+
+    # link to destination was established, we should now request the download
+    def link_established(self, link):
+
+        # request download over link
+        link.request(
+            self.path,
+            data=None,
+            response_callback=self.on_response,
+            failed_callback=self.on_failed,
+            progress_callback=self.on_progress,
+            timeout=self.timeout,
+        )
+
+    # handle successful download
+    def on_response(self, request_receipt):
+        print("file_received")
+        self.on_download_success(request_receipt.response)
+
+    # handle failure
+    def on_failed(self, request_receipt=None):
+        self.on_download_failure("request_failed")
+
+    # handle download progress
+    def on_progress(self, request_receipt):
+        print("response_progressed")
+        print(request_receipt)
+
+
+class NomadnetPageDownloader(NomadnetDownloader):
+
+    def __init__(self, destination_hash: bytes, page_path: str, on_page_download_success: Callable[[str], None], on_page_download_failure: Callable[[str], None], timeout: int|None = None, auto_download=True):
+        self.on_page_download_success = on_page_download_success
+        self.on_page_download_failure = on_page_download_failure
+        super().__init__(destination_hash, page_path, self.on_download_success, self.on_download_failure, timeout, auto_download)
+
+    # page download was successful, decode the response and send to provided callback
+    def on_download_success(self, response_bytes):
+        micron_markup_response = response_bytes.decode("utf-8")
+        self.on_page_download_success(micron_markup_response)
+
+    # page download failed, send error to provided callback
+    def on_download_failure(self, failure_reason):
+        self.on_page_download_failure(failure_reason)
+
+
+class NomadnetFileDownloader(NomadnetDownloader):
+
+    def __init__(self, destination_hash: bytes, page_path: str, on_file_download_success: Callable[[str, bytes], None], on_file_download_failure: Callable[[str], None], timeout: int|None = None, auto_download=True):
+        self.on_file_download_success = on_file_download_success
+        self.on_file_download_failure = on_file_download_failure
+        super().__init__(destination_hash, page_path, self.on_download_success, self.on_download_failure, timeout, auto_download)
+
+    # file download was successful, decode the response and send to provided callback
+    def on_download_success(self, response):
+        file_name: str = response[0]
+        file_data: bytes = response[1]
+        self.on_file_download_success(file_name, file_data)
+
+    # page download failed, send error to provided callback
+    def on_download_failure(self, failure_reason):
+        self.on_file_download_failure(failure_reason)
+
 
 async def main():
 
