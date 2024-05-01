@@ -226,10 +226,22 @@ class ReticulumWebChat:
                     },
                 })))
 
+            # handle file download progress
+            def on_file_download_progress(progress):
+                asyncio.run(client.send(json.dumps({
+                    "type": "nomadnet.file.download",
+                    "nomadnet_file_download": {
+                        "status": "progress",
+                        "progress": progress,
+                        "destination_hash": destination_hash.hex(),
+                        "file_path": file_path,
+                    },
+                })))
+
             # todo: handle file download progress
 
             # download the file
-            NomadnetFileDownloader(destination_hash, file_path, on_file_download_success, on_file_download_failure)
+            NomadnetFileDownloader(destination_hash, file_path, on_file_download_success, on_file_download_failure, on_file_download_progress)
 
         # handle downloading a page from a nomadnet node
         elif _type == "nomadnet.page.download":
@@ -265,10 +277,22 @@ class ReticulumWebChat:
                     },
                 })))
 
+            # handle page download progress
+            def on_page_download_progress(progress):
+                asyncio.run(client.send(json.dumps({
+                    "type": "nomadnet.page.download",
+                    "nomadnet_page_download": {
+                        "status": "progress",
+                        "progress": progress,
+                        "destination_hash": destination_hash.hex(),
+                        "page_path": page_path,
+                    },
+                })))
+
             # todo: handle page download progress
 
             # download the page
-            NomadnetPageDownloader(destination_hash, page_path, on_page_download_success, on_page_download_failure)
+            NomadnetPageDownloader(destination_hash, page_path, on_page_download_success, on_page_download_failure, on_page_download_progress)
 
         # unhandled type
         else:
@@ -536,7 +560,7 @@ class LXMFAnnounceHandler:
 
 class NomadnetDownloader:
 
-    def __init__(self, destination_hash: bytes, path: str, on_download_success: Callable[[bytes], None], on_download_failure: Callable[[str], None], timeout: int|None = None, auto_download=True):
+    def __init__(self, destination_hash: bytes, path: str, on_download_success: Callable[[bytes], None], on_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None], timeout: int|None = None, auto_download=True):
         self.app_name = "nomadnetwork"
         self.aspects = "node"
         self.destination_hash = destination_hash
@@ -544,6 +568,7 @@ class NomadnetDownloader:
         self.timeout = timeout
         self.on_download_success = on_download_success
         self.on_download_failure = on_download_failure
+        self.on_progress_update = on_progress_update
         if auto_download:
             self.download()
 
@@ -595,16 +620,15 @@ class NomadnetDownloader:
 
     # handle download progress
     def on_progress(self, request_receipt):
-        print("response_progressed")
-        print(request_receipt)
+        self.on_progress_update(request_receipt.progress)
 
 
 class NomadnetPageDownloader(NomadnetDownloader):
 
-    def __init__(self, destination_hash: bytes, page_path: str, on_page_download_success: Callable[[str], None], on_page_download_failure: Callable[[str], None], timeout: int|None = None, auto_download=True):
+    def __init__(self, destination_hash: bytes, page_path: str, on_page_download_success: Callable[[str], None], on_page_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None], timeout: int|None = None, auto_download=True):
         self.on_page_download_success = on_page_download_success
         self.on_page_download_failure = on_page_download_failure
-        super().__init__(destination_hash, page_path, self.on_download_success, self.on_download_failure, timeout, auto_download)
+        super().__init__(destination_hash, page_path, self.on_download_success, self.on_download_failure, on_progress_update, timeout, auto_download)
 
     # page download was successful, decode the response and send to provided callback
     def on_download_success(self, response_bytes):
@@ -618,10 +642,10 @@ class NomadnetPageDownloader(NomadnetDownloader):
 
 class NomadnetFileDownloader(NomadnetDownloader):
 
-    def __init__(self, destination_hash: bytes, page_path: str, on_file_download_success: Callable[[str, bytes], None], on_file_download_failure: Callable[[str], None], timeout: int|None = None, auto_download=True):
+    def __init__(self, destination_hash: bytes, page_path: str, on_file_download_success: Callable[[str, bytes], None], on_file_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None], timeout: int|None = None, auto_download=True):
         self.on_file_download_success = on_file_download_success
         self.on_file_download_failure = on_file_download_failure
-        super().__init__(destination_hash, page_path, self.on_download_success, self.on_download_failure, timeout, auto_download)
+        super().__init__(destination_hash, page_path, self.on_download_success, self.on_download_failure, on_progress_update, timeout, auto_download)
 
     # file download was successful, decode the response and send to provided callback
     def on_download_success(self, response):

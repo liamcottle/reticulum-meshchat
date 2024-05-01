@@ -418,17 +418,22 @@
                             // handle success
                             if(nomadnetPageDownload.status === "success" && nomadnetPageDownloadCallback.onSuccessCallback){
                                 nomadnetPageDownloadCallback.onSuccessCallback(nomadnetPageDownload.page_content);
+                                delete this.nomadnetPageDownloadCallbacks[getNomadnetPageDownloadCallbackKey];
                                 return;
                             }
 
                             // handle failure
                             if(nomadnetPageDownload.status === "failure" && nomadnetPageDownloadCallback.onFailureCallback){
                                 nomadnetPageDownloadCallback.onFailureCallback(nomadnetPageDownload.failure_reason);
+                                delete this.nomadnetPageDownloadCallbacks[getNomadnetPageDownloadCallbackKey];
                                 return;
                             }
 
-                            // forget callbacks for this page download
-                            delete this.nomadnetPageDownloadCallbacks[getNomadnetPageDownloadCallbackKey];
+                            // handle progress
+                            if(nomadnetPageDownload.status === "progress" && nomadnetPageDownloadCallback.onProgressCallback){
+                                nomadnetPageDownloadCallback.onProgressCallback(nomadnetPageDownload.progress);
+                                return;
+                            }
 
                             break;
 
@@ -449,17 +454,22 @@
                             // handle success
                             if(nomadnetFileDownload.status === "success" && nomadnetFileDownloadCallback.onSuccessCallback){
                                 nomadnetFileDownloadCallback.onSuccessCallback(nomadnetFileDownload.file_name, nomadnetFileDownload.file_bytes);
+                                delete this.nomadnetFileDownloadCallbacks[getNomadnetFileDownloadCallbackKey];
                                 return;
                             }
 
                             // handle failure
                             if(nomadnetFileDownload.status === "failure" && nomadnetFileDownloadCallback.onFailureCallback){
                                 nomadnetFileDownloadCallback.onFailureCallback(nomadnetFileDownload.failure_reason);
+                                delete this.nomadnetFileDownloadCallbacks[getNomadnetFileDownloadCallbackKey];
                                 return;
                             }
 
-                            // forget callbacks for this file download
-                            delete this.nomadnetFileDownloadCallbacks[getNomadnetFileDownloadCallbackKey];
+                            // handle progress
+                            if(nomadnetFileDownload.status === "progress" && nomadnetFileDownloadCallback.onProgressCallback){
+                                nomadnetFileDownloadCallback.onProgressCallback(nomadnetFileDownload.progress);
+                                return;
+                            }
 
                             break;
 
@@ -567,7 +577,7 @@
                     "display_name": this.displayName,
                 });
             },
-            async downloadNomadNetFile(destinationHash, filePath, onSuccessCallback, onFailureCallback) {
+            async downloadNomadNetFile(destinationHash, filePath, onSuccessCallback, onFailureCallback, onProgressCallback) {
 
                 // do nothing if not connected to websocket
                 if(!this.isWebsocketConnected){
@@ -581,6 +591,7 @@
                     this.nomadnetFileDownloadCallbacks[this.getNomadnetFileDownloadCallbackKey(destinationHash, filePath)] = {
                         onSuccessCallback: onSuccessCallback,
                         onFailureCallback: onFailureCallback,
+                        onProgressCallback: onProgressCallback,
                     };
 
                     // ask reticulum to download file from nomadnet
@@ -597,7 +608,7 @@
                 }
 
             },
-            async downloadNomadNetPage(destinationHash, pagePath, onSuccessCallback, onFailureCallback) {
+            async downloadNomadNetPage(destinationHash, pagePath, onSuccessCallback, onFailureCallback, onProgressCallback) {
 
                 // do nothing if not connected to websocket
                 if(!this.isWebsocketConnected){
@@ -611,6 +622,7 @@
                     this.nomadnetPageDownloadCallbacks[this.getNomadnetPageDownloadCallbackKey(destinationHash, pagePath)] = {
                         onSuccessCallback: onSuccessCallback,
                         onFailureCallback: onFailureCallback,
+                        onProgressCallback: onProgressCallback,
                     };
 
                     // ask reticulum to download page from nomadnet
