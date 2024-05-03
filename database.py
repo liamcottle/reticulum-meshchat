@@ -24,11 +24,6 @@ class LxmfMessage(BaseModel):
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
 
-    # override save to auto update updated_at when calling save()
-    def save(self, *args, **kwargs):
-        self.updated_at = datetime.now()
-        return super(LxmfMessage, self).save(*args, **kwargs)
-
     # define database and table name
     class Meta:
         table_name = "lxmf_messages"

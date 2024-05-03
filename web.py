@@ -161,9 +161,29 @@ class ReticulumWebChat:
         @routes.get("/api/v1/lxmf-messages")
         async def index(request):
 
-            # get lxmf messages from db
+            # get query params
+            source_hash = request.query.get("source_hash", None)
+            destination_hash = request.query.get("destination_hash", None)
+
+            # source_hash is required
+            if source_hash is None:
+                return web.json_response({
+                    "message": "source_hash is required",
+                }, status=422)
+
+            # destination_hash is required
+            if destination_hash is None:
+                return web.json_response({
+                    "message": "destination_hash is required",
+                }, status=422)
+
+            # get lxmf messages from db where "source to destination" or "destination to source"
+            db_lxmf_messages = (database.LxmfMessage.select()
+                                .where(database.LxmfMessage.source_hash == source_hash and database.LxmfMessage.destination_hash == destination_hash)
+                                .orwhere(database.LxmfMessage.source_hash == destination_hash and database.LxmfMessage.destination_hash == source_hash))
+
+            # convert to response json
             lxmf_messages = []
-            db_lxmf_messages = database.LxmfMessage.select()
             for db_lxmf_message in db_lxmf_messages:
                 lxmf_messages.append({
                     "id": db_lxmf_message.id,
@@ -521,7 +541,7 @@ class ReticulumWebChat:
             "progress": lxmf_message_dict["progress"],
             "content": lxmf_message_dict["content"],
             "fields": json.dumps(lxmf_message_dict["fields"]),
-            "updated_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(),
         }
 
         # upsert to database
