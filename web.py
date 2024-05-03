@@ -198,6 +198,7 @@ class ReticulumWebChat:
                     "title": db_lxmf_message.title,
                     "content": db_lxmf_message.content,
                     "fields": json.loads(db_lxmf_message.fields),
+                    "timestamp": db_lxmf_message.timestamp,
                     "created_at": db_lxmf_message.created_at.replace(tzinfo=timezone.utc).isoformat(),
                     "updated_at": db_lxmf_message.updated_at.replace(tzinfo=timezone.utc).isoformat(),
                 })
@@ -463,6 +464,7 @@ class ReticulumWebChat:
             "title": lxmf_message.title.decode('utf-8'),
             "content": lxmf_message.content.decode('utf-8'),
             "fields": fields,
+            "timestamp": lxmf_message.timestamp,
         }
 
     # convert lxmf state to a human friendly string
@@ -504,6 +506,7 @@ class ReticulumWebChat:
                 title=lxmf_message_dict["title"],
                 content=lxmf_message_dict["content"],
                 fields=json.dumps(lxmf_message_dict["fields"]),
+                timestamp=lxmf_message_dict["timestamp"],
             )
             lxmf_message_db.save()
 
@@ -551,6 +554,7 @@ class ReticulumWebChat:
             "title": lxmf_message_dict["title"],
             "content": lxmf_message_dict["content"],
             "fields": json.dumps(lxmf_message_dict["fields"]),
+            "timestamp": lxmf_message_dict["timestamp"],
             "updated_at": datetime.now(),
         }
 

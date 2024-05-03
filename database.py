@@ -23,6 +23,7 @@ class LxmfMessage(BaseModel):
     title = TextField()
     content = TextField()
     fields = TextField()  # json string
+    timestamp = FloatField()  # timestamp of when the message was originally created (before ever being sent)
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
 
