@@ -190,7 +190,7 @@
                             <div class="flex space-x-2 border border-gray-300 rounded-xl shadow px-2.5 py-1 bg-white" :class="{ 'bg-[#efefef]': !chatItem.is_outbound, 'bg-[#3b82f6] text-white': chatItem.is_outbound }">
                                 <div class="w-full">
                                     <div v-if="chatItem.lxmf_message.content" style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;">{{ chatItem.lxmf_message.content }}</div>
-                                    <div v-if="chatItem.lxmf_message.fields?.image" class="grid grid-cols-3 gap-2">
+                                    <div v-if="chatItem.lxmf_message.fields?.image">
                                         <img @click="openImage(`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`)" :src="`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`" class="w-full rounded-md shadow-md cursor-pointer"/>
                                     </div>
                                     <div v-if="chatItem.lxmf_message.fields?.file_attachments">
