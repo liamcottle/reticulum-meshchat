@@ -6,6 +6,7 @@ import json
 import mimetypes
 import os
 import time
+from datetime import datetime, timezone
 from typing import Callable
 
 import RNS
@@ -457,7 +458,10 @@ class ReticulumWebChat:
 
     # handle delivery status update for an outbound lxmf message
     def on_lxmf_sending_state_updated(self, lxmf_message):
-    
+
+        # upsert lxmf message to database
+        self.db_upsert_lxmf_message(lxmf_message)
+
         # send lxmf message state to all websocket clients
         asyncio.run(self.websocket_broadcast(json.dumps({
             "type": "lxmf_message_state_updated",
@@ -468,6 +472,29 @@ class ReticulumWebChat:
     def on_lxmf_sending_failed(self, lxmf_message):
         # just pass this on, we don't need to do anything special
         self.on_lxmf_sending_state_updated(lxmf_message)
+
+    # upserts the provided lxmf message to the database
+    def db_upsert_lxmf_message(self, lxmf_message: LXMF.LXMessage):
+
+        # convert lxmf message to dict
+        lxmf_message_dict = self.convert_lxmf_message_to_dict(lxmf_message)
+
+        # prepare data to insert or update
+        data = {
+            "hash": lxmf_message_dict["hash"],
+            "source_hash": lxmf_message_dict["source_hash"],
+            "destination_hash": lxmf_message_dict["destination_hash"],
+            "state": lxmf_message_dict["state"],
+            "progress": lxmf_message_dict["progress"],
+            "content": lxmf_message_dict["content"],
+            "fields": json.dumps(lxmf_message_dict["fields"]),
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+        # upsert to database
+        query = database.LxmfMessage.insert(data)
+        query = query.on_conflict(conflict_target=[database.LxmfMessage.hash], update=data)
+        query.execute()
 
     # handle sending an lxmf message to reticulum
     async def send_message(self, destination_hash, message_content):
@@ -499,7 +526,10 @@ class ReticulumWebChat:
 
             # send lxmf message to be routed to destination
             self.message_router.handle_outbound(lxmf_message)
-            
+
+            # upsert lxmf message to database
+            self.db_upsert_lxmf_message(lxmf_message)
+
             # send outbound lxmf message to websocket (after passing to router so hash is available)
             await self.websocket_broadcast(json.dumps({
                 "type": "lxmf_outbound_message_created",
