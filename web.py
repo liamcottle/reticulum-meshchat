@@ -14,6 +14,8 @@ import asyncio
 import websockets
 import base64
 
+import database
+
 
 class ReticulumWebChat:
 
@@ -25,6 +27,13 @@ class ReticulumWebChat:
         # load config
         self.config_file = webchat_config_file or "storage/config.json"
         self.load_config()
+
+        # init database
+        self.db = database.database
+        self.db.connect()
+        self.db.create_tables([
+            database.LxmfMessage,
+        ])
 
         # init reticulum
         self.reticulum = RNS.Reticulum(reticulum_config_dir)
@@ -383,12 +392,15 @@ class ReticulumWebChat:
                     "image_bytes": image_bytes,
                 }
 
+        # convert 0.0-1.0 progress to 0.00-100 percentage
+        progress_percentage = round(lxmf_message.progress * 100, 2)
+
         return {
             "hash": lxmf_message.hash.hex(),
             "source_hash": lxmf_message.source_hash.hex(),
             "destination_hash": lxmf_message.destination_hash.hex(),
             "state": self.convert_lxmf_state_to_string(lxmf_message),
-            "progress": lxmf_message.progress,
+            "progress": progress_percentage,
             "content": lxmf_message.content.decode('utf-8'),
             "fields": fields,
         }
@@ -417,6 +429,21 @@ class ReticulumWebChat:
     # NOTE: cant be async, as Reticulum doesn't await it
     def on_lxmf_delivery(self, message):
         try:
+
+            # convert lxmf message to dict
+            lxmf_message_dict = self.convert_lxmf_message_to_dict(message)
+
+            # save to database
+            lxmf_message_db = database.LxmfMessage(
+                hash=lxmf_message_dict["hash"],
+                source_hash=lxmf_message_dict["source_hash"],
+                destination_hash=lxmf_message_dict["destination_hash"],
+                state=lxmf_message_dict["state"],
+                progress=lxmf_message_dict["progress"],
+                content=lxmf_message_dict["content"],
+                fields=json.dumps(lxmf_message_dict["fields"]),
+            )
+            lxmf_message_db.save()
 
             # send received lxmf message data to all websocket clients
             asyncio.run(self.websocket_broadcast(json.dumps({
