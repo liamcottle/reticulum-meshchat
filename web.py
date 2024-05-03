@@ -122,7 +122,36 @@ class ReticulumWebChat:
                 return http.HTTPStatus.OK, [
                     ('Content-Type', mime_type)
                 ], file_content
-        
+
+        # serve lxmf messages
+        if path == "/api/v1/lxmf-messages":
+
+            # get lxmf messages from db
+            lxmf_messages = []
+            db_lxmf_messages = database.LxmfMessage.select()
+            for db_lxmf_message in db_lxmf_messages:
+                lxmf_messages.append({
+                    "id": db_lxmf_message.id,
+                    "hash": db_lxmf_message.hash,
+                    "source_hash": db_lxmf_message.source_hash,
+                    "destination_hash": db_lxmf_message.destination_hash,
+                    "state": db_lxmf_message.state,
+                    "progress": db_lxmf_message.progress,
+                    "content": db_lxmf_message.content,
+                    "fields": json.loads(db_lxmf_message.fields),
+                    "created_at": db_lxmf_message.created_at.replace(tzinfo=timezone.utc).isoformat(),
+                    "updated_at": db_lxmf_message.updated_at.replace(tzinfo=timezone.utc).isoformat(),
+                })
+
+            # create json response
+            json_response = json.dumps({
+                "lxmf_messages": lxmf_messages,
+            })
+
+            return http.HTTPStatus.OK, [
+                ('Content-Type', 'application/json')
+            ], json_response.encode("utf-8")
+
         # by default, websocket is always served, but we only want it to be available at /ws
         # so we will return 404 for everything other than /ws
         if path != "/ws":
