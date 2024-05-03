@@ -1,3 +1,4 @@
+aiohttp==3.9.5
 lxmf==0.4.3
 peewee==3.17.3
 rns==0.7.3

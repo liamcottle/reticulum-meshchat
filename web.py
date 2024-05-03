@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
-import http
 import json
-import mimetypes
 import os
+import signal
 import time
 from datetime import datetime, timezone
-from typing import Callable
+from typing import Callable, List
 
 import RNS
 import LXMF
+from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
 import asyncio
-import websockets
 import base64
 
 import database
@@ -53,7 +52,7 @@ class ReticulumWebChat:
         RNS.Transport.register_announce_handler(LXMFAnnounceHandler(self.on_lxmf_announce_received))
 
         # remember websocket clients
-        self.websocket_clients = []
+        self.websocket_clients: List[web.WebSocketResponse] = []
 
     def load_config(self):
 
@@ -95,36 +94,72 @@ class ReticulumWebChat:
         except:
             print("failed to save config")
 
-    async def run(self, host, port):
+    # web server has shutdown, likely ctrl+c, but if we don't do the following, the script never exits
+    async def shutdown(self, app):
 
-        # start websocket server
-        async with websockets.serve(self.on_websocket_client_connected, host, port, process_request=self.process_request):
-            print("ReticulumWebChat server running at http://{}:{}".format(host, port))
-            await asyncio.Future()  # run forever
+        # force close websocket clients
+        for websocket_client in self.websocket_clients:
+            print("force closing websocket for shutdown")
+            await websocket_client.close(code=WSCloseCode.GOING_AWAY)
+            print("force closed websocket")
 
-    # handle serving custom http paths
-    async def process_request(self, path, request_headers):
+        # stop reticulum
+        print("stopping reticulum")
+        RNS.Transport.detach_interfaces()
+        self.reticulum.exit_handler()
+        RNS.exit()
+
+
+    def run(self, host, port):
+
+        # create route table
+        routes = web.RouteTableDef()
 
         # serve index.html
-        if path == "/":
-            with open("public/index.html") as f:
-                file_content = f.read()
-                return http.HTTPStatus.OK, [
-                    ('Content-Type', 'text/html')
-                ], file_content.encode("utf-8")
+        @routes.get("/")
+        async def index(request):
+            return web.FileResponse(path="public/index.html")
 
-        # serve anything in public folder
-        public_file_path = os.path.join("public", path.lstrip("/"))
-        if os.path.isfile(public_file_path):
-            mime_type, _ = mimetypes.guess_type(public_file_path)
-            with open(public_file_path, "rb") as f:
-                file_content = f.read()
-                return http.HTTPStatus.OK, [
-                    ('Content-Type', mime_type)
-                ], file_content
+        # handle websocket clients
+        @routes.get("/ws")
+        async def ws(request):
+
+            # prepare websocket response
+            websocket_response = web.WebSocketResponse()
+            await websocket_response.prepare(request)
+
+            # add client to connected clients list
+            self.websocket_clients.append(websocket_response)
+
+            # send config to all clients
+            await self.send_config_to_websocket_clients()
+
+            # send known peers to all clients
+            await self.send_known_peers_to_websocket_clients()
+
+            # handle websocket messages until disconnected
+            async for msg in websocket_response:
+                msg: WSMessage = msg
+                if msg.type == WSMsgType.TEXT:
+                    try:
+                        data = json.loads(msg.data)
+                        await self.on_websocket_data_received(websocket_response, data)
+                    except Exception as e:
+                        # ignore errors while handling message
+                        print("failed to process client message")
+                        print(e)
+                elif msg.type == WSMsgType.ERROR:
+                    # ignore errors while handling message
+                    print('ws connection error %s' % websocket_response.exception())
+
+            # websocket closed
+            self.websocket_clients.remove(websocket_response)
+
+            return websocket_response
 
         # serve lxmf messages
-        if path == "/api/v1/lxmf-messages":
+        @routes.get("/api/v1/lxmf-messages")
+        async def index(request):
 
             # get lxmf messages from db
             lxmf_messages = []
@@ -143,50 +178,19 @@ class ReticulumWebChat:
                     "updated_at": db_lxmf_message.updated_at.replace(tzinfo=timezone.utc).isoformat(),
                 })
 
-            # create json response
-            json_response = json.dumps({
+            return web.json_response({
                 "lxmf_messages": lxmf_messages,
             })
 
-            return http.HTTPStatus.OK, [
-                ('Content-Type', 'application/json')
-            ], json_response.encode("utf-8")
+        asyncio.get_event_loop().add_signal_handler(signal.SIGINT, lambda: exit(-1))
+        asyncio.get_event_loop().add_signal_handler(signal.SIGTERM, lambda: exit(-1))
 
-        # by default, websocket is always served, but we only want it to be available at /ws
-        # so we will return 404 for everything other than /ws
-        if path != "/ws":
-            return http.HTTPStatus.NOT_FOUND, [
-                ('Content-Type', 'text/html')
-            ], b"Not Found"
-
-    # handle new client connecting to websocket
-    async def on_websocket_client_connected(self, client):
-
-        # add client to connected clients list
-        self.websocket_clients.append(client)
-
-        # send config to all clients
-        await self.send_config_to_websocket_clients()
-
-        # send known peers to all clients
-        await self.send_known_peers_to_websocket_clients()
-
-        # handle client messages until disconnected
-        while True:
-            try:
-                message = await client.recv()
-                data = json.loads(message)
-                await self.on_websocket_data_received(client, data)
-            except (websockets.ConnectionClosed, websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
-                # client disconnected, we can stop looping
-                break
-            except Exception as e:
-                # ignore errors while handling message
-                print("failed to process client message")
-                print(e)
-
-        # loop finished, client is no longer connected
-        self.websocket_clients.remove(client)
+        # create and run web app
+        app = web.Application()
+        app.add_routes(routes)
+        app.add_routes([web.static('/', "public")])  # serve anything in public folder
+        app.on_shutdown.append(self.shutdown)  # need to force close websockets and stop reticulum now
+        web.run_app(app, host=host, port=port)
 
     # handle data received from websocket client
     async def on_websocket_data_received(self, client, data):
@@ -340,7 +344,7 @@ class ReticulumWebChat:
     # broadcast provided data to all connected websocket clients
     async def websocket_broadcast(self, data):
         for websocket_client in self.websocket_clients:
-            await websocket_client.send(data)
+            await websocket_client.send_str(data)
 
     # broadcasts config to all websocket clients
     async def send_config_to_websocket_clients(self):
@@ -709,7 +713,7 @@ class NomadnetFileDownloader(NomadnetDownloader):
         self.on_file_download_failure(failure_reason)
 
 
-async def main():
+def main():
 
     # parse command line args
     parser = argparse.ArgumentParser(description="ReticulumWebChat")
@@ -763,8 +767,8 @@ async def main():
 
     # init app
     reticulum_webchat = ReticulumWebChat(args.webchat_config_file, args.reticulum_config_dir, identity)
-    await reticulum_webchat.run(args.host, args.port)
+    reticulum_webchat.run(args.host, args.port)
     
     
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
