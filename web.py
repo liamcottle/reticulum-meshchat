@@ -177,10 +177,12 @@ class ReticulumWebChat:
                     "message": "destination_hash is required",
                 }, status=422)
 
-            # get lxmf messages from db where "source to destination" or "destination to source"
+            # get lxmf messages from db where "source to destination" or "destination to source" and ordered by oldest to newest
             db_lxmf_messages = (database.LxmfMessage.select()
-                                .where(database.LxmfMessage.source_hash == source_hash and database.LxmfMessage.destination_hash == destination_hash)
-                                .orwhere(database.LxmfMessage.source_hash == destination_hash and database.LxmfMessage.destination_hash == source_hash))
+                                .where((database.LxmfMessage.source_hash == source_hash) & (database.LxmfMessage.destination_hash == destination_hash))
+                                .orwhere((database.LxmfMessage.destination_hash == source_hash) & (database.LxmfMessage.source_hash == destination_hash))
+                                .order_by(database.LxmfMessage.id.asc())
+                                )
 
             # convert to response json
             lxmf_messages = []

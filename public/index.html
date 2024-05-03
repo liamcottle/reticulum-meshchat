@@ -8,6 +8,7 @@
 
     <!-- scripts -->
     <script src="assets/js/tailwindcss/tailwind-v3.4.3-forms-v0.5.7.js"></script>
+    <script src="assets/js/axios@1.6.8/dist/axios.min.js"></script>
     <script src="assets/js/vue@3.4.26/dist/vue.global.js"></script>
 
 </head>
@@ -148,10 +149,10 @@
         </div>
 
         <!-- chat view -->
-        <div class="flex flex-col flex-1">
+        <div class="flex flex-col flex-1 py-2">
 
             <!-- peer selected -->
-            <div v-if="selectedPeer" class="flex flex-col h-full my-2 border rounded-xl bg-white shadow">
+            <div v-if="selectedPeer" class="flex flex-col h-full border rounded-xl bg-white shadow">
 
                 <!-- header -->
                 <div class="flex p-2 border-b border-gray-300">
@@ -299,6 +300,8 @@
                 peers: {},
                 peersSearchTerm: "",
                 selectedPeer: null,
+
+                lxmfMessagesRequestSequence: 0,
                 chatItems: [],
 
                 nomadnetPageDownloadCallbacks: {},
@@ -639,6 +642,45 @@
                 }
 
             },
+            async loadLxmfMessages(destinationHash) {
+                const seq = ++this.lxmfMessagesRequestSequence;
+                try {
+
+                    // fetch lxmf messages from "us to destination" and from "destination to us"
+                    const response = await window.axios.get('/api/v1/lxmf-messages', {
+                        params: {
+                            source_hash: this.config.lxmf_address_hash,
+                            destination_hash: destinationHash,
+                        },
+                    });
+
+                    // do nothing if response is for a previous request
+                    if(seq !== this.lxmfMessagesRequestSequence){
+                        console.log("ignoring response for previous lxmf messages request")
+                        return;
+                    }
+
+                    // convert lxmf messages to chat items
+                    const chatItems = [];
+                    const lxmfMessages = response.data.lxmf_messages;
+                    for(const lxmfMessage of lxmfMessages){
+                        chatItems.push({
+                            "type": "lxmf_message",
+                            "is_outbound": this.config.lxmf_address_hash === lxmfMessage.source_hash,
+                            "lxmf_message": lxmfMessage,
+                        });
+                    }
+
+                    // update ui
+                    this.chatItems = chatItems;
+
+                    // scroll to bottom
+                    this.scrollMessagesToBottom();
+
+                } catch(e) {
+                    // do nothing if failed to load messages
+                }
+            },
             addNewLine: function() {
                 this.newMessageText += "\n";
             },
@@ -671,6 +713,8 @@
             },
             onPeerClick: function(peer) {
                 this.selectedPeer = peer;
+                this.chatItems = [];
+                this.loadLxmfMessages(peer.destination_hash);
             },
             parseSeconds: function(secondsToFormat) {
                 secondsToFormat = Number(secondsToFormat);
