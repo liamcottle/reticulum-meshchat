@@ -195,6 +195,7 @@ class ReticulumWebChat:
                     "is_incoming": db_lxmf_message.is_incoming,
                     "state": db_lxmf_message.state,
                     "progress": db_lxmf_message.progress,
+                    "title": db_lxmf_message.title,
                     "content": db_lxmf_message.content,
                     "fields": json.loads(db_lxmf_message.fields),
                     "created_at": db_lxmf_message.created_at.replace(tzinfo=timezone.utc).isoformat(),
@@ -459,6 +460,7 @@ class ReticulumWebChat:
             "is_incoming": lxmf_message.incoming,
             "state": self.convert_lxmf_state_to_string(lxmf_message),
             "progress": progress_percentage,
+            "title": lxmf_message.title.decode('utf-8'),
             "content": lxmf_message.content.decode('utf-8'),
             "fields": fields,
         }
@@ -499,6 +501,7 @@ class ReticulumWebChat:
                 is_incoming=lxmf_message_dict["is_incoming"],
                 state=lxmf_message_dict["state"],
                 progress=lxmf_message_dict["progress"],
+                title=lxmf_message_dict["title"],
                 content=lxmf_message_dict["content"],
                 fields=json.dumps(lxmf_message_dict["fields"]),
             )
@@ -545,6 +548,7 @@ class ReticulumWebChat:
             "is_incoming": lxmf_message_dict["is_incoming"],
             "state": lxmf_message_dict["state"],
             "progress": lxmf_message_dict["progress"],
+            "title": lxmf_message_dict["title"],
             "content": lxmf_message_dict["content"],
             "fields": json.dumps(lxmf_message_dict["fields"]),
             "updated_at": datetime.now(),
