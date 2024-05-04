@@ -653,7 +653,8 @@
                     // add image attachment
                     if(this.newMessageImage){
                         fields["image"] = {
-                            "image_type": this.newMessageImage.type,
+                            // Reticulum sends image type as "jpg" or "png" and not "image/jpg" or "image/png"
+                            "image_type": this.newMessageImage.type.replace("image/", ""),
                             "image_bytes": this.arrayBufferToBase64(await this.newMessageImage.arrayBuffer()),
                         };
                     }
