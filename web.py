@@ -463,31 +463,16 @@ class ReticulumWebChat:
 
     # handle an lxmf delivery from reticulum
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_lxmf_delivery(self, message):
+    def on_lxmf_delivery(self, lxmf_message):
         try:
 
-            # convert lxmf message to dict
-            lxmf_message_dict = self.convert_lxmf_message_to_dict(message)
-
-            # save to database
-            lxmf_message_db = database.LxmfMessage(
-                hash=lxmf_message_dict["hash"],
-                source_hash=lxmf_message_dict["source_hash"],
-                destination_hash=lxmf_message_dict["destination_hash"],
-                is_incoming=lxmf_message_dict["is_incoming"],
-                state=lxmf_message_dict["state"],
-                progress=lxmf_message_dict["progress"],
-                title=lxmf_message_dict["title"],
-                content=lxmf_message_dict["content"],
-                fields=json.dumps(lxmf_message_dict["fields"]),
-                timestamp=lxmf_message_dict["timestamp"],
-            )
-            lxmf_message_db.save()
+            # upsert lxmf message to database
+            self.db_upsert_lxmf_message(lxmf_message)
 
             # send received lxmf message data to all websocket clients
             asyncio.run(self.websocket_broadcast(json.dumps({
                 "type": "lxmf.delivery",
-                "lxmf_message": self.convert_lxmf_message_to_dict(message),
+                "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
             })))
 
         except Exception as e:
