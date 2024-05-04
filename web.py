@@ -14,6 +14,8 @@ from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
 import asyncio
 import base64
 
+from peewee import SqliteDatabase
+
 import database
 
 
@@ -29,6 +31,7 @@ class ReticulumWebChat:
         self.load_config()
 
         # init database
+        database.database.initialize(SqliteDatabase('storage/reticulum-webchat.db'))
         self.db = database.database
         self.db.connect()
         self.db.create_tables([

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from peewee import *
 
-database = SqliteDatabase('storage/reticulum-webchat.db')
+database = DatabaseProxy()  # use a proxy object, as we will init real db client inside web.py
 
 
 class BaseModel(Model):
