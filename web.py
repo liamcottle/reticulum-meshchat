@@ -26,12 +26,26 @@ class ReticulumWebChat:
         # default values before loading config
         self.display_name = "Anonymous Peer"
 
+        # create storage path based on identity being used
+        # ./storage/identities/<identity_hex>/
+        # ./storage/identities/<identity_hex>/config.json
+        # ./storage/identities/<identity_hex>/database.db
+        # ./storage/identities/<identity_hex>/lxmf
+        storage_path = os.path.join("storage", "identities", identity.hash.hex())
+        print("Using Storage Path: {}".format(storage_path))
+        os.makedirs(storage_path, exist_ok=True)
+
+        # define path to files based on storage path
+        config_path = os.path.join(storage_path, "config.json")
+        database_path = os.path.join(storage_path, "database.db")
+        lxmf_router_path = os.path.join(storage_path, "lxmf_router")
+
         # load config
-        self.config_file = webchat_config_file or "storage/config.json"
+        self.config_file = webchat_config_file or config_path
         self.load_config()
 
         # init database
-        database.database.initialize(SqliteDatabase('storage/reticulum-webchat.db'))
+        database.database.initialize(SqliteDatabase(database_path))
         self.db = database.database
         self.db.connect()
         self.db.create_tables([
@@ -43,7 +57,7 @@ class ReticulumWebChat:
         self.identity = identity
 
         # init lxmf router
-        self.message_router = LXMF.LXMRouter(identity=self.identity, storagepath="storage/lxmf")
+        self.message_router = LXMF.LXMRouter(identity=self.identity, storagepath=lxmf_router_path)
 
         # register lxmf identity
         self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity)
