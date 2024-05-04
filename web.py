@@ -17,6 +17,7 @@ import base64
 from peewee import SqliteDatabase
 
 import database
+from lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment
 
 
 class ReticulumWebChat:
@@ -523,7 +524,9 @@ class ReticulumWebChat:
         query.execute()
 
     # handle sending an lxmf message to reticulum
-    async def send_message(self, destination_hash, message_content):
+    async def send_message(self, destination_hash, content: str,
+                           image_field: LxmfImageField = None,
+                           file_attachments_field: LxmfFileAttachmentsField = None):
 
         try:
 
@@ -545,8 +548,30 @@ class ReticulumWebChat:
             lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery")
 
             # create lxmf message
-            lxmf_message = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, message_content, desired_method=LXMF.LXMessage.DIRECT)
+            lxmf_message = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, content, desired_method=LXMF.LXMessage.DIRECT)
             lxmf_message.try_propagation_on_fail = True
+
+            lxmf_message.fields = {}
+
+            # add file attachments field
+            if file_attachments_field is not None:
+
+                # create array of [[file_name, file_bytes], [file_name, file_bytes], ...]
+                file_attachments = []
+                for file_attachment in file_attachments_field.file_attachments:
+                    file_attachments.append([file_attachment.file_name, file_attachment.file_bytes])
+
+                # set field attachments field
+                lxmf_message.fields[LXMF.FIELD_FILE_ATTACHMENTS] = file_attachments
+
+            # add image field
+            if image_field is not None:
+                lxmf_message.fields[LXMF.FIELD_IMAGE] = [
+                    image_field.image_type,
+                    image_field.image_bytes,
+                ]
+
+            # register delivery callbacks
             lxmf_message.register_delivery_callback(self.on_lxmf_sending_state_updated)
             lxmf_message.register_failed_callback(self.on_lxmf_sending_failed)
 
