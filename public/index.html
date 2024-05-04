@@ -187,21 +187,21 @@
                             <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 ml-2">{{ selectedPeer.app_data || "Unknown" }}</div>
 
                             <!-- message content -->
-                            <div class="flex space-x-2 border border-gray-300 rounded-xl shadow px-2.5 py-1 bg-white" :class="{ 'bg-[#efefef]': !chatItem.is_outbound, 'bg-[#3b82f6] text-white': chatItem.is_outbound }">
+                            <div class="flex space-x-2 border border-gray-300 rounded-xl shadow px-2.5 py-1" :class="{ 'bg-[#efefef]': !chatItem.is_outbound, 'bg-[#3b82f6] text-white': chatItem.is_outbound }">
                                 <div class="w-full">
                                     <div v-if="chatItem.lxmf_message.content" style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;">{{ chatItem.lxmf_message.content }}</div>
                                     <div v-if="chatItem.lxmf_message.fields?.image">
-                                        <img @click="openImage(`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`)" :src="`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`" class="w-full rounded-md shadow-md cursor-pointer"/>
+                                        <img @click="openImage(`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`)" :src="`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`" class="w-full rounded-md cursor-pointer"/>
                                     </div>
-                                    <div v-if="chatItem.lxmf_message.fields?.file_attachments">
-                                        <a target="_blank" :download="file_attachment.file_name" :href="`data:application/octet-stream;base64,${file_attachment.file_bytes}`" v-for="file_attachment of chatItem.lxmf_message.fields?.file_attachments ?? []" class="flex border border-gray-200 hover:bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 font-semibold cursor-pointer">
-                                            <div class="mr-2 my-auto">
+                                    <div v-if="chatItem.lxmf_message.fields?.file_attachments" class="space-y-1">
+                                        <a target="_blank" :download="file_attachment.file_name" :href="`data:application/octet-stream;base64,${file_attachment.file_bytes}`" v-for="file_attachment of chatItem.lxmf_message.fields?.file_attachments ?? []" class="flex border border-gray-300 hover:bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 font-semibold cursor-pointer space-x-2 bg-[#efefef]">
+                                            <div class="my-auto">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"></path>
                                                 </svg>
                                             </div>
-                                            <div class="my-auto">{{ file_attachment.file_name }}</div>
-                                            <div class="ml-auto my-auto">
+                                            <div class="my-auto w-full">{{ file_attachment.file_name }}</div>
+                                            <div class="my-auto">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                                                 </svg>
