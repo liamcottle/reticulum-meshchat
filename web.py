@@ -218,10 +218,34 @@ class ReticulumWebChat:
         # handle sending an lxmf message
         elif _type == "lxmf.delivery":
 
+            # get data from websocket client
+            destination_hash = data["lxmf_message"]["destination_hash"]
+            content = data["lxmf_message"]["content"]
+            fields = {}
+            if "fields" in data["lxmf_message"]:
+                fields = data["lxmf_message"]["fields"]
+
+            # parse image field
+            image_field = None
+            if "image" in fields:
+                image_type = data["lxmf_message"]["fields"]["image"]["image_type"]
+                image_bytes = base64.b64decode(data["lxmf_message"]["fields"]["image"]["image_bytes"])
+                image_field = LxmfImageField(image_type, image_bytes)
+
+            # parse file attachments field
+            file_attachments_field = None
+            if "file_attachments" in fields:
+
+                file_attachments = []
+                for file_attachment in data["lxmf_message"]["fields"]["file_attachments"]:
+                    file_name = file_attachment["file_name"]
+                    file_bytes = base64.b64decode(file_attachment["file_bytes"])
+                    file_attachments.append(LxmfFileAttachment(file_name, file_bytes))
+
+                file_attachments_field = LxmfFileAttachmentsField(file_attachments)
+
             # send lxmf message to destination
-            destination_hash = data["destination_hash"]
-            message = data["message"]
-            await self.send_message(destination_hash, message)
+            await self.send_message(destination_hash, content, image_field=image_field, file_attachments_field=file_attachments_field)
 
             # # TODO: send response to client when marked as delivered?
             # await client.send(json.dumps({
