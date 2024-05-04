@@ -98,7 +98,6 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 - [ ] send images from web ui
 - [ ] send file attachments from web ui
-- [ ] support saving conversation history across page reloads, maybe an sqlite database
 - [ ] conversations/contacts list ui with unread indicators
 - [ ] button to add peer to contacts, and show a tab for contacts, separate from peers list
 - [ ] allow setting a custom name to show for a contact
