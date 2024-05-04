@@ -12,7 +12,6 @@ class BaseModel(Model):
 
 class LxmfMessage(BaseModel):
 
-    # id = primary key auto increment bigint
     id = BigAutoField()
     hash = CharField(unique=True)  # unique lxmf message hash
     source_hash = CharField(index=True)
