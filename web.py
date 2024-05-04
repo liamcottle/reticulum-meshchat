@@ -21,17 +21,24 @@ import database
 
 class ReticulumWebChat:
 
-    def __init__(self, reticulum_config_dir, identity: RNS.Identity):
+    def __init__(self, identity: RNS.Identity, storage_dir, reticulum_config_dir):
 
         # default values before loading config
         self.display_name = "Anonymous Peer"
 
-        # create storage path based on identity being used
+        # when providing a custom storage_dir, files will be saved as
+        # <storage_dir>/identities/<identity_hex>/
+        # <storage_dir>/identities/<identity_hex>/config.json
+        # <storage_dir>/identities/<identity_hex>/database.db
+
+        # if storage_dir is not provided, we will use ./storage instead
         # ./storage/identities/<identity_hex>/
         # ./storage/identities/<identity_hex>/config.json
         # ./storage/identities/<identity_hex>/database.db
-        # ./storage/identities/<identity_hex>/lxmf
-        storage_path = os.path.join("storage", "identities", identity.hash.hex())
+
+        # ensure a storage path exists for the loaded identity
+        base_storage_dir = storage_dir or os.path.join("storage")
+        storage_path = os.path.join(base_storage_dir, "identities", identity.hash.hex())
         print("Using Storage Path: {}".format(storage_path))
         os.makedirs(storage_path, exist_ok=True)
 
@@ -775,6 +782,7 @@ def main():
     parser.add_argument("--generate-identity-file", type=str, help="Generates and saves a new Reticulum Identity to the provided file path and then exits.")
     parser.add_argument("--generate-identity-base64", action='store_true', help="Outputs a randomly generated Reticulum Identity as base64 and then exits.")
     parser.add_argument("--reticulum-config-dir", type=str, help="Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)")
+    parser.add_argument("--storage-dir", type=str, help="Path to a directory for storing databases and config files (default: ./storage)")
     args = parser.parse_args()
 
     # util to generate reticulum identity and save to file without using rnid
@@ -816,7 +824,7 @@ def main():
         print(identity)
 
     # init app
-    reticulum_webchat = ReticulumWebChat(args.reticulum_config_dir, identity)
+    reticulum_webchat = ReticulumWebChat(identity, args.storage_dir, args.reticulum_config_dir)
     reticulum_webchat.run(args.host, args.port)
     
     
