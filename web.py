@@ -103,7 +103,10 @@ class ReticulumWebChat:
         async def ws(request):
 
             # prepare websocket response
-            websocket_response = web.WebSocketResponse()
+            websocket_response = web.WebSocketResponse(
+                # set max message size accepted by server to 50 megabytes
+                max_msg_size=50 * 1024 * 1024,
+            )
             await websocket_response.prepare(request)
 
             # add client to connected clients list
