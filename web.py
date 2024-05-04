@@ -208,6 +208,32 @@ class ReticulumWebChat:
                 "message": "ok",
             })
 
+        # delete lxmf messages for conversation
+        @routes.delete("/api/v1/lxmf-messages/conversation/{destination_hash}")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", None)
+
+            # get source hash from local lxmf destination
+            source_hash = self.local_lxmf_destination.hash.hex()
+
+            # source_hash is required
+            if destination_hash is None:
+                return web.json_response({
+                    "message": "destination_hash is required",
+                }, status=422)
+
+            # delete lxmf messages from db where "source to destination" or "destination to source"
+            (database.LxmfMessage.delete()
+             .where((database.LxmfMessage.source_hash == source_hash) & (database.LxmfMessage.destination_hash == destination_hash))
+             .orwhere((database.LxmfMessage.destination_hash == source_hash) & (database.LxmfMessage.source_hash == destination_hash))
+             .execute())
+
+            return web.json_response({
+                "message": "ok",
+            })
+
         asyncio.get_event_loop().add_signal_handler(signal.SIGINT, lambda: exit(-1))
         asyncio.get_event_loop().add_signal_handler(signal.SIGTERM, lambda: exit(-1))
 
