@@ -344,7 +344,7 @@
                                 </button>
 
                                 <!-- send message -->
-                                <button @click="sendMessage" type="button" class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md bg-blue-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500">
+                                <button @click="sendMessage" :disabled="!canSendMessage" type="button" class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" :class="[ canSendMessage ? 'bg-blue-500 hover:bg-blue-400 focus-visible:outline-blue-500' : 'bg-gray-400 focus-visible:outline-gray-500 cursor-not-allowed']">
                                     Send
                                 </button>
 
@@ -612,9 +612,8 @@
             },
             async sendMessage() {
 
-                // do nothing if empty message
-                const messageText = this.newMessageText.trim();
-                if(messageText == null || messageText === ""){
+                // do nothing if can't send message
+                if(!this.canSendMessage){
                     return;
                 }
 
@@ -1050,7 +1049,18 @@
                 // no peer, so no chat items!
                 return [];
 
-            }
+            },
+            canSendMessage() {
+
+                // can't send if empty message
+                const messageText = this.newMessageText.trim();
+                if(messageText == null || messageText === ""){
+                    return false;
+                }
+
+                return true;
+
+            },
         },
     }).mount('#app');
 </script>
