@@ -26,8 +26,6 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 - Supports setting a custom display name to send in your announce.
 - Supports viewing and searching peers discovered from announces.
 
-> NOTE: At this time, received messages are not saved anywhere. You will lose your conversation history when you reload the page.
-
 ## How does it work?
 
 - A python script ([web.py](./web.py)) runs a Reticulum instance and a WebSocket server.
