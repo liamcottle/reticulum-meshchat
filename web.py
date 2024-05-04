@@ -21,7 +21,7 @@ import database
 
 class ReticulumWebChat:
 
-    def __init__(self, webchat_config_file, reticulum_config_dir, identity: RNS.Identity):
+    def __init__(self, reticulum_config_dir, identity: RNS.Identity):
 
         # default values before loading config
         self.display_name = "Anonymous Peer"
@@ -41,7 +41,7 @@ class ReticulumWebChat:
         lxmf_router_path = os.path.join(storage_path, "lxmf_router")
 
         # load config
-        self.config_file = webchat_config_file or config_path
+        self.config_file = config_path
         self.load_config()
 
         # init database
@@ -775,7 +775,6 @@ def main():
     parser.add_argument("--generate-identity-file", type=str, help="Generates and saves a new Reticulum Identity to the provided file path and then exits.")
     parser.add_argument("--generate-identity-base64", action='store_true', help="Outputs a randomly generated Reticulum Identity as base64 and then exits.")
     parser.add_argument("--reticulum-config-dir", type=str, help="Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)")
-    parser.add_argument("--webchat-config-file", type=str, help="Path to a ReticulumWebChat config file for saving user preferences.")
     args = parser.parse_args()
 
     # util to generate reticulum identity and save to file without using rnid
@@ -817,7 +816,7 @@ def main():
         print(identity)
 
     # init app
-    reticulum_webchat = ReticulumWebChat(args.webchat_config_file, args.reticulum_config_dir, identity)
+    reticulum_webchat = ReticulumWebChat(args.reticulum_config_dir, identity)
     reticulum_webchat.run(args.host, args.port)
     
     
