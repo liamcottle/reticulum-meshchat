@@ -43,13 +43,17 @@ class ReticulumWebChat:
         lxmf_router_path = os.path.join(storage_path, "lxmf_router")
 
         # init database
-        database.database.initialize(SqliteDatabase(database_path))
+        sqlite_database = SqliteDatabase(database_path)
+        database.database.initialize(sqlite_database)
         self.db = database.database
         self.db.connect()
         self.db.create_tables([
             database.Config,
             database.LxmfMessage,
         ])
+
+        # vacuum database on start to shrink its file size
+        sqlite_database.execute_sql("VACUUM")
 
         # init config
         self.config = Config()
