@@ -371,7 +371,11 @@ class ReticulumWebChat:
     # broadcast provided data to all connected websocket clients
     async def websocket_broadcast(self, data):
         for websocket_client in self.websocket_clients:
-            await websocket_client.send_str(data)
+            try:
+                await websocket_client.send_str(data)
+            except:
+                # do nothing if failed to broadcast to a specific websocket client
+                pass
 
     # broadcasts config to all websocket clients
     async def send_config_to_websocket_clients(self):
@@ -613,6 +617,22 @@ class ReticulumWebChat:
                 "type": "lxmf_outbound_message_created",
                 "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
             }))
+
+            # FIXME: there's no register_progress_callback on the lxmf message, so manually send progress until delivered or failed
+            # we also can't use on_lxmf_sending_state_updated method to do this, because of async/await issues...
+            while lxmf_message.state != LXMF.LXMessage.DELIVERED and lxmf_message.state != LXMF.LXMessage.FAILED:
+
+                # wait 1 second between sending updates
+                await asyncio.sleep(1)
+
+                # upsert lxmf message to database (as we want to update the progress in database too)
+                self.db_upsert_lxmf_message(lxmf_message)
+
+                # send update to websocket clients
+                await self.websocket_broadcast(json.dumps({
+                    "type": "lxmf_message_state_updated",
+                    "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
+                }))
 
         except:
             # FIXME send error to websocket?
