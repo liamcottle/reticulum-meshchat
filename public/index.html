@@ -208,7 +208,6 @@
                                             </div>
                                         </a>
                                     </div>
-
                                 </div>
                             </div>
 
@@ -218,6 +217,7 @@
 
                                     <!-- state label -->
                                     <div class="my-auto space-x-1">
+                                        <span v-if="chatItem.lxmf_message.state === 'failed'" @click="deleteChatItem(chatItem)" class="text-gray-500 underline">delete?</span>
                                         <span>{{ chatItem.lxmf_message.state }}</span>
                                         <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress }}%</span>
                                     </div>
@@ -742,6 +742,26 @@
 
                 } catch(e) {
                     // do nothing if failed to load messages
+                }
+            },
+            async deleteChatItem(chatItem) {
+                try {
+
+                    // make sure it's an lxmf message
+                    if(chatItem.type !== "lxmf_message"){
+                        return;
+                    }
+
+                    // delete lxmf message from server
+                    await window.axios.delete(`/api/v1/lxmf-messages/${chatItem.lxmf_message.id}`);
+
+                    // remove lxmf message from chat items
+                    this.chatItems = this.chatItems.filter((item) => {
+                        return item.lxmf_message?.id !== chatItem.lxmf_message.id;
+                    });
+
+                } catch(e) {
+                    // do nothing if failed to delete message
                 }
             },
             addNewLine: function() {

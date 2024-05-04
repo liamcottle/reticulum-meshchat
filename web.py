@@ -188,6 +188,26 @@ class ReticulumWebChat:
                 "lxmf_messages": lxmf_messages,
             })
 
+        # serve lxmf messages
+        @routes.delete("/api/v1/lxmf-messages/{id}")
+        async def index(request):
+
+            # get path params
+            id = request.match_info.get("id", None)
+
+            # source_hash is required
+            if id is None:
+                return web.json_response({
+                    "message": "id is required",
+                }, status=422)
+
+            # delete lxmf messages from db where id matches
+            database.LxmfMessage.delete_by_id(id)
+
+            return web.json_response({
+                "message": "ok",
+            })
+
         asyncio.get_event_loop().add_signal_handler(signal.SIGINT, lambda: exit(-1))
         asyncio.get_event_loop().add_signal_handler(signal.SIGTERM, lambda: exit(-1))
 
