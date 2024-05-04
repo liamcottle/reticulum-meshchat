@@ -188,11 +188,17 @@
 
                             <!-- message content -->
                             <div class="flex space-x-2 border border-gray-300 rounded-xl shadow px-2.5 py-1" :class="[ chatItem.lxmf_message.state === 'failed' ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
-                                <div class="w-full">
+                                <div class="w-full space-y-0.5">
+
+                                    <!-- content -->
                                     <div v-if="chatItem.lxmf_message.content" style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;">{{ chatItem.lxmf_message.content }}</div>
+
+                                    <!-- image field -->
                                     <div v-if="chatItem.lxmf_message.fields?.image">
                                         <img @click="openImage(`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`)" :src="`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`" class="w-full rounded-md cursor-pointer"/>
                                     </div>
+
+                                    <!-- file attachment fields -->
                                     <div v-if="chatItem.lxmf_message.fields?.file_attachments" class="space-y-1">
                                         <a target="_blank" :download="file_attachment.file_name" :href="`data:application/octet-stream;base64,${file_attachment.file_bytes}`" v-for="file_attachment of chatItem.lxmf_message.fields?.file_attachments ?? []" class="flex border border-gray-300 hover:bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 font-semibold cursor-pointer space-x-2 bg-[#efefef]">
                                             <div class="my-auto">
@@ -208,6 +214,7 @@
                                             </div>
                                         </a>
                                     </div>
+
                                 </div>
                             </div>
 
