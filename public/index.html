@@ -1019,7 +1019,8 @@
                 return this.peersOrderedByLatestAnnounce.filter((peer) => {
                     const search = this.peersSearchTerm.toLowerCase();
                     const matchesAppData = (peer.app_data || "").toLowerCase().includes(search);
-                    return matchesAppData;
+                    const matchesDestinationHash = (peer.destination_hash || "").toLowerCase().includes(search);
+                    return matchesAppData || matchesDestinationHash;
                 });
             },
             selectedPeerChatItems() {
