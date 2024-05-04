@@ -23,17 +23,12 @@ class ReticulumWebChat:
 
     def __init__(self, identity: RNS.Identity, storage_dir, reticulum_config_dir):
 
-        # default values before loading config
-        self.display_name = "Anonymous Peer"
-
         # when providing a custom storage_dir, files will be saved as
         # <storage_dir>/identities/<identity_hex>/
-        # <storage_dir>/identities/<identity_hex>/config.json
         # <storage_dir>/identities/<identity_hex>/database.db
 
         # if storage_dir is not provided, we will use ./storage instead
         # ./storage/identities/<identity_hex>/
-        # ./storage/identities/<identity_hex>/config.json
         # ./storage/identities/<identity_hex>/database.db
 
         # ensure a storage path exists for the loaded identity
@@ -43,21 +38,20 @@ class ReticulumWebChat:
         os.makedirs(storage_path, exist_ok=True)
 
         # define path to files based on storage path
-        config_path = os.path.join(storage_path, "config.json")
         database_path = os.path.join(storage_path, "database.db")
         lxmf_router_path = os.path.join(storage_path, "lxmf_router")
-
-        # load config
-        self.config_file = config_path
-        self.load_config()
 
         # init database
         database.database.initialize(SqliteDatabase(database_path))
         self.db = database.database
         self.db.connect()
         self.db.create_tables([
+            database.Config,
             database.LxmfMessage,
         ])
+
+        # init config
+        self.config = Config()
 
         # init reticulum
         self.reticulum = RNS.Reticulum(reticulum_config_dir)
@@ -78,46 +72,6 @@ class ReticulumWebChat:
         # remember websocket clients
         self.websocket_clients: List[web.WebSocketResponse] = []
 
-    def load_config(self):
-
-        # default config
-        config = {
-
-        }
-
-        # attempt to load config and override default values
-        try:
-            with open(self.config_file, 'r') as f:
-                custom_config = json.load(f)
-                config |= custom_config
-
-        # config is broken, fallback to defaults
-        except:
-            print("failed to load config, defaults will be used")
-
-        # update display name from config
-        if "display_name" in config:
-            self.display_name = config["display_name"]
-
-        # return loaded config
-        return config
-
-    def save_config(self):
-
-        # build config
-        config = {
-            "display_name": self.display_name,
-        }
-
-        # attempt to save config
-        try:
-            with open(self.config_file, 'w') as f:
-                json.dump(config, f, indent=4)
-
-        # config is broken, fallback to defaults
-        except:
-            print("failed to save config")
-
     # web server has shutdown, likely ctrl+c, but if we don't do the following, the script never exits
     async def shutdown(self, app):
 
@@ -132,7 +86,6 @@ class ReticulumWebChat:
         RNS.Transport.detach_interfaces()
         self.reticulum.exit_handler()
         RNS.exit()
-
 
     def run(self, host, port):
 
@@ -255,11 +208,8 @@ class ReticulumWebChat:
 
             # update display name in state
             if "display_name" in config and config["display_name"] != "":
-                self.display_name = config["display_name"]
-                print("updated display name to: " + self.display_name)
-
-            # save config
-            self.save_config()
+                self.config.display_name.set(config["display_name"])
+                print("updated display name to: " + self.config.display_name.get())
 
             # send config to websocket clients
             await self.send_config_to_websocket_clients()
@@ -281,7 +231,7 @@ class ReticulumWebChat:
         elif _type == "announce":
 
             # send announce for lxmf
-            self.local_lxmf_destination.announce(app_data=self.display_name.encode("utf-8"))
+            self.local_lxmf_destination.announce(app_data=self.config.display_name.get().encode("utf-8"))
 
         # handle downloading a file from a nomadnet node
         elif _type == "nomadnet.file.download":
@@ -400,7 +350,7 @@ class ReticulumWebChat:
         await self.websocket_broadcast(json.dumps({
             "type": "config",
             "config": {
-                "display_name": self.display_name,
+                "display_name": self.config.display_name.get(),
                 "identity_hash": self.identity.hexhash,
                 "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             },
@@ -652,6 +602,55 @@ class ReticulumWebChat:
                 "last_announce_timestamp": time.time(),
             },
         })))
+
+
+# class to manage config stored in database
+class Config:
+
+    @staticmethod
+    def get(key: str, default_value=None):
+
+        # get config value from database
+        config_item = database.Config.get_or_none(database.Config.key == key)
+
+        # return value if available
+        if config_item is not None:
+            return config_item.value
+
+        # fallback to returning default value
+        return default_value
+
+    @staticmethod
+    def set(key: str, value: str):
+
+        # prepare data to insert or update
+        data = {
+            "key": key,
+            "value": value,
+            "updated_at": datetime.now(),
+        }
+
+        # upsert to database
+        query = database.Config.insert(data)
+        query = query.on_conflict(conflict_target=[database.Config.key], update=data)
+        query.execute()
+
+    # handle config values that should be strings
+    class StringConfig:
+
+        def __init__(self, key: str, default_value: str = None):
+            self.key = key
+            self.default_value = default_value
+
+        def get(self, default_value: str = None):
+            _default_value = default_value or self.default_value
+            return Config.get(self.key, default_value=_default_value)
+
+        def set(self, value: str):
+            return Config.set(self.key, value)
+
+    # all possible config items
+    display_name = StringConfig("display_name", "Anonymous Peer")
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback

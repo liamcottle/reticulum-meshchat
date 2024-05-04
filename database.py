@@ -10,6 +10,19 @@ class BaseModel(Model):
         database = database
 
 
+class Config(BaseModel):
+
+    id = BigAutoField()
+    key = CharField(unique=True)
+    value = TextField()
+    created_at = DateTimeField(default=datetime.now)
+    updated_at = DateTimeField(default=datetime.now)
+
+    # define table name
+    class Meta:
+        table_name = "config"
+
+
 class LxmfMessage(BaseModel):
 
     id = BigAutoField()
@@ -26,6 +39,6 @@ class LxmfMessage(BaseModel):
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
 
-    # define database and table name
+    # define table name
     class Meta:
         table_name = "lxmf_messages"
