@@ -815,6 +815,11 @@
             async deleteChatItem(chatItem) {
                 try {
 
+                    // ask user to confirm deleting message
+                    if(!confirm("Are you sure you want to delete this message? This can not be undone!")){
+                        return;
+                    }
+
                     // make sure it's an lxmf message
                     if(chatItem.type !== "lxmf_message"){
                         return;
