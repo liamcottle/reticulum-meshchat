@@ -217,8 +217,9 @@
                                 <div class="flex ml-auto space-x-1">
 
                                     <!-- state label -->
-                                    <div class="my-auto">
-                                        {{ chatItem.lxmf_message.state }} <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress }}%</span>
+                                    <div class="my-auto space-x-1">
+                                        <span>{{ chatItem.lxmf_message.state }}</span>
+                                        <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress }}%</span>
                                     </div>
 
                                     <!-- delivered icon -->
