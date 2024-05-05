@@ -144,6 +144,41 @@ class ReticulumWebChat:
 
             return websocket_response
 
+        # serve announces
+        @routes.get("/api/v1/announces")
+        async def index(request):
+
+            # get query params
+            aspect = request.query.get("aspect", None)
+
+            # build announces database query
+            query = database.Announce.select()
+
+            # filter by provided aspect
+            if aspect is not None:
+                query = query.where(database.Announce.aspect == aspect)
+
+            # get announces from database
+            query_results = query.order_by(database.Announce.id.asc())
+
+            # process announces
+            announces = []
+            for announce in query_results:
+                announces.append({
+                    "id": announce.id,
+                    "destination_hash": announce.destination_hash,
+                    "aspect": announce.aspect,
+                    "identity_hash": announce.identity_hash,
+                    "identity_public_key": announce.identity_public_key,
+                    "app_data": announce.app_data,
+                    "created_at": announce.created_at,
+                    "updated_at": announce.updated_at,
+                })
+
+            return web.json_response({
+                "announces": announces,
+            })
+
         # serve lxmf messages
         @routes.delete("/api/v1/lxmf-messages/{id}")
         async def index(request):
