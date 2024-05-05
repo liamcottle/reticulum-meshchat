@@ -143,18 +143,34 @@ class ReticulumWebChat:
             return websocket_response
 
         # serve lxmf messages
-        @routes.get("/api/v1/lxmf-messages")
+        @routes.delete("/api/v1/lxmf-messages/{id}")
         async def index(request):
 
-            # get query params
-            source_hash = request.query.get("source_hash", None)
-            destination_hash = request.query.get("destination_hash", None)
+            # get path params
+            id = request.match_info.get("id", None)
 
             # source_hash is required
-            if source_hash is None:
+            if id is None:
                 return web.json_response({
-                    "message": "source_hash is required",
+                    "message": "id is required",
                 }, status=422)
+
+            # delete lxmf messages from db where id matches
+            database.LxmfMessage.delete_by_id(id)
+
+            return web.json_response({
+                "message": "ok",
+            })
+
+        # serve lxmf messages
+        @routes.get("/api/v1/lxmf-messages/conversation/{destination_hash}")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", None)
+
+            # get source hash from local lxmf destination
+            source_hash = self.local_lxmf_destination.hash.hex()
 
             # destination_hash is required
             if destination_hash is None:
@@ -192,26 +208,6 @@ class ReticulumWebChat:
                 "lxmf_messages": lxmf_messages,
             })
 
-        # serve lxmf messages
-        @routes.delete("/api/v1/lxmf-messages/{id}")
-        async def index(request):
-
-            # get path params
-            id = request.match_info.get("id", None)
-
-            # source_hash is required
-            if id is None:
-                return web.json_response({
-                    "message": "id is required",
-                }, status=422)
-
-            # delete lxmf messages from db where id matches
-            database.LxmfMessage.delete_by_id(id)
-
-            return web.json_response({
-                "message": "ok",
-            })
-
         # delete lxmf messages for conversation
         @routes.delete("/api/v1/lxmf-messages/conversation/{destination_hash}")
         async def index(request):
@@ -222,7 +218,7 @@ class ReticulumWebChat:
             # get source hash from local lxmf destination
             source_hash = self.local_lxmf_destination.hash.hex()
 
-            # source_hash is required
+            # destination_hash is required
             if destination_hash is None:
                 return web.json_response({
                     "message": "destination_hash is required",

@@ -789,12 +789,7 @@
                 try {
 
                     // fetch lxmf messages from "us to destination" and from "destination to us"
-                    const response = await window.axios.get('/api/v1/lxmf-messages', {
-                        params: {
-                            source_hash: this.config.lxmf_address_hash,
-                            destination_hash: destinationHash,
-                        },
-                    });
+                    const response = await window.axios.get(`/api/v1/lxmf-messages/conversation/${destinationHash}`);
 
                     // do nothing if response is for a previous request
                     if(seq !== this.lxmfMessagesRequestSequence){
