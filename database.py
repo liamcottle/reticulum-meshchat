@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from peewee import *
 
@@ -15,8 +15,8 @@ class Config(BaseModel):
     id = BigAutoField()
     key = CharField(unique=True)
     value = TextField()
-    created_at = DateTimeField(default=datetime.now)
-    updated_at = DateTimeField(default=datetime.now)
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
 
     # define table name
     class Meta:
@@ -32,8 +32,8 @@ class Announce(BaseModel):
     identity_public_key = CharField()  # base64 encoded public key, incase we want to recreate the identity manually
     app_data = TextField(null=True)  # base64 encoded app data bytes
 
-    created_at = DateTimeField(default=datetime.now)
-    updated_at = DateTimeField(default=datetime.now)
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
 
     # define table name
     class Meta:
@@ -53,8 +53,8 @@ class LxmfMessage(BaseModel):
     content = TextField()
     fields = TextField()  # json string
     timestamp = FloatField()  # timestamp of when the message was originally created (before ever being sent)
-    created_at = DateTimeField(default=datetime.now)
-    updated_at = DateTimeField(default=datetime.now)
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
 
     # define table name
     class Meta:

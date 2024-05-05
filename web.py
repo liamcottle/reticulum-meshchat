@@ -594,7 +594,7 @@ class ReticulumWebChat:
             "content": lxmf_message_dict["content"],
             "fields": json.dumps(lxmf_message_dict["fields"]),
             "timestamp": lxmf_message_dict["timestamp"],
-            "updated_at": datetime.now(),
+            "updated_at": datetime.now(timezone.utc),
         }
 
         # upsert to database
@@ -617,7 +617,7 @@ class ReticulumWebChat:
             "identity_hash": identity.hash.hex(),
             "identity_public_key": base64.b64encode(identity.get_public_key()).decode("utf-8"),
             "app_data": parsed_app_data,
-            "updated_at": datetime.now(),
+            "updated_at": datetime.now(timezone.utc),
         }
 
         # upsert to database
@@ -768,7 +768,7 @@ class Config:
         data = {
             "key": key,
             "value": value,
-            "updated_at": datetime.now(),
+            "updated_at": datetime.now(timezone.utc),
         }
 
         # upsert to database
