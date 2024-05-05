@@ -249,7 +249,6 @@
 
                                     <!-- state label -->
                                     <div class="my-auto space-x-1">
-                                        <span v-if="chatItem.lxmf_message.state === 'failed'" @click="deleteChatItem(chatItem)" class="text-gray-500 underline cursor-pointer">delete?</span>
                                         <span>{{ chatItem.lxmf_message.state }}</span>
                                         <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress.toFixed(0) }}%</span>
                                     </div>
