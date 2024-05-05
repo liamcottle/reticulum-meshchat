@@ -22,6 +22,7 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 
 - Supports sending and receiving messages between [Reticulum WebChat](https://github.com/liamcottle/reticulum-webchat), [Sideband](https://github.com/markqvist/Sideband/) and [Nomadnet](https://github.com/markqvist/nomadnet).
 - Supports receiving and saving images and attachments sent from Sideband.
+- Supports sending images and file attachments.
 - Supports saving inbound and outbound messages to a local database.
 - Supports sending an announce to the network.
 - Supports setting a custom display name to send in your announce.
