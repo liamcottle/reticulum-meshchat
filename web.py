@@ -169,16 +169,10 @@ class ReticulumWebChat:
         async def index(request):
 
             # get path params
-            destination_hash = request.match_info.get("destination_hash", None)
+            destination_hash = request.match_info.get("destination_hash", "")
 
             # get source hash from local lxmf destination
             source_hash = self.local_lxmf_destination.hash.hex()
-
-            # destination_hash is required
-            if destination_hash is None:
-                return web.json_response({
-                    "message": "destination_hash is required",
-                }, status=422)
 
             # get lxmf messages from db where "source to destination" or "destination to source" and ordered by oldest to newest
             db_lxmf_messages = (database.LxmfMessage.select()
@@ -215,16 +209,10 @@ class ReticulumWebChat:
         async def index(request):
 
             # get path params
-            destination_hash = request.match_info.get("destination_hash", None)
+            destination_hash = request.match_info.get("destination_hash", "")
 
             # get source hash from local lxmf destination
             source_hash = self.local_lxmf_destination.hash.hex()
-
-            # destination_hash is required
-            if destination_hash is None:
-                return web.json_response({
-                    "message": "destination_hash is required",
-                }, status=422)
 
             # delete lxmf messages from db where "source to destination" or "destination to source"
             (database.LxmfMessage.delete()
