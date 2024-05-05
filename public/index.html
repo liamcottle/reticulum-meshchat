@@ -66,54 +66,58 @@
 
             <!-- peers -->
             <div class="flex-1 flex flex-col border rounded-xl bg-white shadow overflow-hidden">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2">
-                    <div class="mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-                        </svg>
-                    </div>
-                    <div>Peers Discovered ({{ peersCount }})</div>
-                </div>
-                <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
-                    <input v-model="peersSearchTerm" type="text" placeholder="Search peers..." class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                </div>
-                <div v-if="searchedPeers.length > 0" class="overflow-y-scroll">
-                    <div @click="onPeerClick(peer)" v-for="peer of searchedPeers" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
-                        <div class="my-auto mr-2">
-                            <img class="w-9 h-9 rounded-full" src="assets/images/user.png"/>
-                        </div>
-                        <div>
-                            <div class="text-gray-900">{{ peer.app_data || "Anonymous Peer" }}</div>
-                            <div class="text-gray-500 text-sm">{{ formatTimeAgo(peer.last_announce_timestamp) }}</div>
-                        </div>
+
+                <!-- tabs -->
+                <div class="border-b border-gray-200">
+                    <div class="-mb-px flex">
+                        <!-- Current: "border-blue-500 text-blue-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
+                        <div @click="tab = 'peers'" class="w-full border-b-2 py-3 px-1 text-center text-sm font-medium cursor-pointer" :class="[ tab === 'peers' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']">Peers</div>
                     </div>
                 </div>
-                <div v-else class="mx-auto my-auto text-center leading-5">
 
-                    <!-- no peers at all -->
-                    <div v-if="peersCount === 0" class="flex flex-col">
-                        <div class="mx-auto mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                            </svg>
-                        </div>
-                        <div class="font-semibold">No Peers Discovered</div>
-                        <div>Waiting for someone to announce!</div>
+                <template v-if="tab === 'peers'">
+                    <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
+                        <input v-model="peersSearchTerm" type="text" :placeholder="`Search ${peersCount} peers...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                     </div>
-
-                    <!-- is searching, but no results -->
-                    <div v-if="peersSearchTerm !== '' && peersCount > 0" class="flex flex-col">
-                        <div class="mx-auto mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                            </svg>
+                    <div v-if="searchedPeers.length > 0" class="overflow-y-scroll">
+                        <div @click="onPeerClick(peer)" v-for="peer of searchedPeers" class="flex cursor-pointer p-2 border-l-2 border-transparent" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white hover:bg-gray-50 hover:border-gray-200' ]">
+                            <div class="my-auto mr-2">
+                                <img class="w-9 h-9 rounded-full" src="assets/images/user.png"/>
+                            </div>
+                            <div>
+                                <div class="text-gray-900">{{ peer.name }}</div>
+                                <div class="text-gray-500 text-sm">{{ formatTimeAgo(peer.updated_at) }}</div>
+                            </div>
                         </div>
-                        <div class="font-semibold">No Search Results</div>
-                        <div>Your search didn't match any Peers!</div>
                     </div>
+                    <div v-else class="mx-auto my-auto text-center leading-5">
+
+                        <!-- no peers at all -->
+                        <div v-if="peersCount === 0" class="flex flex-col">
+                            <div class="mx-auto mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                </svg>
+                            </div>
+                            <div class="font-semibold">No Peers Discovered</div>
+                            <div>Waiting for someone to announce!</div>
+                        </div>
+
+                        <!-- is searching, but no results -->
+                        <div v-if="peersSearchTerm !== '' && peersCount > 0" class="flex flex-col">
+                            <div class="mx-auto mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                            </div>
+                            <div class="font-semibold">No Search Results</div>
+                            <div>Your search didn't match any Peers!</div>
+                        </div>
 
 
-                </div>
+                    </div>
+                </template>
+
             </div>
 
             <!-- my identity -->
@@ -159,7 +163,7 @@
 
                     <!-- peer info -->
                     <div>
-                        <div class="font-semibold">{{ selectedPeer.app_data || "Unknown" }}</div>
+                        <div class="font-semibold">{{ selectedPeer.name }}</div>
                         <div class="text-sm">@<{{ selectedPeer.destination_hash }}></div>
                     </div>
 
@@ -197,7 +201,7 @@
                         <div v-for="chatItem of selectedPeerChatItems" class="flex flex-col max-w-xl" :class="{ 'ml-auto pl-4 md:pl-16 items-end': chatItem.is_outbound, 'mr-auto pr-4 md:pr-16 items-start': !chatItem.is_outbound }">
 
                             <!-- sender name -->
-                            <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 ml-2">{{ selectedPeer.app_data || "Unknown" }}</div>
+                            <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 ml-2">{{ selectedPeer.name }}</div>
 
                             <!-- message content -->
                             <div @click="onChatItemClick(chatItem)" class="border border-gray-300 rounded-xl shadow overflow-hidden" :class="[ chatItem.lxmf_message.state === 'failed' ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
@@ -406,6 +410,9 @@
                 displayName: "Anonymous Peer",
                 config: null,
 
+                lxmfDeliveryAnnounces: [],
+
+                tab: "peers",
                 peers: {},
                 peersSearchTerm: "",
                 selectedPeer: null,
@@ -420,6 +427,7 @@
         },
         mounted: function() {
             this.connectWebsocket();
+            this.getLxmfDeliveryAnnounces();
         },
         methods: {
             connectWebsocket: function() {
@@ -450,20 +458,9 @@
                             break;
                         }
                         case 'announce': {
-                            this.peers[json.announce.destination_hash] = {
-                                destination_hash: json.announce.destination_hash,
-                                app_data: json.announce.app_data,
-                                last_announce_timestamp: json.announce.last_announce_timestamp,
-                            }
-                            break;
-                        }
-                        case 'known_peers': {
-                            for(const known_peer of json.known_peers){
-                                this.peers[known_peer.destination_hash] = {
-                                    destination_hash: known_peer.destination_hash,
-                                    app_data: known_peer.app_data,
-                                    last_announce_timestamp: known_peer.last_announce_timestamp,
-                                }
+                            const aspect = json.announce.aspect;
+                            if(aspect === "lxmf.delivery"){
+                                this.updatePeerFromAnnounce(json.announce);
                             }
                             break;
                         }
@@ -784,6 +781,41 @@
                 }
 
             },
+            async getLxmfDeliveryAnnounces() {
+                try {
+
+                    // fetch announces for "lxmf.delivery" aspect
+                    const response = await window.axios.get(`/api/v1/announces`, {
+                        params: {
+                            aspect: "lxmf.delivery",
+                        },
+                    });
+
+                    // update ui
+                    const lxmfDeliveryAnnounces = response.data.announces;
+                    for(const lxmfDeliveryAnnounce of lxmfDeliveryAnnounces){
+                        this.updatePeerFromAnnounce(lxmfDeliveryAnnounce);
+                    }
+
+                } catch(e) {
+                    // do nothing if failed to load announces
+                }
+            },
+            getPeerNameFromAppData: function(appData) {
+                try {
+                    // app data should be peer name, and our server provides it base64 encoded
+                    return atob(appData);
+                } catch(e){
+                    return "Anonymous Peer";
+                }
+            },
+            updatePeerFromAnnounce: function(announce) {
+                this.peers[announce.destination_hash] = {
+                    ...announce,
+                    // helper property for easily grabbing peer name from app data
+                    name: this.getPeerNameFromAppData(announce.app_data),
+                };
+            },
             async loadLxmfMessages(destinationHash) {
                 const seq = ++this.lxmfMessagesRequestSequence;
                 try {
@@ -891,9 +923,10 @@
                     seconds: seconds,
                 };
             },
-            formatTimeAgo: function(seconds) {
+            formatTimeAgo: function(datetimeString) {
 
-                const secondsAgo = Math.round((Date.now() / 1000) - seconds);
+                const millisecondsAgo = Date.now() - new Date(datetimeString).getTime();
+                const secondsAgo = Math.round(millisecondsAgo / 1000);
                 const parsedSeconds = this.parseSeconds(secondsAgo);
 
                 if(parsedSeconds.days > 0){
@@ -1029,15 +1062,17 @@
             peersOrderedByLatestAnnounce() {
                 const peers = Object.values(this.peers);
                 return peers.sort(function(peerA, peerB) {
-                    // order by last_announce_timestamp desc
-                    return peerB.last_announce_timestamp - peerA.last_announce_timestamp;
+                    // order by updated_at desc
+                    const peerAUpdatedAt = new Date(peerA.updated_at).getTime();
+                    const peerBUpdatedAt = new Date(peerB.updated_at).getTime();
+                    return peerBUpdatedAt - peerAUpdatedAt;
                 });
             },
             searchedPeers() {
                 return this.peersOrderedByLatestAnnounce.filter((peer) => {
                     const search = this.peersSearchTerm.toLowerCase();
-                    const matchesAppData = (peer.app_data || "").toLowerCase().includes(search);
-                    const matchesDestinationHash = (peer.destination_hash || "").toLowerCase().includes(search);
+                    const matchesAppData = peer.name.toLowerCase().includes(search);
+                    const matchesDestinationHash = peer.destination_hash.toLowerCase().includes(search);
                     return matchesAppData || matchesDestinationHash;
                 });
             },

@@ -4,7 +4,6 @@ import argparse
 import json
 import os
 import signal
-import time
 from datetime import datetime, timezone
 from typing import Callable, List
 
@@ -121,9 +120,6 @@ class ReticulumWebChat:
             # send config to all clients
             await self.send_config_to_websocket_clients()
 
-            # send known peers to all clients
-            await self.send_known_peers_to_websocket_clients()
-
             # handle websocket messages until disconnected
             async for msg in websocket_response:
                 msg: WSMessage = msg
@@ -164,22 +160,13 @@ class ReticulumWebChat:
             # process announces
             announces = []
             for announce in query_results:
-                announces.append({
-                    "id": announce.id,
-                    "destination_hash": announce.destination_hash,
-                    "aspect": announce.aspect,
-                    "identity_hash": announce.identity_hash,
-                    "identity_public_key": announce.identity_public_key,
-                    "app_data": announce.app_data,
-                    "created_at": announce.created_at,
-                    "updated_at": announce.updated_at,
-                })
+                announces.append(self.convert_db_announce_to_dict(announce))
 
             return web.json_response({
                 "announces": announces,
             })
 
-        # serve lxmf messages
+        # delete lxmf message
         @routes.delete("/api/v1/lxmf-messages/{id}")
         async def index(request):
 
@@ -199,7 +186,7 @@ class ReticulumWebChat:
                 "message": "ok",
             })
 
-        # serve lxmf messages
+        # serve lxmf messages for conversation
         @routes.get("/api/v1/lxmf-messages/conversation/{destination_hash}")
         async def index(request):
 
@@ -459,26 +446,6 @@ class ReticulumWebChat:
             },
         }))
 
-    # broadcasts known peers to all websocket clients
-    async def send_known_peers_to_websocket_clients(self):
-
-        # process known peers
-        known_peers = []
-        for destination_hash in RNS.Identity.known_destinations:
-            known_destination = RNS.Identity.known_destinations[destination_hash]
-            last_announce_timestamp = known_destination[0]
-            known_peers.append({
-                "destination_hash": destination_hash.hex(),
-                "app_data": self.convert_app_data_to_string(RNS.Identity.recall_app_data(destination_hash)),
-                "last_announce_timestamp": last_announce_timestamp,
-            })
-
-        # send known peers to websocket clients
-        await self.websocket_broadcast(json.dumps({
-            "type": "known_peers",
-            "known_peers": known_peers,
-        }))
-
     # convert app data to string, or return none unable to do so
     def convert_app_data_to_string(self, app_data):
 
@@ -563,6 +530,19 @@ class ReticulumWebChat:
             lxmf_message_state = "failed"
         
         return lxmf_message_state
+
+    # convert database announce to a dictionary
+    def convert_db_announce_to_dict(self, announce: database.Announce):
+        return {
+            "id": announce.id,
+            "destination_hash": announce.destination_hash,
+            "aspect": announce.aspect,
+            "identity_hash": announce.identity_hash,
+            "identity_public_key": announce.identity_public_key,
+            "app_data": announce.app_data,
+            "created_at": announce.created_at,
+            "updated_at": announce.updated_at,
+        }
 
     # handle an lxmf delivery from reticulum
     # NOTE: cant be async, as Reticulum doesn't await it
@@ -742,19 +722,15 @@ class ReticulumWebChat:
         # upsert announce to database
         self.db_upsert_announce(announced_identity, destination_hash, "lxmf.delivery", app_data)
 
-        # parse app data
-        parsed_app_data = None
-        if app_data is not None:
-            parsed_app_data = app_data.decode("utf-8")
+        # find announce from database
+        announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
+        if announce is None:
+            return
 
-        # send received lxmf announce to all websocket clients
+        # send database announce to all websocket clients
         asyncio.run(self.websocket_broadcast(json.dumps({
             "type": "announce",
-            "announce": {
-                "destination_hash": destination_hash.hex(),
-                "app_data": parsed_app_data,
-                "last_announce_timestamp": time.time(),
-            },
+            "announce": self.convert_db_announce_to_dict(announce),
         })))
 
     # handle an announce received from reticulum, for a nomadnet node
@@ -766,6 +742,17 @@ class ReticulumWebChat:
 
         # upsert announce to database
         self.db_upsert_announce(announced_identity, destination_hash, "nomadnetwork.node", app_data)
+
+        # find announce from database
+        announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
+        if announce is None:
+            return
+
+        # send database announce to all websocket clients
+        asyncio.run(self.websocket_broadcast(json.dumps({
+            "type": "announce",
+            "announce": self.convert_db_announce_to_dict(announce),
+        })))
 
 
 # class to manage config stored in database
