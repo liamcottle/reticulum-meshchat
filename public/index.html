@@ -200,8 +200,9 @@
                             <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 ml-2">{{ selectedPeer.app_data || "Unknown" }}</div>
 
                             <!-- message content -->
-                            <div class="flex space-x-2 border border-gray-300 rounded-xl shadow px-2.5 py-1" :class="[ chatItem.lxmf_message.state === 'failed' ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
-                                <div class="w-full space-y-0.5">
+                            <div @click="onChatItemClick(chatItem)" class="border border-gray-300 rounded-xl shadow overflow-hidden" :class="[ chatItem.lxmf_message.state === 'failed' ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
+
+                                <div class="w-full space-y-0.5 px-2.5 py-1">
 
                                     <!-- content -->
                                     <div v-if="chatItem.lxmf_message.content" style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;">{{ chatItem.lxmf_message.content }}</div>
@@ -229,6 +230,17 @@
                                     </div>
 
                                 </div>
+
+                                <!-- actions -->
+                                <div v-if="chatItem.is_actions_expanded" class="border-t p-1 bg-[#efefef] text-white">
+
+                                    <!-- delete message -->
+                                    <button @click.stop="deleteChatItem(chatItem)" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                                        Delete
+                                    </button>
+
+                                </div>
+
                             </div>
 
                             <!-- message state -->
@@ -1004,6 +1016,13 @@
                 // reload conversation
                 await this.loadLxmfMessages(this.selectedPeer.destination_hash);
 
+            },
+            onChatItemClick: function(chatItem) {
+                if(!chatItem.is_actions_expanded){
+                    chatItem.is_actions_expanded = true;
+                } else {
+                    chatItem.is_actions_expanded = false;
+                }
             },
         },
         computed: {
