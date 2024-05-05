@@ -202,8 +202,8 @@ class ReticulumWebChat:
                     "content": db_lxmf_message.content,
                     "fields": json.loads(db_lxmf_message.fields),
                     "timestamp": db_lxmf_message.timestamp,
-                    "created_at": db_lxmf_message.created_at.replace(tzinfo=timezone.utc).isoformat(),
-                    "updated_at": db_lxmf_message.updated_at.replace(tzinfo=timezone.utc).isoformat(),
+                    "created_at": db_lxmf_message.created_at,
+                    "updated_at": db_lxmf_message.updated_at,
                 })
 
             return web.json_response({
