@@ -891,7 +891,6 @@ class NomadnetDownloader:
 
     # handle successful download
     def on_response(self, request_receipt):
-        print("file_received")
         self.on_download_success(request_receipt.response)
 
     # handle failure
