@@ -23,6 +23,23 @@ class Config(BaseModel):
         table_name = "config"
 
 
+class Announce(BaseModel):
+
+    id = BigAutoField()
+    destination_hash = CharField(unique=True)  # unique destination hash that was announced
+    aspect = TextField(index=True)  # aspect is not included in announce, but we want to filter saved announces by aspect
+    identity_hash = CharField(index=True)  # identity hash that announced the destination
+    identity_public_key = CharField()  # base64 encoded public key, incase we want to recreate the identity manually
+    app_data = TextField(null=True)  # base64 encoded app data bytes
+
+    created_at = DateTimeField(default=datetime.now)
+    updated_at = DateTimeField(default=datetime.now)
+
+    # define table name
+    class Meta:
+        table_name = "announces"
+
+
 class LxmfMessage(BaseModel):
 
     id = BigAutoField()

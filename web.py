@@ -49,6 +49,7 @@ class ReticulumWebChat:
         self.db.connect()
         self.db.create_tables([
             database.Config,
+            database.Announce,
             database.LxmfMessage,
         ])
 
@@ -73,6 +74,7 @@ class ReticulumWebChat:
 
         # set a callback for when an lxmf announce is received
         RNS.Transport.register_announce_handler(LXMFAnnounceHandler(self.on_lxmf_announce_received))
+        RNS.Transport.register_announce_handler(NomadnetworkNodeAnnounceHandler(self.on_nomadnet_node_announce_received))
 
         # remember websocket clients
         self.websocket_clients: List[web.WebSocketResponse] = []
@@ -600,6 +602,29 @@ class ReticulumWebChat:
         query = query.on_conflict(conflict_target=[database.LxmfMessage.hash], update=data)
         query.execute()
 
+    # upserts the provided announce to the database
+    def db_upsert_announce(self, identity: RNS.Identity, destination_hash: bytes, aspect: str, app_data: bytes):
+
+        # parse app data
+        parsed_app_data = None
+        if app_data is not None:
+            parsed_app_data = base64.b64encode(app_data).decode("utf-8")
+
+        # prepare data to insert or update
+        data = {
+            "destination_hash": destination_hash.hex(),
+            "aspect": aspect,
+            "identity_hash": identity.hash.hex(),
+            "identity_public_key": base64.b64encode(identity.get_public_key()).decode("utf-8"),
+            "app_data": parsed_app_data,
+            "updated_at": datetime.now(),
+        }
+
+        # upsert to database
+        query = database.Announce.insert(data)
+        query = query.on_conflict(conflict_target=[database.Announce.destination_hash], update=data)
+        query.execute()
+
     # handle sending an lxmf message to reticulum
     async def send_message(self, destination_hash, content: str,
                            image_field: LxmfImageField = None,
@@ -689,7 +714,10 @@ class ReticulumWebChat:
     def on_lxmf_announce_received(self, destination_hash, announced_identity, app_data):
 
         # log received announce
-        RNS.log("Received an announce from " + RNS.prettyhexrep(destination_hash))
+        print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [lxmf.delivery]")
+
+        # upsert announce to database
+        self.db_upsert_announce(announced_identity, destination_hash, "lxmf.delivery", app_data)
 
         # parse app data
         parsed_app_data = None
@@ -705,6 +733,16 @@ class ReticulumWebChat:
                 "last_announce_timestamp": time.time(),
             },
         })))
+
+    # handle an announce received from reticulum, for a nomadnet node
+    # NOTE: cant be async, as Reticulum doesn't await it
+    def on_nomadnet_node_announce_received(self, destination_hash, announced_identity, app_data):
+
+        # log received announce
+        print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [nomadnetwork.node]")
+
+        # upsert announce to database
+        self.db_upsert_announce(announced_identity, destination_hash, "nomadnetwork.node", app_data)
 
 
 # class to manage config stored in database
@@ -761,6 +799,23 @@ class LXMFAnnounceHandler:
 
     def __init__(self, received_announce_callback):
         self.aspect_filter = "lxmf.delivery"
+        self.received_announce_callback = received_announce_callback
+
+    # we will just pass the received announce back to the provided callback
+    def received_announce(self, destination_hash, announced_identity, app_data):
+        try:
+            # handle received announce
+            self.received_announce_callback(destination_hash, announced_identity, app_data)
+        except:
+            # ignore failure to handle received announce
+            pass
+
+
+# an announce handler for nomadnetwork.node aspect that just forwards to a provided callback
+class NomadnetworkNodeAnnounceHandler:
+
+    def __init__(self, received_announce_callback):
+        self.aspect_filter = "nomadnetwork.node"
         self.received_announce_callback = received_announce_callback
 
     # we will just pass the received announce back to the provided callback
