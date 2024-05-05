@@ -331,7 +331,7 @@ class ReticulumWebChat:
 
             # handle successful file download
             def on_file_download_success(file_name, file_bytes):
-                asyncio.run(client.send(json.dumps({
+                asyncio.run(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
                         "status": "success",
@@ -344,7 +344,7 @@ class ReticulumWebChat:
 
             # handle file download failure
             def on_file_download_failure(failure_reason):
-                asyncio.run(client.send(json.dumps({
+                asyncio.run(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
                         "status": "error",
@@ -356,7 +356,7 @@ class ReticulumWebChat:
 
             # handle file download progress
             def on_file_download_progress(progress):
-                asyncio.run(client.send(json.dumps({
+                asyncio.run(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
                         "status": "progress",
@@ -383,7 +383,7 @@ class ReticulumWebChat:
 
             # handle successful page download
             def on_page_download_success(page_content):
-                asyncio.run(client.send(json.dumps({
+                asyncio.run(client.send_str(json.dumps({
                     "type": "nomadnet.page.download",
                     "nomadnet_page_download": {
                         "status": "success",
@@ -395,7 +395,7 @@ class ReticulumWebChat:
 
             # handle page download failure
             def on_page_download_failure(failure_reason):
-                asyncio.run(client.send(json.dumps({
+                asyncio.run(client.send_str(json.dumps({
                     "type": "nomadnet.page.download",
                     "nomadnet_page_download": {
                         "status": "error",
@@ -407,7 +407,7 @@ class ReticulumWebChat:
 
             # handle page download progress
             def on_page_download_progress(progress):
-                asyncio.run(client.send(json.dumps({
+                asyncio.run(client.send_str(json.dumps({
                     "type": "nomadnet.page.download",
                     "nomadnet_page_download": {
                         "status": "progress",
