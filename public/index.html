@@ -473,7 +473,7 @@
 
                 <!-- browser navigation -->
                 <div class="w-full border-gray-300 border-b p-2">
-                    NAV BAR
+                    {{ nodePagePath }}
                 </div>
 
                 <!-- page content -->
@@ -526,6 +526,8 @@
                 lxmfMessagesRequestSequence: 0,
                 chatItems: [],
 
+                nodePageRequestSequence: 0,
+                nodePagePath: null,
                 nodePageContent: null,
 
                 nomadnetPageDownloadCallbacks: {},
@@ -998,17 +1000,48 @@
                     // do nothing if failed to load messages
                 }
             },
-            async loadNodeIndexPage(node) {
-                this.nodePageContent = "Requesting page: /page/index.mu";
-                this.downloadNomadNetPage(node.destination_hash, "/page/index.mu", (pageContent) => {
-                    console.log("pageContent", pageContent);
+            async loadNodePage(destinationHash, pagePath) {
+
+                // get new sequence for this page load
+                const seq = ++this.nodePageRequestSequence;
+
+                // update ui
+                this.nodePagePath = pagePath;
+                this.nodePageContent = `Loading page`;
+
+                this.downloadNomadNetPage(destinationHash, pagePath, (pageContent) => {
+
+                    // do nothing if callback is for a previous request
+                    if(seq !== this.nodePageRequestSequence){
+                        console.log("ignoring page content callback for previous page request")
+                        return;
+                    }
+
+                    // update page content
                     this.nodePageContent = pageContent;
+
                 }, (failureReason) => {
-                    console.log("failureReason", failureReason);
+
+                    // do nothing if callback is for a previous request
+                    if(seq !== this.nodePageRequestSequence){
+                        console.log("ignoring failure callback for previous page request")
+                        return;
+                    }
+
+                    // update page content
                     this.nodePageContent = `Failed loading page: ${failureReason}`;
+
                 }, (progress) => {
-                    console.log("progress", progress);
+
+                    // do nothing if callback is for a previous request
+                    if(seq !== this.nodePageRequestSequence){
+                        console.log("ignoring progress callback for previous page request")
+                        return;
+                    }
+
+                    // update page content
                     this.nodePageContent = `Loading page: ${progress}`;
+
                 });
             },
             async deleteChatItem(chatItem) {
@@ -1075,7 +1108,7 @@
             onNodeClick: function(node) {
                 this.selectedPeer = null;
                 this.selectedNode = node;
-                this.loadNodeIndexPage(node);
+                this.loadNodePage(node.destination_hash, "/page/index.mu");
             },
             parseSeconds: function(secondsToFormat) {
                 secondsToFormat = Number(secondsToFormat);
