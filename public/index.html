@@ -493,6 +493,17 @@
                     <pre v-else v-html="nodePageContent" class="h-full text-wrap"></pre>
                 </div>
 
+                <!-- file download bottom bar -->
+                <div v-if="isDownloadingNodeFile" class="flex w-full border-gray-300 border-t p-2">
+                    <div class="my-auto mr-2">
+                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    <div class="my-auto">Downloading: {{ nodeFilePath }} ({{ nodeFileProgress }}%)</div>
+                </div>
+
             </div>
 
         </div>
@@ -541,6 +552,10 @@
                 nodePagePath: null,
                 nodePageContent: null,
                 nodePageProgress: 0,
+
+                isDownloadingNodeFile: false,
+                nodeFilePath: null,
+                nodeFileProgress: 0,
 
                 nomadnetPageDownloadCallbacks: {},
                 nomadnetFileDownloadCallbacks: {},
@@ -1120,14 +1135,47 @@
                 const parsedUrl = this.parseNomadnetworkUrl(url);
                 if(parsedUrl != null){
 
-                    // file urls are not supported yet
-                    if(parsedUrl.path.startsWith("/file/")){
-                        alert("file urls are not supported yet")
-                        return;
-                    }
-
                     // use parsed destination hash, or fallback to selected node destination hash
                     const destinationHash = parsedUrl.destination_hash || this.selectedNode.destination_hash;
+
+                    // download file
+                    if(parsedUrl.path.startsWith("/file/")){
+
+                        // prevent simultaneous downloads
+                        if(this.isDownloadingNodeFile){
+                            alert("An existing download is in progress. Please wait for it to finish beforing starting another download.");
+                            return;
+                        }
+
+                        // update ui
+                        this.isDownloadingNodeFile = true;
+                        this.nodeFilePath = parsedUrl.path.split("/").pop();
+                        this.nodeFileProgress = 0;
+
+                        // start file download
+                        this.downloadNomadNetFile(destinationHash, parsedUrl.path, (fileName, fileBytesBase64) => {
+
+                            // no longer downloading
+                            this.isDownloadingNodeFile = false;
+
+                            // download file to browser
+                            this.downloadFileFromBase64(fileName, fileBytesBase64);
+
+                        }, (failureReason) => {
+
+                            // no longer downloading
+                            this.isDownloadingNodeFile = false;
+
+                            // show error message
+                            alert(`Failed to download file: ${failureReason}`);
+
+                        }, (progress) => {
+                            this.nodeFileProgress = Math.round(progress * 100);
+                        });
+
+                        return;
+
+                    }
 
                     // update selected node, so relative urls work correctly when returned by the new node
                     this.selectedNode = this.nodes[destinationHash] || {
@@ -1198,6 +1246,37 @@
 
                 // open new tab
                 window.open(fileUrl);
+
+            },
+            downloadFileFromBase64: async function(fileName, fileBytesBase64) {
+
+                // create blob from base64 encoded file bytes
+                const byteCharacters = atob(fileBytesBase64);
+                const byteNumbers = new Array(byteCharacters.length);
+                for(let i = 0; i < byteCharacters.length; i++){
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray]);
+
+                // create object url for blob
+                const objectUrl = URL.createObjectURL(blob);
+
+                // create link element to download blob
+                const link = document.createElement('a');
+                link.href = objectUrl;
+                link.download = fileName;
+                link.style.display = "none";
+                document.body.append(link);
+
+                // click link to download file in browser
+                link.click();
+
+                // link element is no longer needed
+                link.remove();
+
+                // revoke object url to clear memory
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
 
             },
             onPeerClick: function(peer) {
