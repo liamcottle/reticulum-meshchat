@@ -28,6 +28,12 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 - Supports setting a custom display name to send in your announce.
 - Supports viewing and searching peers discovered from announces.
 
+## Beta Features
+
+- Support for browsing pages hosted on Nomad Network Nodes.
+
+> NOTE: micron format parsing is still in development, some pages may not render or work correctly at all.
+
 ## How does it work?
 
 - A python script ([web.py](./web.py)) runs a Reticulum instance and a WebSocket server.
@@ -102,5 +108,4 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 - [ ] allow setting a custom name to show for a contact
 - [ ] button to forget peers and contacts
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
-- [ ] support for exploring/navigating a nodes micron pages
 - [ ] support for managing Reticulum config/interfaces via the web ui
