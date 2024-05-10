@@ -30,7 +30,7 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 
 ## Beta Features
 
-- Support for browsing pages hosted on Nomad Network Nodes.
+- Support for browsing pages, and downloading files hosted on Nomad Network Nodes.
 
 > NOTE: micron format parsing is still in development, some pages may not render or work correctly at all.
 
