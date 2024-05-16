@@ -3,7 +3,6 @@
 import argparse
 import json
 import os
-import signal
 from datetime import datetime, timezone
 from typing import Callable, List
 
@@ -245,9 +244,6 @@ class ReticulumWebChat:
             return web.json_response({
                 "message": "ok",
             })
-
-        asyncio.get_event_loop().add_signal_handler(signal.SIGINT, lambda: exit(-1))
-        asyncio.get_event_loop().add_signal_handler(signal.SIGTERM, lambda: exit(-1))
 
         # create and run web app
         app = web.Application()
