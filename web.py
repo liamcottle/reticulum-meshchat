@@ -11,6 +11,7 @@ import LXMF
 from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
 import asyncio
 import base64
+import webbrowser
 
 from peewee import SqliteDatabase
 
@@ -92,7 +93,7 @@ class ReticulumWebChat:
         self.reticulum.exit_handler()
         RNS.exit()
 
-    def run(self, host, port):
+    def run(self, host, port, launch_browser: bool):
 
         # create route table
         routes = web.RouteTableDef()
@@ -312,11 +313,22 @@ class ReticulumWebChat:
                 "message": "ok",
             })
 
+        # called when web app has started
+        async def on_startup(app):
+
+            # auto launch web browser
+            if launch_browser:
+                try:
+                    webbrowser.open("http://127.0.0.1:{}".format(port))
+                except:
+                    print("failed to launch web browser")
+
         # create and run web app
         app = web.Application()
         app.add_routes(routes)
         app.add_routes([web.static('/', "public")])  # serve anything in public folder
         app.on_shutdown.append(self.shutdown)  # need to force close websockets and stop reticulum now
+        app.on_startup.append(on_startup)
         web.run_app(app, host=host, port=port)
 
     # handle data received from websocket client
@@ -1006,6 +1018,7 @@ def main():
     parser = argparse.ArgumentParser(description="ReticulumWebChat")
     parser.add_argument("--host", nargs='?', default="0.0.0.0", type=str, help="The address the web server should listen on.")
     parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
+    parser.add_argument("--headless", action='store_true', help="Web browser will not automatically launch when this flag is passed.")
     parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
     parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
     parser.add_argument("--generate-identity-file", type=str, help="Generates and saves a new Reticulum Identity to the provided file path and then exits.")
@@ -1051,7 +1064,7 @@ def main():
 
     # init app
     reticulum_webchat = ReticulumWebChat(identity, args.storage_dir, args.reticulum_config_dir)
-    reticulum_webchat.run(args.host, args.port)
+    reticulum_webchat.run(args.host, args.port, launch_browser=args.headless is False)
     
     
 if __name__ == "__main__":
