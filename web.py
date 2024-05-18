@@ -1040,17 +1040,14 @@ def main():
     if args.identity_file is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load(args.identity_file)
-        print("Reticulum Identity has been loaded from file.")
-        print(identity)
+        print("Reticulum Identity <{}> has been loaded from file.".format(identity.hash.hex()))
     elif args.identity_base64 is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load_private_key(base64.b64decode(args.identity_base64))
-        print("Reticulum Identity has been loaded from base64.")
-        print(identity)
+        print("Reticulum Identity <{}> has been loaded from base64.".format(identity.hash.hex()))
     else:
         identity = RNS.Identity(create_keys=True)
-        print("Reticulum Identity has been randomly generated.")
-        print(identity)
+        print("Reticulum Identity <{}> has been randomly generated.".format(identity.hash.hex()))
 
     # init app
     reticulum_webchat = ReticulumWebChat(identity, args.storage_dir, args.reticulum_config_dir)
