@@ -61,7 +61,8 @@ python web.py --help
 ```
 
 ```
-usage: web.py [-h] [--host [HOST]] [--port [PORT]] [--identity-file IDENTITY_FILE] [--identity-base64 IDENTITY_BASE64]
+usage: web.py [-h] [--host [HOST]] [--port [PORT]] [--headless] [--identity-file IDENTITY_FILE] [--identity-base64 IDENTITY_BASE64] [--generate-identity-file GENERATE_IDENTITY_FILE] [--generate-identity-base64]
+              [--reticulum-config-dir RETICULUM_CONFIG_DIR] [--storage-dir STORAGE_DIR]
 
 ReticulumWebChat
 
@@ -69,10 +70,19 @@ options:
   -h, --help            show this help message and exit
   --host [HOST]         The address the web server should listen on.
   --port [PORT]         The port the web server should listen on.
+  --headless            Web browser will not automatically launch when this flag is passed.
   --identity-file IDENTITY_FILE
                         Path to a Reticulum Identity file to use as your LXMF address.
   --identity-base64 IDENTITY_BASE64
                         A base64 encoded Reticulum Identity to use as your LXMF address.
+  --generate-identity-file GENERATE_IDENTITY_FILE
+                        Generates and saves a new Reticulum Identity to the provided file path and then exits.
+  --generate-identity-base64
+                        Outputs a randomly generated Reticulum Identity as base64 and then exits.
+  --reticulum-config-dir RETICULUM_CONFIG_DIR
+                        Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)
+  --storage-dir STORAGE_DIR
+                        Path to a directory for storing databases and config files (default: ./storage)
 ```
 
 ## Using an existing Reticulum Identity
