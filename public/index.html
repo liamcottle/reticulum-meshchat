@@ -1473,7 +1473,7 @@
                 }
             },
             onDestinationPathClick: function(path) {
-                alert(path.description);
+                alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
             },
         },
         computed: {
