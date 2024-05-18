@@ -222,7 +222,7 @@
                         <!-- peer info -->
                         <div>
                             <div class="font-semibold">{{ selectedPeer.name }}</div>
-                            <div class="text-sm">@<{{ selectedPeer.destination_hash }}></div>
+                            <div class="text-sm"><{{ selectedPeer.destination_hash }}> <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span></div>
                         </div>
 
                         <!-- delete button -->
@@ -452,6 +452,7 @@
                     <!-- node info -->
                     <div class="my-auto">
                         <div class="font-semibold">{{ selectedNode.name }}</div>
+                        <div class="text-sm"><{{ selectedNode.destination_hash }}> <span v-if="selectedNodePath" @click="onDestinationPathClick(selectedNodePath)" class="cursor-pointer">{{ selectedNodePath.hops }} {{ selectedNodePath.hops === 1 ? 'hop' : 'hops' }} away</span></div>
                     </div>
 
                     <!-- close button -->
@@ -539,10 +540,12 @@
                 peers: {},
                 peersSearchTerm: "",
                 selectedPeer: null,
+                selectedPeerPath: null,
 
                 nodes: {},
                 nodesSearchTerm: "",
                 selectedNode: null,
+                selectedNodePath: null,
 
                 lxmfMessagesRequestSequence: 0,
                 chatItems: [],
@@ -966,6 +969,42 @@
                     console.log(e);
                 }
             },
+            async getPeerPath(destinationHash) {
+
+                // clear previous known path
+                this.selectedPeerPath = null;
+
+                try {
+
+                    // get path to destination
+                    const response = await window.axios.get(`/api/v1/destination/${destinationHash}/path`);
+
+                    // update ui
+                    this.selectedPeerPath = response.data.path;
+
+                } catch(e) {
+                    console.log(e);
+                }
+
+            },
+            async getNodePath(destinationHash) {
+
+                // clear previous known path
+                this.selectedNodePath = null;
+
+                try {
+
+                    // get path to destination
+                    const response = await window.axios.get(`/api/v1/destination/${destinationHash}/path`);
+
+                    // update ui
+                    this.selectedNodePath = response.data.path;
+
+                } catch(e) {
+                    console.log(e);
+                }
+
+            },
             getPeerNameFromAppData: function(appData) {
                 try {
                     // app data should be peer name, and our server provides it base64 encoded
@@ -1283,11 +1322,13 @@
                 this.selectedNode = null;
                 this.selectedPeer = peer;
                 this.chatItems = [];
+                this.getPeerPath(peer.destination_hash);
                 this.loadLxmfMessages(peer.destination_hash);
             },
             onNodeClick: function(node) {
                 this.selectedPeer = null;
                 this.selectedNode = node;
+                this.getNodePath(node.destination_hash);
                 this.loadNodePage(node.destination_hash, "/page/index.mu");
             },
             parseSeconds: function(secondsToFormat) {
@@ -1430,6 +1471,9 @@
                 } else {
                     chatItem.is_actions_expanded = false;
                 }
+            },
+            onDestinationPathClick: function(path) {
+                alert(path.description);
             },
         },
         computed: {
