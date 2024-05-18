@@ -202,6 +202,21 @@ class ReticulumWebChat:
                 },
             })
 
+        # get interface stats
+        @routes.get("/api/v1/interface-stats")
+        async def index(request):
+
+            # get interface stats
+            interface_stats = self.reticulum.get_interface_stats()
+
+            # ensure transport_id is hex as json_response can't serialize bytes
+            if "transport_id" in interface_stats:
+                interface_stats["transport_id"] = interface_stats["transport_id"].hex()
+
+            return web.json_response({
+                "interface_stats": interface_stats,
+            })
+
         # delete lxmf message
         @routes.delete("/api/v1/lxmf-messages/{id}")
         async def index(request):
