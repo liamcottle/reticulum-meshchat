@@ -165,6 +165,43 @@ class ReticulumWebChat:
                 "announces": announces,
             })
 
+        # get path to destination
+        @routes.get("/api/v1/destination/{destination_hash}/path")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # ensure path is known
+            if not RNS.Transport.has_path(destination_hash):
+                return web.json_response({
+                    "path": None,
+                })
+
+            # determine next hop and hop count
+            hops = RNS.Transport.hops_to(destination_hash)
+            next_hop_bytes = self.reticulum.get_next_hop(destination_hash)
+
+            # ensure next hop provided
+            if next_hop_bytes is None:
+                return web.json_response({
+                    "path": None,
+                })
+
+            next_hop = next_hop_bytes.hex()
+            next_hop_interface = self.reticulum.get_next_hop_if_name(destination_hash)
+
+            return web.json_response({
+                "path": {
+                    "hops": hops,
+                    "next_hop": next_hop,
+                    "next_hop_interface": next_hop_interface,
+                },
+            })
+
         # delete lxmf message
         @routes.delete("/api/v1/lxmf-messages/{id}")
         async def index(request):
