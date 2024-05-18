@@ -217,6 +217,21 @@ class ReticulumWebChat:
                 "interface_stats": interface_stats,
             })
 
+        # get path table
+        @routes.get("/api/v1/path-table")
+        async def index(request):
+
+            # get path table, making sure hash and via are in hex as json_response can't serialize bytes
+            path_table = []
+            for path in self.reticulum.get_path_table():
+                path["hash"] = path["hash"].hex()
+                path["via"] = path["via"].hex()
+                path_table.append(path)
+
+            return web.json_response({
+                "path_table": path_table,
+            })
+
         # delete lxmf message
         @routes.delete("/api/v1/lxmf-messages/{id}")
         async def index(request):
