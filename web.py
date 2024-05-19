@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import time
 from datetime import datetime, timezone
 from typing import Callable, List
 
@@ -180,6 +181,23 @@ class ReticulumWebChat:
 
             # convert destination hash to bytes
             destination_hash = bytes.fromhex(destination_hash)
+
+            # check if user wants to request the path from the network right now
+            request_query_param = request.query.get("request", "false")
+            should_request_now = request_query_param == "true" or request_query_param == "1"
+            if should_request_now:
+
+                # determine how long we should wait for a path response
+                timeout_seconds = int(request.query.get("timeout", 15))
+                timeout_after_seconds = time.time() + timeout_seconds
+
+                # request path if we don't have it
+                if not RNS.Transport.has_path(destination_hash):
+                    RNS.Transport.request_path(destination_hash)
+
+                # wait until we have a path, or give up after the configured timeout
+                while not RNS.Transport.has_path(destination_hash) and time.time() < timeout_after_seconds:
+                    await asyncio.sleep(0.1)
 
             # ensure path is known
             if not RNS.Transport.has_path(destination_hash):
