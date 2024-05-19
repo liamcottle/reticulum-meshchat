@@ -29,7 +29,7 @@
                 <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500">Liam Cottle</a></div>
             </div>
             <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
-                <div class="rounded-full">
+                <div class="rounded-full  hidden sm:block">
                     <div class="flex text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
                         <div>
                             <svg v-if="isWebsocketConnected" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -208,7 +208,7 @@
         </div>
 
         <!-- main view -->
-        <div class="flex flex-col flex-1 py-2 overflow-hidden">
+        <div class="flex flex-col flex-1 py-2 overflow-hidden min-w-full sm:min-w-[500px]">
 
             <!-- peer -->
             <template v-if="!selectedNode">
