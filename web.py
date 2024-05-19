@@ -726,6 +726,7 @@ class ReticulumWebChat:
                 RNS.Transport.request_path(destination_hash)
 
                 # we have to bail out of sending, since we don't have the path yet
+                # FIXME: we just ate the message, and didn't tell the user it failed...
                 return
 
             # create destination for recipients lxmf delivery address
