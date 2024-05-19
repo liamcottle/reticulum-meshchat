@@ -55,6 +55,11 @@ class ReticulumWebChat:
         # vacuum database on start to shrink its file size
         sqlite_database.execute_sql("VACUUM")
 
+        # lxmf messages in outbound or sending state should be marked as failed when app starts as they are no longer being processed
+        (database.LxmfMessage.update(state="failed")
+         .where(database.LxmfMessage.state == "outbound")
+         .orwhere(database.LxmfMessage.state == "sending").execute())
+
         # init config
         self.config = Config()
 
