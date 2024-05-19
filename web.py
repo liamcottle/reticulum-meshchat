@@ -767,25 +767,34 @@ class ReticulumWebChat:
                 "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
             }))
 
-            # FIXME: there's no register_progress_callback on the lxmf message, so manually send progress until delivered or failed
-            # we also can't use on_lxmf_sending_state_updated method to do this, because of async/await issues...
-            while lxmf_message.state != LXMF.LXMessage.DELIVERED and lxmf_message.state != LXMF.LXMessage.FAILED:
-
-                # wait 1 second between sending updates
-                await asyncio.sleep(1)
-
-                # upsert lxmf message to database (as we want to update the progress in database too)
-                self.db_upsert_lxmf_message(lxmf_message)
-
-                # send update to websocket clients
-                await self.websocket_broadcast(json.dumps({
-                    "type": "lxmf_message_state_updated",
-                    "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
-                }))
+            # handle lxmf message progress loop without blocking or awaiting
+            # otherwise other incoming websocket packets will not be processed until sending is complete
+            # which results in the next message not showing up until the first message is finished
+            asyncio.create_task(self.handle_lxmf_message_progress(lxmf_message))
 
         except:
             # FIXME send error to websocket?
             print("failed to send lxmf message")
+
+    # updates lxmf message in database and broadcasts to websocket until it's delivered, or it fails
+    async def handle_lxmf_message_progress(self, lxmf_message):
+
+        # FIXME: there's no register_progress_callback on the lxmf message, so manually send progress until delivered or failed
+        # we also can't use on_lxmf_sending_state_updated method to do this, because of async/await issues...
+        while lxmf_message.state != LXMF.LXMessage.DELIVERED and lxmf_message.state != LXMF.LXMessage.FAILED:
+
+            # wait 1 second between sending updates
+            await asyncio.sleep(1)
+
+            # upsert lxmf message to database (as we want to update the progress in database too)
+            self.db_upsert_lxmf_message(lxmf_message)
+
+            # send update to websocket clients
+            await self.websocket_broadcast(json.dumps({
+                "type": "lxmf_message_state_updated",
+                "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
+            }))
+
 
     # handle an announce received from reticulum, for an lxmf address
     # NOTE: cant be async, as Reticulum doesn't await it
