@@ -348,10 +348,9 @@ class ReticulumWebChat:
             # send lxmf message to destination
             config = data["config"]
 
-            # update display name in state
+            # update display name in config
             if "display_name" in config and config["display_name"] != "":
                 self.config.display_name.set(config["display_name"])
-                print("updated display name to: " + self.config.display_name.get())
 
             # send config to websocket clients
             await self.send_config_to_websocket_clients()
