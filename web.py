@@ -146,6 +146,141 @@ class ReticulumWebChat:
 
             return websocket_response
 
+        # handle websocket clients for initiating a call
+        @routes.get("/call/initiate/{destination_hash}")
+        async def ws(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # prepare websocket response
+            websocket_response = web.WebSocketResponse()
+            await websocket_response.prepare(request)
+
+            # wait until we have a path to the destination
+            if not RNS.Transport.has_path(destination_hash):
+                print("waiting for path to server")
+                RNS.Transport.request_path(destination_hash)
+                while not RNS.Transport.has_path(destination_hash):
+                    await asyncio.sleep(0.1)
+
+            # connect to server
+            print("establishing link with server")
+            server_identity = RNS.Identity.recall(destination_hash)
+            server_destination = RNS.Destination(
+                server_identity,
+                RNS.Destination.OUT,
+                RNS.Destination.SINGLE,
+                "call",
+                "audio"
+            )
+
+            # todo implement
+            def link_established(link):
+                print("link established")
+
+            # todo implement
+            def link_closed(link):
+                if link.teardown_reason == RNS.Link.TIMEOUT:
+                    print("The link timed out, exiting now")
+                elif link.teardown_reason == RNS.Link.DESTINATION_CLOSED:
+                    print("The link was closed by the server, exiting now")
+                else:
+                    print("Link closed")
+
+            # todo implement
+            def client_packet_received(message, packet):
+                # todo, we don't send anything from the call initiator from the call receiver yet...
+                pass
+
+            # create link
+            link = RNS.Link(server_destination)
+
+            # register link state callbacks
+            link.set_packet_callback(client_packet_received)
+            link.set_link_established_callback(link_established)
+            link.set_link_closed_callback(link_closed)
+
+            # handle websocket messages until disconnected
+            async for msg in websocket_response:
+                msg: WSMessage = msg
+                if msg.type == WSMsgType.BINARY:
+                    try:
+
+                        # drop audio packet if it is too big to send
+                        if len(msg.data) > RNS.Link.MDU:
+                            print("dropping packet " + str(len(msg.data)) + " bytes exceeds the link packet MDU of " + str(RNS.Link.MDU) + " bytes")
+                            continue
+
+                        # send codec2 audio received from call initiator on websocket, to call receiver over reticulum link
+                        print("sending bytes to call receiver: {}".format(len(msg.data)))
+                        RNS.Packet(link, msg.data).send()
+
+                    except Exception as e:
+                        # ignore errors while handling message
+                        print("failed to process client message")
+                        print(e)
+                elif msg.type == WSMsgType.ERROR:
+                    # ignore errors while handling message
+                    print('ws connection error %s' % websocket_response.exception())
+
+            return websocket_response
+
+        # handle websocket clients for listening for calls
+        @routes.get("/call/listen")
+        async def ws(request):
+
+            # prepare websocket response
+            websocket_response = web.WebSocketResponse()
+            await websocket_response.prepare(request)
+
+            # create destination to allow incoming audio calls
+            server_identity = self.identity
+            server_destination = RNS.Destination(
+                server_identity,
+                RNS.Destination.IN,
+                RNS.Destination.SINGLE,
+                "call",
+                "audio",
+            )
+
+            # client connected to us
+            def client_connected(link):
+                print("client connected")
+                link.set_link_closed_callback(client_disconnected)
+                link.set_packet_callback(server_packet_received)
+
+            # client disconnected from us
+            def client_disconnected(link):
+                print("client disconnected")
+
+            # client sent us a packet
+            def server_packet_received(message, packet):
+
+                # send audio received from call initiator to call receiver websocket
+                asyncio.run(websocket_response.send_bytes(message))
+
+                # todo send our audio back to call initiator
+
+            # register link state callbacks
+            server_destination.set_link_established_callback(client_connected)
+
+            # announce our call.audio destination
+            print("call.audio announced and waiting for connection: "+ RNS.prettyhexrep(server_destination.hash))
+            server_destination.announce()
+
+            # handle websocket messages until disconnected
+            async for msg in websocket_response:
+                msg: WSMessage = msg
+                if msg.type == WSMsgType.ERROR:
+                    # ignore errors while handling message
+                    print('ws connection error %s' % websocket_response.exception())
+
+            return websocket_response
+
         # serve announces
         @routes.get("/api/v1/announces")
         async def index(request):

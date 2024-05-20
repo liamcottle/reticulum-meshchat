@@ -1,0 +1,127 @@
+<html>
+<body>
+<div>
+
+    <div style="margin-bottom:1rem;">
+        <div>Select a *.wav audio file.</div>
+        <input id="file-input" type="file" accept="audio/wav"/>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+        <span>Select Codec2 Mode:</span>
+        <select id="codec-mode">
+            <option value="3200">3200</option>
+            <option value="2400">2400</option>
+            <option value="1600">1600</option>
+            <option value="1400">1400</option>
+            <option value="1300">1300</option>
+            <option value="1200">1200</option>
+            <option value="700C" selected>700C</option>
+            <option value="450">450</option>
+            <option value="450PWB">450PWB</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+        <div>Click to encode audio file as Codec2</div>
+        <button type="submit" onclick="encode()">Encode</button>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+        <div>Codec2 audio represented as Base64</div>
+        <textarea id="encoded-output" style="width:500px" rows="8"></textarea>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+        <div>Click to decode Codec2 audio back to WAVE audio</div>
+        <button type="submit" onclick="decode()">Decode</button>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+        <div>Decoded audio available to listen to</div>
+        <audio id="decoded-audio" controls></audio>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+        <div>Input File Size: <span id="input-size">0 Bytes</span></div>
+        <div>Encoded Data Size: <span id="encoded-size">0 Bytes</span></div>
+        <div>Decoded Data Size: <span id="decoded-size">0 Bytes</span></div>
+    </div>
+
+</div>
+<script src="c2enc.js"></script>
+<script src="c2dec.js"></script>
+<script src="sox.js"></script>
+<script src="codec2-lib.js"></script>
+<script>
+
+    // find elements
+    const codecModeElement = document.getElementById("codec-mode");
+    const encodedOutputElement = document.getElementById("encoded-output");
+    const fileInputElement = document.getElementById("file-input");
+    const decodedAudioElement = document.getElementById("decoded-audio");
+    const inputSizeElement = document.getElementById("input-size");
+    const encodedSizeElement = document.getElementById("encoded-size");
+    const decodedSizeElement = document.getElementById("decoded-size");
+
+    // update file size stats on change
+    fileInputElement.onchange = function() {
+        if(fileInputElement.files.length > 0){
+            const file = fileInputElement.files[0];
+            inputSizeElement.innerText = formatBytes(file.size);
+        }
+    }
+
+    async function encode() {
+
+        const file = fileInputElement.files[0];
+        if(!file){
+            alert("select a file first");
+            return;
+        }
+
+        const mode = codecModeElement.value;
+
+        const buffer = await Codec2Lib.readFileAsArrayBuffer(file);
+        const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, file.name || "input.wav");
+        const encoded = await Codec2Lib.runEncode(mode, rawBuffer);
+
+        encodedOutputElement.value = Codec2Lib.arrayBufferToBase64(encoded);
+        inputSizeElement.innerText = formatBytes(file.size);
+        encodedSizeElement.innerText = formatBytes(encoded.length);
+
+    }
+
+    async function decode() {
+
+        const mode = codecModeElement.value;
+        const input = encodedOutputElement.value;
+
+        const encoded = Codec2Lib.base64ToArrayBuffer(input);
+        const decodedRaw = await Codec2Lib.runDecode(mode, encoded);
+        const decodedWav = await Codec2Lib.rawToWav(decodedRaw);
+
+        decodedAudioElement.src = URL.createObjectURL(new Blob([decodedWav], { type: "audio/wav" }));
+        decodedSizeElement.innerText = formatBytes(decodedWav.length);
+
+    }
+
+    function formatBytes(bytes) {
+
+        if(bytes === 0){
+            return '0 Bytes';
+        }
+
+        const k = 1024;
+        const decimals = 0;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+
+    }
+
+</script>
+</body>
+</html>

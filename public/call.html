@@ -1,0 +1,231 @@
+<html>
+<body>
+<div>
+
+    <div>
+        <button onclick="startStreaming()">Start Streaming</button>
+        <button onclick="stopStreaming()">Stop Streaming</button>
+        <button onclick="startListening()">Start Listening</button>
+        <button onclick="stopListening()">Stop Listening</button>
+    </div>
+
+    <div>
+        <select id="codec-mode">
+            <option value="3200">3200</option>
+            <option value="2400">2400</option>
+            <option value="1600">1600</option>
+            <option value="1400">1400</option>
+            <option value="1300">1300</option>
+            <option value="1200" selected>1200</option>
+            <option value="700C">700C</option>
+            <option value="450">450</option>
+            <option value="450PWB">450PWB</option>
+        </select>
+    </div>
+
+    <div>Encoded Bytes Sent: <span id="encoded-bytes-sent"></span></div>
+
+</div>
+<script src="assets/js/codec2-emscripten/c2enc.js"></script>
+<script src="assets/js/codec2-emscripten/c2dec.js"></script>
+<script src="assets/js/codec2-emscripten/sox.js"></script>
+<script src="assets/js/codec2-emscripten/codec2-lib.js"></script>
+<script>
+
+    // find elements
+    const codecModeElement = document.getElementById("codec-mode");
+    const encodedBytesSentElement = document.getElementById("encoded-bytes-sent");
+
+    var encodedBytesSent = 0;
+
+    let audioContext;
+    let mediaStreamSource;
+    let audioWorkletNode;
+    let microphoneMediaStream;
+
+    var callWebsocket = null;
+    var listenWebsocket = null;
+
+    async function startStreaming() {
+        try {
+
+            // reset stats
+            encodedBytesSent = 0;
+
+            // ask who to call
+            const destinationHash = prompt("Enter destination hash to call");
+            if(!destinationHash){
+                return;
+            }
+
+            // connect to websocket
+            callWebsocket = new WebSocket(location.origin.replace(/^http/, 'ws') + "/call/initiate/" + destinationHash);
+            callWebsocket.onopen = () => {
+                console.log("connected to websocket");
+            };
+
+            // load audio worklet module
+            audioContext = new AudioContext({ sampleRate: 8000 });
+            await audioContext.audioWorklet.addModule('assets/js/codec2-emscripten/processor.js');
+            audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+
+            // handle audio received from audio worklet
+            audioWorkletNode.port.onmessage = async (event) => {
+
+                // convert audio received from worklet processor to wav
+                const buffer = encodeWAV(event.data, 8000);
+
+                // convert wav audio to codec2
+                const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
+                const encoded = await Codec2Lib.runEncode(codecModeElement.value, rawBuffer);
+
+                // update stats
+                encodedBytesSent += encoded.length;
+                encodedBytesSentElement.innerText = formatBytes(encodedBytesSent);
+
+                // send encoded audio to websocket
+                if(callWebsocket.readyState === WebSocket.OPEN){
+                    callWebsocket.send(encoded);
+                }
+
+            };
+
+            // request access to the microphone
+            microphoneMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // send mic audio to audio worklet
+            mediaStreamSource = audioContext.createMediaStreamSource(microphoneMediaStream);
+            mediaStreamSource.connect(audioWorkletNode);
+
+        } catch(error) {
+            alert(error);
+            console.log(error);
+        }
+    }
+
+    function stopStreaming() {
+
+        // disconnect websocket
+        if(callWebsocket){
+            callWebsocket.close()
+        }
+
+        // disconnect media stream source
+        if(mediaStreamSource){
+            mediaStreamSource.disconnect();
+        }
+
+        // stop using microphone
+        if(microphoneMediaStream){
+            microphoneMediaStream.getTracks().forEach(track => track.stop());
+        }
+
+        // disconnect the audio worklet node
+        if(audioWorkletNode){
+            audioWorkletNode.disconnect();
+        }
+
+        // close audio context
+        if(audioContext){
+            audioContext.close();
+        }
+
+    }
+
+    async function startListening() {
+
+        // connect to websocket to get codec2 packets
+        listenWebsocket = new WebSocket(location.origin.replace(/^http/, 'ws') + "/call/listen");
+        listenWebsocket.onmessage = async function(event) {
+
+            // get encoded codec2 bytes from websocket message
+            const encoded = await event.data.arrayBuffer();
+
+            // decode codec2 audio
+            const decoded = await Codec2Lib.runDecode(codecModeElement.value, encoded);
+
+            // convert decoded codec2 to wav audio
+            const wavAudio = await Codec2Lib.rawToWav(decoded);
+
+            // play wav audio buffer
+            let audioCtx = new AudioContext()
+            const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
+            const sampleSource = audioCtx.createBufferSource();
+            sampleSource.buffer = audioBuffer;
+            sampleSource.connect(audioCtx.destination)
+            sampleSource.start(0);
+
+        };
+
+    }
+
+    function stopListening() {
+        if(listenWebsocket){
+            listenWebsocket.close();
+            listenWebsocket = null;
+        }
+    }
+
+    function encodeWAV(samples, sampleRate = 8000, numChannels = 1) {
+
+        const buffer = new ArrayBuffer(44 + samples.length * 2);
+        const view = new DataView(buffer);
+
+        // RIFF chunk descriptor
+        writeString(view, 0, 'RIFF');
+        view.setUint32(4, 36 + samples.length * 2, true); // file length
+        writeString(view, 8, 'WAVE');
+
+        // fmt sub-chunk
+        writeString(view, 12, 'fmt ');
+        view.setUint32(16, 16, true); // sub-chunk size
+        view.setUint16(20, 1, true); // audio format (1 = PCM)
+        view.setUint16(22, numChannels, true); // number of channels
+        view.setUint32(24, sampleRate, true); // sample rate
+        view.setUint32(28, sampleRate * numChannels * 2, true); // byte rate
+        view.setUint16(32, numChannels * 2, true); // block align
+        view.setUint16(34, 16, true); // bits per sample
+
+        // data sub-chunk
+        writeString(view, 36, 'data');
+        view.setUint32(40, samples.length * 2, true); // data chunk length
+
+        // write the PCM samples
+        floatTo16BitPCM(view, 44, samples);
+
+        return buffer;
+
+    }
+
+    function writeString(view, offset, string) {
+        for (let i = 0; i < string.length; i++) {
+            view.setUint8(offset + i, string.charCodeAt(i));
+        }
+    }
+
+    function floatTo16BitPCM(output, offset, input) {
+        for (let i = 0; i < input.length; i++, offset += 2) {
+            const s = Math.max(-1, Math.min(1, input[i]));
+            output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+    }
+
+    function formatBytes(bytes) {
+
+        if(bytes === 0){
+            return '0 Bytes';
+        }
+
+        const k = 1024;
+        const decimals = 0;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+
+    }
+
+</script>
+</body>
+</html>
