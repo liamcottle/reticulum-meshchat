@@ -21,7 +21,7 @@
 <body class="bg-gray-100">
 <div id="app" class="flex h-full">
 
-    <div class="mx-auto my-auto w-full max-w-lg">
+    <div class="mx-auto my-auto w-full max-w-lg p-4">
 
         <!-- in active call -->
         <div v-if="isWebsocketConnected" class="w-full">
@@ -108,25 +108,62 @@
                 </div>
             </div>
 
-            <!-- call log -->
-            <div v-if="audioCalls.length > 0" class="border rounded-xl bg-white shadow w-full overflow-hidden">
+            <!-- active calls -->
+            <div v-if="activeAudioCalls.length > 0" class="border rounded-xl bg-white shadow w-full overflow-hidden">
                 <div class="flex border-b border-gray-300 text-gray-700 p-2">
                     <div class="my-auto mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                         </svg>
                     </div>
-                    <div class="my-auto">Call Log</div>
+                    <div class="my-auto">Active Calls</div>
                 </div>
                 <div>
-                    <div v-for="audioCall in audioCalls" class="flex p-2">
+                    <div v-for="audioCall in activeAudioCalls" class="flex p-2">
                         <div>
-                            <div>Initiator Identity: {{ audioCall.initiator_identity_hash || "Unknown" }}</div>
                             <div>Call Hash: {{ audioCall.hash }}</div>
+                            <div v-if="!audioCall.is_outbound">Initiator Identity: {{ audioCall.initiator_identity_hash || "Unknown" }}</div>
                             <div>
-                                <span v-if="audioCall.is_active">Status: Active</span>
-                                <span v-else>Status: Inactive</span>
+                                <span v-if="audioCall.is_outbound">Direction: Outbound</span>
+                                <span v-else>Direction: Inbound</span>
                             </div>
+                        </div>
+                        <div class="flex space-x-2 ml-auto my-auto mx-2">
+
+                            <!-- rejoin call -->
+                            <button v-if="audioCall.is_active" title="Join Call" @click="joinCall(audioCall.hash)" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-green-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                                </svg>
+                            </button>
+
+                            <!-- hangup call -->
+                            <button v-if="audioCall.is_active" title="Hangup Call" @click="hangupCall(audioCall.hash)" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-red-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- call history -->
+            <div v-if="inactiveAudioCalls.length > 0" class="border rounded-xl bg-white shadow w-full overflow-hidden">
+                <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                    <div class="my-auto mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                        </svg>
+                    </div>
+                    <div class="my-auto">Call History</div>
+                </div>
+                <div>
+                    <div v-for="audioCall in inactiveAudioCalls" class="flex p-2">
+                        <div>
+                            <div>Call Hash: {{ audioCall.hash }}</div>
+                            <div v-if="!audioCall.is_outbound">Initiator Identity: {{ audioCall.initiator_identity_hash || "Unknown" }}</div>
                             <div>
                                 <span v-if="audioCall.is_outbound">Direction: Outbound</span>
                                 <span v-else>Direction: Inbound</span>
@@ -335,6 +372,12 @@
 
             },
             async hangupCall(callHash) {
+
+                // confirm user wants to hang up call
+                if(!confirm("Are you sure you want to hang up this call?")){
+                    return;
+                }
+
                 try {
 
                     // hangup call
@@ -346,6 +389,7 @@
                 } catch(e) {
                     alert("failed to hangup call");
                 }
+
             },
             leaveCall: function() {
 
@@ -497,6 +541,18 @@
                 } catch(e) {
                     // do nothing on error
                 }
+            },
+        },
+        computed: {
+            activeAudioCalls: function() {
+                return this.audioCalls.filter((audioCall) => {
+                    return audioCall.is_active;
+                });
+            },
+            inactiveAudioCalls: function() {
+                return this.audioCalls.filter((audioCall) => {
+                   return !audioCall.is_active;
+                });
             },
         },
     }).mount('#app');
