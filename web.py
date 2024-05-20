@@ -18,6 +18,7 @@ from peewee import SqliteDatabase
 
 import database
 from lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment
+from src.audio_call_manager import AudioCall, AudioCallManager
 
 
 class ReticulumWebChat:
@@ -84,7 +85,13 @@ class ReticulumWebChat:
         # remember websocket clients
         self.websocket_clients: List[web.WebSocketResponse] = []
 
-        self.link_call_audio = None
+        # register audio call identity
+        self.audio_call_manager = AudioCallManager(identity=self.identity)
+        self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
+
+    # handle receiving a new audio call
+    def on_incoming_audio_call(self, audio_call: AudioCall):
+        print("on_incoming_audio_call: {}".format(audio_call.link.hash.hex()))
 
     # web server has shutdown, likely ctrl+c, but if we don't do the following, the script never exits
     async def shutdown(self, app):
@@ -232,69 +239,89 @@ class ReticulumWebChat:
 
             return websocket_response
 
-        # handle websocket clients for listening for calls
-        @routes.get("/call/listen")
+        # get calls
+        @routes.get("/api/v1/calls")
+        async def index(request):
+
+            # get audio calls
+            audio_calls = []
+            for audio_call in self.audio_call_manager.audio_calls:
+
+                # get initiator identity hash
+                initiator_identity_hash = None
+                initiator_identity = audio_call.initiator_identity()
+                if initiator_identity is not None:
+                    initiator_identity_hash = initiator_identity.hash.hex()
+
+                audio_calls.append({
+                    "hash": audio_call.link.hash.hex(),
+                    "initiator_identity_hash": initiator_identity_hash,
+                    "is_active": audio_call.is_active(),
+                    "is_outbound": audio_call.is_outbound,
+                })
+
+            return web.json_response({
+                "audio_calls": audio_calls,
+            })
+
+        # initiate a call to the provided destination
+        @routes.get("/api/v1/calls/initiate/{destination_hash}")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # initiate audio call
+            link_hash = await self.audio_call_manager.initiate(destination_hash)
+
+            return web.json_response({
+                "hash": link_hash.hex(),
+            })
+
+        # handle websocket client for sending and receiving audio packets in a call
+        @routes.get("/api/v1/calls/{audio_call_link_hash}/audio")
         async def ws(request):
+
+            # get path params
+            audio_call_link_hash = request.match_info.get("audio_call_link_hash", "")
+
+            # convert hash to bytes
+            audio_call_link_hash = bytes.fromhex(audio_call_link_hash)
+
+            # find audio call
+            audio_call = self.audio_call_manager.find_audio_call_by_link_hash(audio_call_link_hash)
+            if audio_call is None:
+                # fixme: web browser expects websocket, so this won't be useful
+                return web.json_response({
+                    "message": "audio call not found",
+                }, status=404)
+
+            # send audio received from call initiator to call receiver websocket
+            def on_audio_packet(data):
+                if websocket_response.closed is False:
+                    try:
+                        asyncio.run(websocket_response.send_bytes(data))
+                    except:
+                        # ignore errors sending audio packets to websocket
+                        pass
+
+            # register audio packet listener
+            audio_call.register_audio_packet_listener(on_audio_packet)
 
             # prepare websocket response
             websocket_response = web.WebSocketResponse()
             await websocket_response.prepare(request)
 
-            # create destination to allow incoming audio calls
-            server_identity = self.identity
-            server_destination = RNS.Destination(
-                server_identity,
-                RNS.Destination.IN,
-                RNS.Destination.SINGLE,
-                "call",
-                "audio",
-            )
-
-            # client connected to us
-            def client_connected(link):
-                print("client connected")
-                self.link_call_audio = link
-                link.set_link_closed_callback(client_disconnected)
-                link.set_packet_callback(server_packet_received)
-
-            # client disconnected from us
-            def client_disconnected(link):
-                print("client disconnected")
-                self.link_call_audio = None
-
-            # client sent us a packet
-            def server_packet_received(message, packet):
-
-                # send audio received from call initiator to call receiver websocket
-                asyncio.run(websocket_response.send_bytes(message))
-
-                # todo send our audio back to call initiator
-
-            # register link state callbacks
-            server_destination.set_link_established_callback(client_connected)
-
-            # announce our call.audio destination
-            print("call.audio announced and waiting for connection: "+ RNS.prettyhexrep(server_destination.hash))
-            server_destination.announce()
-
             # handle websocket messages until disconnected
+            # FIXME: we should send a type with the message, so we can send other data as well
             async for msg in websocket_response:
                 msg: WSMessage = msg
                 if msg.type == WSMsgType.BINARY:
                     try:
-
-                        # drop audio packet if it is too big to send
-                        if len(msg.data) > RNS.Link.MDU:
-                            print("dropping packet " + str(len(msg.data)) + " bytes exceeds the link packet MDU of " + str(RNS.Link.MDU) + " bytes")
-                            continue
-
-                        # send codec2 audio received from call receiver on websocket, to call initiator over reticulum link
-                        if self.link_call_audio is not None:
-                            print("sending bytes to call initiator: {}".format(len(msg.data)))
-                            RNS.Packet(self.link_call_audio, msg.data).send()
-                        else:
-                            print("link to call initiator not available")
-
+                        audio_call.send_audio_packet(msg.data)
                     except Exception as e:
                         # ignore errors while handling message
                         print("failed to process client message")
@@ -303,7 +330,34 @@ class ReticulumWebChat:
                     # ignore errors while handling message
                     print('ws connection error %s' % websocket_response.exception())
 
+            # unregister audio packet handler now that the websocket has been closed
+            audio_call.register_audio_packet_listener(on_audio_packet)
+
             return websocket_response
+
+        # hangup calls
+        @routes.get("/api/v1/calls/{audio_call_link_hash}/hangup")
+        async def index(request):
+
+            # get path params
+            audio_call_link_hash = request.match_info.get("audio_call_link_hash", "")
+
+            # convert hash to bytes
+            audio_call_link_hash = bytes.fromhex(audio_call_link_hash)
+
+            # find audio call
+            audio_call = self.audio_call_manager.find_audio_call_by_link_hash(audio_call_link_hash)
+            if audio_call is None:
+                return web.json_response({
+                    "message": "audio call not found",
+                }, status=404)
+
+            # hangup the call
+            audio_call.hangup()
+
+            return web.json_response({
+                "message": "call has been hungup",
+            })
 
         # serve announces
         @routes.get("/api/v1/announces")
@@ -574,6 +628,9 @@ class ReticulumWebChat:
 
             # send announce for lxmf
             self.local_lxmf_destination.announce(app_data=self.config.display_name.get().encode("utf-8"))
+
+            # send announce for audio call
+            self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
 
         # handle downloading a file from a nomadnet node
         elif _type == "nomadnet.file.download":

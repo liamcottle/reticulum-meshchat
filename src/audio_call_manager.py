@@ -1,0 +1,195 @@
+import asyncio
+from typing import List
+
+import RNS
+
+# todo optionally identity self over link
+# todo allowlist/denylist for incoming calls
+
+
+class AudioCall:
+
+    def __init__(self, link: RNS.Link, is_outbound: bool):
+        self.link = link
+        self.is_outbound = is_outbound
+        self.link.set_link_closed_callback(self.on_link_closed)
+        self.link.set_packet_callback(self.on_packet)
+        self.audio_packet_listeners = []
+
+    def register_audio_packet_listener(self, callback):
+        self.audio_packet_listeners.append(callback)
+
+    def unregister_audio_packet_listener(self, callback):
+        self.audio_packet_listeners.remove(callback)
+
+    # handle link being closed
+    def on_link_closed(self):
+        print("[AudioCall] on_link_closed")
+        self.hangup()
+
+    # handle packet received over link
+    def on_packet(self, message, packet):
+
+        # send audio received from call initiator to all audio packet listeners
+        for audio_packet_listener in self.audio_packet_listeners:
+            audio_packet_listener(message)
+
+    # send an audio packet over the link
+    def send_audio_packet(self, data):
+
+        # do nothing if link is not active
+        if self.is_active() is False:
+            return
+
+        # drop audio packet if it is too big to send
+        if len(data) > RNS.Link.MDU:
+            print("[AudioCall] dropping audio packet " + str(len(data)) + " bytes exceeds the link packet MDU of " + str(RNS.Link.MDU) + " bytes")
+            return
+
+        # send codec2 audio received from call receiver to call initiator over reticulum link
+        RNS.Packet(self.link, data).send()
+
+    # gets the identity of the caller, or returns None if they did not identify
+    def initiator_identity(self):
+        return self.link.get_remote_identity()
+
+    # determine if this call is still active
+    def is_active(self):
+        return self.link.status == RNS.Link.ACTIVE
+
+    # handle hanging up the call
+    def hangup(self):
+        print("[AudioCall] hangup")
+        self.link.teardown()
+        pass
+
+
+class AudioCallManager:
+
+    def __init__(self, identity: RNS.Identity):
+
+        self.identity = identity
+        self.on_incoming_call_callback = None
+        self.on_outgoing_call_callback = None
+        self.audio_call_receiver = AudioCallReceiver(manager=self)
+
+        # remember audio calls
+        self.audio_calls: List[AudioCall] = []
+
+    # announces the audio call destination
+    def announce(self, app_data=None):
+        self.audio_call_receiver.destination.announce(app_data)
+        print("[AudioCallManager] announced destination: " + RNS.prettyhexrep(self.audio_call_receiver.destination.hash))
+
+    # set the callback for incoming calls
+    def register_incoming_call_callback(self, callback):
+        self.on_incoming_call_callback = callback
+
+    # set the callback for outgoing calls
+    def register_outgoing_call_callback(self, callback):
+        self.on_outgoing_call_callback = callback
+
+    # handle incoming calls from audio call receiver
+    def handle_incoming_call(self, audio_call: AudioCall):
+
+        # remember it
+        self.audio_calls.append(audio_call)
+
+        # fire callback
+        if self.on_incoming_call_callback is not None:
+            self.on_incoming_call_callback(audio_call)
+
+    # handle outgoing calls
+    def handle_outgoing_call(self, audio_call: AudioCall):
+
+        # remember it
+        self.audio_calls.append(audio_call)
+
+        # fire callback
+        if self.on_outgoing_call_callback is not None:
+            self.on_outgoing_call_callback(audio_call)
+
+    # find an existing audio call from the provided link hash
+    def find_audio_call_by_link_hash(self, link_hash: bytes):
+        for audio_call in self.audio_calls:
+            if audio_call.link.hash == link_hash:
+                return audio_call
+        return None
+
+    # attempts to initiate a call to the provided destination and returns the link hash on success
+    # FIXME: implement timeout. at the moment, it loops forever if no path is found
+    async def initiate(self, destination_hash: bytes) -> bytes:
+
+        # wait until we have a path to the destination
+        # FIXME: implement timeout instead of looping forever
+        if not RNS.Transport.has_path(destination_hash):
+            RNS.Transport.request_path(destination_hash)
+            while not RNS.Transport.has_path(destination_hash):
+                await asyncio.sleep(0.1)
+
+        # create outbound destination to initiate audio calls
+        server_identity = RNS.Identity.recall(destination_hash)
+        server_destination = RNS.Destination(
+            server_identity,
+            RNS.Destination.OUT,
+            RNS.Destination.SINGLE,
+            "call",
+            "audio"
+        )
+
+        # create link
+        link = RNS.Link(server_destination)
+
+        # register link state callbacks
+        link.set_link_established_callback(self.on_link_established)
+
+        return link.hash
+
+    def on_link_established(self, link: RNS.Link):
+
+        # todo: this can be optional, it's only being sent by default for ui, can be removed
+        link.identify(self.identity)
+
+        # create audio call
+        audio_call = AudioCall(link, is_outbound=True)
+
+        # handle new outgoing call
+        self.handle_outgoing_call(audio_call)
+
+
+class AudioCallReceiver:
+
+    def __init__(self, manager: AudioCallManager):
+
+        self.manager = manager
+
+        # create destination for receiver audio calls
+        self.destination = RNS.Destination(
+            self.manager.identity,
+            RNS.Destination.IN,
+            RNS.Destination.SINGLE,
+            "call",
+            "audio",
+        )
+
+        # register link state callbacks
+        self.destination.set_link_established_callback(self.client_connected)
+
+    # find an existing audio call from the provided link
+    def find_audio_call_by_link_hash(self, link_hash: bytes):
+        for audio_call in self.manager.audio_calls:
+            if audio_call.link.hash == link_hash:
+                return audio_call
+        return None
+
+    # client connected to us, set up an audio call instance
+    def client_connected(self, link: RNS.Link):
+
+        # todo: this can be optional, it's only being sent by default for ui, can be removed
+        link.identify(self.manager.identity)
+
+        # create audio call
+        audio_call = AudioCall(link, is_outbound=False)
+
+        # pass to manager
+        self.manager.handle_incoming_call(audio_call)

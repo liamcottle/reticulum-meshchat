@@ -1,300 +1,340 @@
 <html>
-<body>
-<div>
+<head>
 
-    <div>
-        <button onclick="startStreaming()">Start Streaming</button>
-        <button onclick="stopStreaming()">Stop Streaming</button>
-        <button onclick="startListening()">Start Listening</button>
-        <button onclick="stopListening()">Stop Listening</button>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Phone | Reticulum WebChat</title>
+
+    <!-- scripts -->
+    <script src="assets/js/tailwindcss/tailwind-v3.4.3-forms-v0.5.7.js"></script>
+    <script src="assets/js/vue@3.4.26/dist/vue.global.js"></script>
+
+    <!-- codec2 -->
+    <script src="assets/js/codec2-emscripten/c2enc.js"></script>
+    <script src="assets/js/codec2-emscripten/c2dec.js"></script>
+    <script src="assets/js/codec2-emscripten/sox.js"></script>
+    <script src="assets/js/codec2-emscripten/codec2-lib.js"></script>
+
+</head>
+<body class="bg-gray-100">
+<div id="app" class="flex h-full">
+
+    <div class="mx-auto my-auto w-full max-w-md">
+
+        <!-- in active call -->
+        <div v-if="isWebsocketConnected" class="w-full">
+            <div class="border rounded-xl bg-white shadow w-full">
+                <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                    <div class="my-auto mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                        </svg>
+                    </div>
+                    <div class="my-auto">Reticulum Phone</div>
+                </div>
+                <div class="border-b border-gray-300 text-gray-700 p-2">
+
+                    <div class="mb-2">
+                        <div class="mb-1 text-sm font-medium text-gray-900">Call Hash</div>
+                        <div class="text-xs text-gray-600">{{ callHash }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="mb-1 text-sm font-medium text-gray-900">TX Bytes</div>
+                        <div class="text-xs text-gray-600">{{ formatBytes(txBytes) }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="mb-1 text-sm font-medium text-gray-900">RX Bytes</div>
+                        <div class="text-xs text-gray-600">{{ formatBytes(rxBytes) }}</div>
+                    </div>
+
+                    <div>
+                        <div class="mb-1 text-sm font-medium text-gray-900">Codec2 Mode</div>
+                        <select v-model="codecMode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <option value="3200">3200</option>
+                            <option value="2400">2400</option>
+                            <option value="1600">1600</option>
+                            <option value="1400">1400</option>
+                            <option value="1300">1300</option>
+                            <option value="1200">1200</option>
+                            <option value="700C">700C</option>
+                            <option value="450">450</option>
+                            <option value="450PWB">450PWB</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="flex text-gray-900 p-2">
+                    <button @click="isMicMuted = !isMicMuted" type="button" :class="[ isMicMuted ? 'bg-red-500 hover:bg-red-400 focus-visible:outline-red-500' : 'bg-green-500 hover:bg-green-400 focus-visible:outline-green-500' ]" class="my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 1 1-6 0V4Z" />
+                            <path d="M5.5 9.643a.75.75 0 0 0-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-1.5v-1.546A6.001 6.001 0 0 0 16 10v-.357a.75.75 0 0 0-1.5 0V10a4.5 4.5 0 0 1-9 0v-.357Z" />
+                        </svg>
+                    </button>
+                    <button @click="leaveCall" type="button" class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md bg-red-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                        Leave Call
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- no call active -->
+        <div v-else class="w-full">
+            <div class="border rounded-xl bg-white shadow w-full">
+                <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                    <div class="my-auto mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                        </svg>
+                    </div>
+                    <div class="my-auto">Reticulum Phone</div>
+                </div>
+                <div class="flex text-gray-900 p-2 space-x-2">
+                    <div class="flex-1">
+                        <input v-model="callHash" type="text" placeholder="Enter Call Hash" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
+                    </div>
+                    <button @click="joinCall" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                        Join Existing Call
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
-
-    <div>
-        <input id="checkbox-mute-mic" type="checkbox"/> Mute Mic
-    </div>
-
-    <div>
-        <select id="codec-mode">
-            <option value="3200">3200</option>
-            <option value="2400">2400</option>
-            <option value="1600">1600</option>
-            <option value="1400">1400</option>
-            <option value="1300">1300</option>
-            <option value="1200" selected>1200</option>
-            <option value="700C">700C</option>
-            <option value="450">450</option>
-            <option value="450PWB">450PWB</option>
-        </select>
-    </div>
-
-    <div>Encoded Bytes Sent: <span id="encoded-bytes-sent"></span></div>
 
 </div>
-<script src="assets/js/codec2-emscripten/c2enc.js"></script>
-<script src="assets/js/codec2-emscripten/c2dec.js"></script>
-<script src="assets/js/codec2-emscripten/sox.js"></script>
-<script src="assets/js/codec2-emscripten/codec2-lib.js"></script>
+
 <script>
+    Vue.createApp({
+        data() {
+            return {
 
-    // find elements
-    const codecModeElement = document.getElementById("codec-mode");
-    const encodedBytesSentElement = document.getElementById("encoded-bytes-sent");
-    const checkboxMuteMicElement = document.getElementById("checkbox-mute-mic");
+                isWebsocketConnected: false,
+                callHash: null,
+                txBytes: 0,
+                rxBytes: 0,
 
-    var encodedBytesSent = 0;
+                isMicMuted: true,
+                codecMode: "1200",
+                sampleRate: 8000,
 
-    let audioContext;
-    let mediaStreamSource;
-    let audioWorkletNode;
-    let microphoneMediaStream;
-
-    var callWebsocket = null;
-    var listenWebsocket = null;
-
-    async function startRecordingMicrophone(onAudioAvailable) {
-        try {
-
-            // load audio worklet module
-            audioContext = new AudioContext({ sampleRate: 8000 });
-            await audioContext.audioWorklet.addModule('assets/js/codec2-emscripten/processor.js');
-            audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-processor');
-
-            // handle audio received from audio worklet
-            audioWorkletNode.port.onmessage = async (event) => {
-
-                // convert audio received from worklet processor to wav
-                const buffer = encodeWAV(event.data, 8000);
-
-                // convert wav audio to codec2
-                const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
-                const encoded = await Codec2Lib.runEncode(codecModeElement.value, rawBuffer);
-
-                // pass encoded audio to callback
-                onAudioAvailable(encoded);
+                audioContext: null,
+                mediaStreamSource: null,
+                audioWorkletNode: null,
+                microphoneMediaStream: null,
 
             };
+        },
+        mounted: function() {
 
-            // request access to the microphone
-            microphoneMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        },
+        methods: {
+            async joinCall() {
 
-            // send mic audio to audio worklet
-            mediaStreamSource = audioContext.createMediaStreamSource(microphoneMediaStream);
-            mediaStreamSource.connect(audioWorkletNode);
-
-        } catch(e) {
-            alert(e);
-            console.log(e);
-        }
-    }
-
-    async function startStreaming() {
-        try {
-
-            // reset stats
-            encodedBytesSent = 0;
-
-            // ask who to call
-            const destinationHash = prompt("Enter destination hash to call");
-            if(!destinationHash){
-                return;
-            }
-
-            // connect to websocket
-            callWebsocket = new WebSocket(location.origin.replace(/^http/, 'ws') + "/call/initiate/" + destinationHash);
-            callWebsocket.onmessage = async function(event) {
-
-                // get encoded codec2 bytes from websocket message
-                const encoded = await event.data.arrayBuffer();
-
-                // decode codec2 audio
-                const decoded = await Codec2Lib.runDecode(codecModeElement.value, encoded);
-
-                // convert decoded codec2 to wav audio
-                const wavAudio = await Codec2Lib.rawToWav(decoded);
-
-                // play wav audio buffer
-                let audioCtx = new AudioContext()
-                const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
-                const sampleSource = audioCtx.createBufferSource();
-                sampleSource.buffer = audioBuffer;
-                sampleSource.connect(audioCtx.destination)
-                sampleSource.start(0);
-
-            };
-
-            // record mic to send to websocket
-            await startRecordingMicrophone((encoded) => {
-
-                // do nothing if websocket closed
-                if(callWebsocket.readyState !== WebSocket.OPEN){
+                // make sure call hash provided
+                if(!this.callHash){
+                    alert("Enter hash of existing call.");
                     return;
                 }
 
-                // do nothing when audio muted
-                if(checkboxMuteMicElement.checked){
-                    return;
+                // reset stats
+                this.txBytes = 0;
+                this.rxBytes = 0;
+
+                // connect to websocket
+                this.ws = new WebSocket(location.origin.replace(/^http/, 'ws') + `/api/v1/calls/${this.callHash}/audio`);
+
+                this.ws.addEventListener('open', async () => {
+
+                    // we are now connected
+                    this.isWebsocketConnected = true;
+
+                    // send mic audio over call
+                    await this.startRecordingMicrophone((encoded) => {
+
+                        // do nothing if websocket closed
+                        if(this.ws.readyState !== WebSocket.OPEN){
+                            return;
+                        }
+
+                        // do nothing when audio muted
+                        if(this.isMicMuted){
+                            return;
+                        }
+
+                        // send encoded audio to websocket
+                        this.ws.send(encoded);
+
+                        // update stats
+                        this.txBytes += encoded.length;
+
+                    });
+
+                });
+
+                this.ws.addEventListener('close', () => {
+                    this.isWebsocketConnected = false;
+                    this.leaveCall();
+                });
+
+                this.ws.addEventListener('error', (error) => {
+                    console.log(error);
+                });
+
+                // listen to audio from call
+                this.ws.onmessage = async (event) => {
+
+                    // get encoded codec2 bytes from websocket message
+                    const encoded = await event.data.arrayBuffer();
+
+                    // update stats
+                    this.rxBytes += encoded.byteLength;
+
+                    // decode codec2 audio
+                    const decoded = await Codec2Lib.runDecode(this.codecMode, encoded);
+
+                    // convert decoded codec2 to wav audio
+                    const wavAudio = await Codec2Lib.rawToWav(decoded);
+
+                    // play wav audio buffer
+                    let audioCtx = new AudioContext()
+                    const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
+                    const sampleSource = audioCtx.createBufferSource();
+                    sampleSource.buffer = audioBuffer;
+                    sampleSource.connect(audioCtx.destination)
+                    sampleSource.start(0);
+
+                };
+
+            },
+            leaveCall: function() {
+
+                // mute mic
+                this.isMicMuted = true;
+
+                // disconnect websocket
+                if(this.ws){
+                    this.ws.close();
                 }
 
-                // send encoded audio to websocket
-                callWebsocket.send(encoded);
+                // disconnect media stream source
+                if(this.mediaStreamSource){
+                    this.mediaStreamSource.disconnect();
+                }
 
-                // update stats
-                encodedBytesSent += encoded.length;
-                encodedBytesSentElement.innerText = formatBytes(encodedBytesSent);
+                // stop using microphone
+                if(this.microphoneMediaStream){
+                    this.microphoneMediaStream.getTracks().forEach(track => track.stop());
+                }
 
-            });
+                // disconnect the audio worklet node
+                if(this.audioWorkletNode){
+                    this.audioWorkletNode.disconnect();
+                }
 
-        } catch(error) {
-            alert(error);
-            console.log(error);
-        }
-    }
+                // close audio context
+                if(this.audioContext && this.audioContext.state !== "closed"){
+                    this.audioContext.close();
+                }
 
-    function stopStreaming() {
+            },
+            async startRecordingMicrophone(onAudioAvailable) {
+                try {
 
-        // disconnect websocket
-        if(callWebsocket){
-            callWebsocket.close()
-        }
+                    // load audio worklet module
+                    this.audioContext = new AudioContext({ sampleRate: this.sampleRate });
+                    await this.audioContext.audioWorklet.addModule('assets/js/codec2-emscripten/processor.js');
+                    this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
 
-        // disconnect media stream source
-        if(mediaStreamSource){
-            mediaStreamSource.disconnect();
-        }
+                    // handle audio received from audio worklet
+                    this.audioWorkletNode.port.onmessage = async (event) => {
 
-        // stop using microphone
-        if(microphoneMediaStream){
-            microphoneMediaStream.getTracks().forEach(track => track.stop());
-        }
+                        // convert audio received from worklet processor to wav
+                        const buffer = this.encodeWAV(event.data, this.sampleRate);
 
-        // disconnect the audio worklet node
-        if(audioWorkletNode){
-            audioWorkletNode.disconnect();
-        }
+                        // convert wav audio to codec2
+                        const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
+                        const encoded = await Codec2Lib.runEncode(this.codecMode, rawBuffer);
 
-        // close audio context
-        if(audioContext){
-            audioContext.close();
-        }
+                        // pass encoded audio to callback
+                        onAudioAvailable(encoded);
 
-    }
+                    };
 
-    async function startListening() {
+                    // request access to the microphone
+                    this.microphoneMediaStream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                    });
 
-        // connect to websocket to get codec2 packets
-        listenWebsocket = new WebSocket(location.origin.replace(/^http/, 'ws') + "/call/listen");
-        listenWebsocket.onmessage = async function(event) {
+                    // send mic audio to audio worklet
+                    this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.microphoneMediaStream);
+                    this.mediaStreamSource.connect(this.audioWorkletNode);
 
-            // get encoded codec2 bytes from websocket message
-            const encoded = await event.data.arrayBuffer();
+                } catch(e) {
+                    alert(e);
+                    console.log(e);
+                }
+            },
+            encodeWAV: function(samples, sampleRate = 8000, numChannels = 1) {
 
-            // decode codec2 audio
-            const decoded = await Codec2Lib.runDecode(codecModeElement.value, encoded);
+                const buffer = new ArrayBuffer(44 + samples.length * 2);
+                const view = new DataView(buffer);
 
-            // convert decoded codec2 to wav audio
-            const wavAudio = await Codec2Lib.rawToWav(decoded);
+                // RIFF chunk descriptor
+                this.writeString(view, 0, 'RIFF');
+                view.setUint32(4, 36 + samples.length * 2, true); // file length
+                this.writeString(view, 8, 'WAVE');
 
-            // play wav audio buffer
-            let audioCtx = new AudioContext()
-            const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
-            const sampleSource = audioCtx.createBufferSource();
-            sampleSource.buffer = audioBuffer;
-            sampleSource.connect(audioCtx.destination)
-            sampleSource.start(0);
+                // fmt sub-chunk
+                this.writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true); // sub-chunk size
+                view.setUint16(20, 1, true); // audio format (1 = PCM)
+                view.setUint16(22, numChannels, true); // number of channels
+                view.setUint32(24, sampleRate, true); // sample rate
+                view.setUint32(28, sampleRate * numChannels * 2, true); // byte rate
+                view.setUint16(32, numChannels * 2, true); // block align
+                view.setUint16(34, 16, true); // bits per sample
 
-        };
+                // data sub-chunk
+                this.writeString(view, 36, 'data');
+                view.setUint32(40, samples.length * 2, true); // data chunk length
 
-        // record mic to send to websocket
-        await startRecordingMicrophone((encoded) => {
+                // write the PCM samples
+                this.floatTo16BitPCM(view, 44, samples);
 
-            // do nothing if websocket closed
-            if(listenWebsocket.readyState !== WebSocket.OPEN){
-                return;
-            }
+                return buffer;
 
-            // do nothing when audio muted
-            if(checkboxMuteMicElement.checked){
-                return;
-            }
+            },
+            writeString: function(view, offset, string) {
+                for(let i = 0; i < string.length; i++){
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            },
+            floatTo16BitPCM: function(output, offset, input) {
+                for(let i = 0; i < input.length; i++, offset += 2){
+                    const s = Math.max(-1, Math.min(1, input[i]));
+                    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                }
+            },
+            formatBytes: function(bytes) {
 
-            // send encoded audio to websocket
-            listenWebsocket.send(encoded);
+                if(bytes === 0){
+                    return '0 Bytes';
+                }
 
-            // update stats
-            encodedBytesSent += encoded.length;
-            encodedBytesSentElement.innerText = formatBytes(encodedBytesSent);
+                const k = 1024;
+                const decimals = 0;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
-        });
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    }
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
 
-    function stopListening() {
-        if(listenWebsocket){
-            listenWebsocket.close();
-            listenWebsocket = null;
-        }
-    }
-
-    function encodeWAV(samples, sampleRate = 8000, numChannels = 1) {
-
-        const buffer = new ArrayBuffer(44 + samples.length * 2);
-        const view = new DataView(buffer);
-
-        // RIFF chunk descriptor
-        writeString(view, 0, 'RIFF');
-        view.setUint32(4, 36 + samples.length * 2, true); // file length
-        writeString(view, 8, 'WAVE');
-
-        // fmt sub-chunk
-        writeString(view, 12, 'fmt ');
-        view.setUint32(16, 16, true); // sub-chunk size
-        view.setUint16(20, 1, true); // audio format (1 = PCM)
-        view.setUint16(22, numChannels, true); // number of channels
-        view.setUint32(24, sampleRate, true); // sample rate
-        view.setUint32(28, sampleRate * numChannels * 2, true); // byte rate
-        view.setUint16(32, numChannels * 2, true); // block align
-        view.setUint16(34, 16, true); // bits per sample
-
-        // data sub-chunk
-        writeString(view, 36, 'data');
-        view.setUint32(40, samples.length * 2, true); // data chunk length
-
-        // write the PCM samples
-        floatTo16BitPCM(view, 44, samples);
-
-        return buffer;
-
-    }
-
-    function writeString(view, offset, string) {
-        for (let i = 0; i < string.length; i++) {
-            view.setUint8(offset + i, string.charCodeAt(i));
-        }
-    }
-
-    function floatTo16BitPCM(output, offset, input) {
-        for (let i = 0; i < input.length; i++, offset += 2) {
-            const s = Math.max(-1, Math.min(1, input[i]));
-            output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-        }
-    }
-
-    function formatBytes(bytes) {
-
-        if(bytes === 0){
-            return '0 Bytes';
-        }
-
-        const k = 1024;
-        const decimals = 0;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
-
-    }
-
+            },
+        },
+    }).mount('#app');
 </script>
 </body>
 </html>
