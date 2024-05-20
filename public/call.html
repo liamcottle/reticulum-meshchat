@@ -461,9 +461,6 @@
             },
             leaveCall: function() {
 
-                // mute mic
-                this.isMicMuted = true;
-
                 // disconnect websocket
                 if(this.ws){
                     this.ws.close();
