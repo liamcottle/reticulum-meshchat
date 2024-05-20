@@ -23,7 +23,7 @@ class AudioCall:
         self.audio_packet_listeners.remove(callback)
 
     # handle link being closed
-    def on_link_closed(self):
+    def on_link_closed(self, link):
         print("[AudioCall] on_link_closed")
         self.hangup()
 
