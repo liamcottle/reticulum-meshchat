@@ -15,6 +15,7 @@ class AudioCall:
         self.link.set_link_closed_callback(self.on_link_closed)
         self.link.set_packet_callback(self.on_packet)
         self.audio_packet_listeners = []
+        self.hangup_listeners = []
 
     def register_audio_packet_listener(self, callback):
         self.audio_packet_listeners.append(callback)
@@ -22,9 +23,16 @@ class AudioCall:
     def unregister_audio_packet_listener(self, callback):
         self.audio_packet_listeners.remove(callback)
 
+    def register_hangup_listener(self, callback):
+        self.hangup_listeners.append(callback)
+
     # handle link being closed
     def on_link_closed(self, link):
         print("[AudioCall] on_link_closed")
+
+        # call all hangup listeners
+        for hangup_listener in self.hangup_listeners:
+            hangup_listener()
 
     # handle packet received over link
     def on_packet(self, message, packet):

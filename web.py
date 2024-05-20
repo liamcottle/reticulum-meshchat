@@ -316,8 +316,18 @@ class ReticulumWebChat:
                         # ignore errors sending audio packets to websocket
                         pass
 
+            # close websocket when call is hungup
+            def on_hangup():
+                if websocket_response.closed is False:
+                    try:
+                        asyncio.run(websocket_response.close(code=WSCloseCode.GOING_AWAY))
+                    except:
+                        # ignore errors closing websocket
+                        pass
+
             # register audio packet listener
             audio_call.register_audio_packet_listener(on_audio_packet)
+            audio_call.register_hangup_listener(on_hangup)
 
             # prepare websocket response
             websocket_response = web.WebSocketResponse()
