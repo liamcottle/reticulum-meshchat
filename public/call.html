@@ -165,7 +165,7 @@
                             </div>
                         </div>
                         <div>
-                            <div>Destination: {{ audioCall.remote_destination_hash || "Unknown" }}</div>
+                            <div>{{ audioCall.remote_destination_hash || "Unknown" }}</div>
                             <div class="text-sm text-gray-500">
                                 <span v-if="audioCall.is_outbound">Outgoing Call...</span>
                                 <span v-else>Incoming Call...</span>
