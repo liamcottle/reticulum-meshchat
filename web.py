@@ -156,6 +156,7 @@ class ReticulumWebChat:
             return websocket_response
 
         # handle websocket clients for initiating a call
+        # todo: remove
         @routes.get("/call/initiate/{destination_hash}")
         async def ws(request):
 
