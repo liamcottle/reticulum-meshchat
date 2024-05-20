@@ -403,6 +403,16 @@ class ReticulumWebChat:
                 "message": "call has been hungup",
             })
 
+        # announce
+        @routes.get("/api/v1/announce")
+        async def index(request):
+
+            self.announce()
+
+            return web.json_response({
+                "message": "announcing",
+            })
+
         # serve announces
         @routes.get("/api/v1/announces")
         async def index(request):
@@ -611,6 +621,15 @@ class ReticulumWebChat:
         app.on_startup.append(on_startup)
         web.run_app(app, host=host, port=port)
 
+    # handle announcing
+    def announce(self):
+
+        # send announce for lxmf
+        self.local_lxmf_destination.announce(app_data=self.config.display_name.get().encode("utf-8"))
+
+        # send announce for audio call
+        self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
+
     # handle data received from websocket client
     async def on_websocket_data_received(self, client, data):
 
@@ -669,12 +688,7 @@ class ReticulumWebChat:
 
         # handle sending an announce
         elif _type == "announce":
-
-            # send announce for lxmf
-            self.local_lxmf_destination.announce(app_data=self.config.display_name.get().encode("utf-8"))
-
-            # send announce for audio call
-            self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
+            self.announce()
 
         # handle downloading a file from a nomadnet node
         elif _type == "nomadnet.file.download":
