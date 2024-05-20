@@ -240,6 +240,13 @@ class ReticulumWebChat:
 
             return websocket_response
 
+        # get config
+        @routes.get("/api/v1/config")
+        async def index(request):
+            return web.json_response({
+                "config": self.get_config_dict(),
+            })
+
         # get calls
         @routes.get("/api/v1/calls")
         async def index(request):
@@ -753,12 +760,17 @@ class ReticulumWebChat:
     async def send_config_to_websocket_clients(self):
         await self.websocket_broadcast(json.dumps({
             "type": "config",
-            "config": {
-                "display_name": self.config.display_name.get(),
-                "identity_hash": self.identity.hexhash,
-                "lxmf_address_hash": self.local_lxmf_destination.hexhash,
-            },
+            "config": self.get_config_dict(),
         }))
+
+    # returns a dictionary of config
+    def get_config_dict(self):
+        return {
+            "display_name": self.config.display_name.get(),
+            "identity_hash": self.identity.hexhash,
+            "lxmf_address_hash": self.local_lxmf_destination.hexhash,
+            "audio_call_address_hash": self.audio_call_manager.audio_call_receiver.destination.hexhash,
+        }
 
     # convert app data to string, or return none unable to do so
     def convert_app_data_to_string(self, app_data):

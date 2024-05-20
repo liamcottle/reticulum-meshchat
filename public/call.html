@@ -94,13 +94,17 @@
                     </div>
                     <div class="my-auto">Start a new Call</div>
                 </div>
-                <div class="flex text-gray-900 p-2 space-x-2">
+                <div class="flex border-b border-gray-300 text-gray-900 p-2 space-x-2">
                     <div class="flex-1">
                         <input v-model="destinationHash" type="text" placeholder="Enter Destination Hash" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
                     </div>
                     <button @click="initiateCall(destinationHash)" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-green-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
                         <span>Initiate Call</span>
                     </button>
+                </div>
+                <div class="p-1">
+                    <div>My Destination Hash</div>
+                    <div class="text-sm text-gray-700">{{ myAudioCallAddressHash || "Unknown" }}</div>
                 </div>
             </div>
 
@@ -152,6 +156,8 @@
 
                 audioCalls: [],
 
+                myAudioCallAddressHash: null,
+
                 destinationHash: null,
                 isInitiatingCall: false,
 
@@ -172,6 +178,9 @@
             };
         },
         mounted: function() {
+
+            // update config
+            this.getConfig();
 
             // update calls list
             this.updateCallsList();
@@ -438,6 +447,20 @@
 
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
 
+            },
+            async getConfig() {
+                try {
+
+                    // fetch calls
+                    const response = await axios.get("/api/v1/config");
+
+                    // update ui
+                    this.myAudioCallAddressHash = response.data.config.audio_call_address_hash;
+
+                } catch(e) {
+                    // do nothing on error
+                    console.error(e);
+                }
             },
             async updateCallsList() {
                 try {
