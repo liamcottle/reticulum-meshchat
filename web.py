@@ -260,7 +260,7 @@ class ReticulumWebChat:
                 "audio_calls": audio_calls,
             })
 
-        # get calls
+        # get call
         @routes.get("/api/v1/calls/{audio_call_link_hash}")
         async def index(request):
 
@@ -279,6 +279,23 @@ class ReticulumWebChat:
 
             return web.json_response({
                 "audio_call": self.convert_audio_call_to_dict(audio_call),
+            })
+
+        # delete call
+        @routes.delete("/api/v1/calls/{audio_call_link_hash}")
+        async def index(request):
+
+            # get path params
+            audio_call_link_hash = request.match_info.get("audio_call_link_hash", "")
+
+            # convert hash to bytes
+            audio_call_link_hash = bytes.fromhex(audio_call_link_hash)
+
+            # delete audio call
+            self.audio_call_manager.delete_audio_call_by_link_hash(audio_call_link_hash)
+
+            return web.json_response({
+                "message": "audio call deleted",
             })
 
         # initiate a call to the provided destination

@@ -123,6 +123,12 @@ class AudioCallManager:
                 return audio_call
         return None
 
+    # delete an existing audio call from the provided link hash
+    def delete_audio_call_by_link_hash(self, link_hash: bytes):
+        audio_call = self.find_audio_call_by_link_hash(link_hash)
+        if audio_call is not None:
+            self.audio_calls.remove(audio_call)
+
     # attempts to initiate a call to the provided destination and returns the link hash on success
     # FIXME: implement timeout. at the moment, it loops forever if no path is found
     async def initiate(self, destination_hash: bytes) -> bytes:
