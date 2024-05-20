@@ -254,22 +254,31 @@ class ReticulumWebChat:
             # get audio calls
             audio_calls = []
             for audio_call in self.audio_call_manager.audio_calls:
-
-                # get initiator identity hash
-                initiator_identity_hash = None
-                initiator_identity = audio_call.initiator_identity()
-                if initiator_identity is not None:
-                    initiator_identity_hash = initiator_identity.hash.hex()
-
-                audio_calls.append({
-                    "hash": audio_call.link.hash.hex(),
-                    "initiator_identity_hash": initiator_identity_hash,
-                    "is_active": audio_call.is_active(),
-                    "is_outbound": audio_call.is_outbound,
-                })
+                audio_calls.append(self.convert_audio_call_to_dict(audio_call))
 
             return web.json_response({
                 "audio_calls": audio_calls,
+            })
+
+        # get calls
+        @routes.get("/api/v1/calls/{audio_call_link_hash}")
+        async def index(request):
+
+            # get path params
+            audio_call_link_hash = request.match_info.get("audio_call_link_hash", "")
+
+            # convert hash to bytes
+            audio_call_link_hash = bytes.fromhex(audio_call_link_hash)
+
+            # find audio call
+            audio_call = self.audio_call_manager.find_audio_call_by_link_hash(audio_call_link_hash)
+            if audio_call is None:
+                return web.json_response({
+                    "message": "audio call not found",
+                }, status=404)
+
+            return web.json_response({
+                "audio_call": self.convert_audio_call_to_dict(audio_call),
             })
 
         # initiate a call to the provided destination
@@ -780,6 +789,48 @@ class ReticulumWebChat:
             "identity_hash": self.identity.hexhash,
             "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             "audio_call_address_hash": self.audio_call_manager.audio_call_receiver.destination.hexhash,
+        }
+
+    # convert audio call to dict
+    def convert_audio_call_to_dict(self, audio_call: AudioCall):
+
+        # get remote identity hash
+        remote_identity_hash = None
+        remote_identity = audio_call.get_remote_identity()
+        if remote_identity is not None:
+            remote_identity_hash = remote_identity.hash.hex()
+
+        # get remote destination hash
+        # we need to know the remote identity to determine their destination hash
+        remote_destination_hash = None
+        if remote_identity is not None:
+            remote_destination_hash = RNS.Destination.hash(remote_identity, "call", "audio")
+
+        # determine path to remote destination
+        path = None
+        if remote_destination_hash is not None:
+
+            # determine next hop and hop count
+            hops = RNS.Transport.hops_to(remote_destination_hash)
+            next_hop_bytes = self.reticulum.get_next_hop(remote_destination_hash)
+
+            # ensure next hop provided
+            if next_hop_bytes is not None:
+                next_hop = next_hop_bytes.hex()
+                next_hop_interface = self.reticulum.get_next_hop_if_name(remote_destination_hash)
+                path = {
+                    "hops": hops,
+                    "next_hop": next_hop,
+                    "next_hop_interface": next_hop_interface,
+                }
+
+        return {
+            "hash": audio_call.link.hash.hex(),
+            "remote_destination_hash": remote_destination_hash.hex(),
+            "remote_identity_hash": remote_identity_hash,
+            "is_active": audio_call.is_active(),
+            "is_outbound": audio_call.is_outbound,
+            "path": path,
         }
 
     # convert app data to string, or return none unable to do so

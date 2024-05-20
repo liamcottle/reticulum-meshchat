@@ -21,7 +21,7 @@
 <body class="bg-gray-100">
 <div id="app" class="flex h-full">
 
-    <div class="mx-auto my-auto w-full max-w-lg p-4">
+    <div class="mx-auto my-auto w-full max-w-xl p-4">
 
         <!-- in active call -->
         <div v-if="isWebsocketConnected" class="w-full">
@@ -38,7 +38,25 @@
 
                     <div class="mb-2">
                         <div class="mb-1 text-sm font-medium text-gray-900">Call Hash</div>
-                        <div class="text-xs text-gray-600">{{ callHash }}</div>
+                        <div class="text-xs text-gray-600">{{ audioCall?.hash || "Unknown" }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="mb-1 text-sm font-medium text-gray-900">Remote Identity Hash</div>
+                        <div class="text-xs text-gray-600">{{ audioCall?.remote_identity_hash || "Unknown" }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="mb-1 text-sm font-medium text-gray-900">Remote Destination Hash</div>
+                        <div class="text-xs text-gray-600">{{ audioCall?.remote_destination_hash || "Unknown" }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="mb-1 text-sm font-medium text-gray-900">Path</div>
+                        <div class="text-xs text-gray-600">
+                            <span v-if="audioCall?.path">{{ audioCall.path.hops }} {{ audioCall.path.hops === 1 ? 'hop' : 'hops' }} away via {{ audioCall.path.next_hop_interface }}</span>
+                            <span v-else>Unknown</span>
+                        </div>
                     </div>
 
                     <div class="mb-2">
@@ -118,11 +136,12 @@
                     </div>
                     <div class="my-auto">Active Calls</div>
                 </div>
-                <div>
+                <div class="divide-y">
                     <div v-for="audioCall in activeAudioCalls" class="flex p-2">
                         <div>
                             <div>Call Hash: {{ audioCall.hash }}</div>
-                            <div v-if="!audioCall.is_outbound">Initiator Identity: {{ audioCall.initiator_identity_hash || "Unknown" }}</div>
+                            <div>Identity: {{ audioCall.remote_identity_hash || "Unknown" }}</div>
+                            <div>Destination: {{ audioCall.remote_destination_hash || "Unknown" }}</div>
                             <div>
                                 <span v-if="audioCall.is_outbound">Direction: Outbound</span>
                                 <span v-else>Direction: Inbound</span>
@@ -159,11 +178,12 @@
                     </div>
                     <div class="my-auto">Call History</div>
                 </div>
-                <div>
+                <div class="divide-y">
                     <div v-for="audioCall in inactiveAudioCalls" class="flex p-2">
                         <div>
                             <div>Call Hash: {{ audioCall.hash }}</div>
-                            <div v-if="!audioCall.is_outbound">Initiator Identity: {{ audioCall.initiator_identity_hash || "Unknown" }}</div>
+                            <div>Identity: {{ audioCall.remote_identity_hash || "Unknown" }}</div>
+                            <div>Destination: {{ audioCall.remote_destination_hash || "Unknown" }}</div>
                             <div>
                                 <span v-if="audioCall.is_outbound">Direction: Outbound</span>
                                 <span v-else>Direction: Inbound</span>
@@ -201,6 +221,7 @@
         data() {
             return {
 
+                audioCall: null,
                 audioCalls: [],
 
                 myAudioCallAddressHash: null,
@@ -312,6 +333,8 @@
 
                     // we are now connected
                     this.isWebsocketConnected = true;
+
+                    await this.updateCall(callHash);
 
                     // send mic audio over call
                     await this.startRecordingMicrophone((encoded) => {
@@ -542,6 +565,24 @@
                 } catch(e) {
                     // do nothing on error
                 }
+            },
+            async updateCall(callHash) {
+
+                // clear previous call
+                this.audioCall = null;
+
+                try {
+
+                    // get path to destination
+                    const response = await window.axios.get(`/api/v1/calls/${callHash}`);
+
+                    // update ui
+                    this.audioCall = response.data.audio_call;
+
+                } catch(e) {
+                    console.log(e);
+                }
+
             },
         },
         computed: {

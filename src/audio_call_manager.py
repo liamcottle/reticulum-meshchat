@@ -56,8 +56,8 @@ class AudioCall:
         # send codec2 audio received from call receiver to call initiator over reticulum link
         RNS.Packet(self.link, data).send()
 
-    # gets the identity of the caller, or returns None if they did not identify
-    def initiator_identity(self):
+    # gets the identity of the other person, or returns None if they did not identify
+    def get_remote_identity(self):
         return self.link.get_remote_identity()
 
     # determine if this call is still active
