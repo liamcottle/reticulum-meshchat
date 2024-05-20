@@ -292,7 +292,7 @@ class ReticulumWebChat:
             # convert hash to bytes
             audio_call_link_hash = bytes.fromhex(audio_call_link_hash)
 
-            # find audio call
+            # find audio call, this will be null until the link is established
             audio_call = self.audio_call_manager.find_audio_call_by_link_hash(audio_call_link_hash)
             if audio_call is None:
                 # fixme: web browser expects websocket, so this won't be useful
