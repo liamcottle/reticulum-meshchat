@@ -339,6 +339,7 @@
                 this.ws.addEventListener('close', () => {
                     this.isWebsocketConnected = false;
                     this.leaveCall();
+                    this.updateCallsList();
                 });
 
                 this.ws.addEventListener('error', (error) => {
