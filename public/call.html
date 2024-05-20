@@ -10,6 +10,10 @@
     </div>
 
     <div>
+        <input id="checkbox-mute-mic" type="checkbox"/> Mute Mic
+    </div>
+
+    <div>
         <select id="codec-mode">
             <option value="3200">3200</option>
             <option value="2400">2400</option>
@@ -35,6 +39,7 @@
     // find elements
     const codecModeElement = document.getElementById("codec-mode");
     const encodedBytesSentElement = document.getElementById("encoded-bytes-sent");
+    const checkboxMuteMicElement = document.getElementById("checkbox-mute-mic");
 
     var encodedBytesSent = 0;
 
@@ -83,10 +88,18 @@
                 encodedBytesSent += encoded.length;
                 encodedBytesSentElement.innerText = formatBytes(encodedBytesSent);
 
-                // send encoded audio to websocket
-                if(callWebsocket.readyState === WebSocket.OPEN){
-                    callWebsocket.send(encoded);
+                // do nothing if websocket closed
+                if(callWebsocket.readyState !== WebSocket.OPEN){
+                    return;
                 }
+
+                // do nothing when audio muted
+                if(checkboxMuteMicElement.checked){
+                    return;
+                }
+
+                // send encoded audio to websocket
+                callWebsocket.send(encoded);
 
             };
 
