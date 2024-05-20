@@ -84,6 +84,8 @@ class ReticulumWebChat:
         # remember websocket clients
         self.websocket_clients: List[web.WebSocketResponse] = []
 
+        self.link_call_audio = None
+
     # web server has shutdown, likely ctrl+c, but if we don't do the following, the script never exits
     async def shutdown(self, app):
 
@@ -193,8 +195,9 @@ class ReticulumWebChat:
 
             # todo implement
             def client_packet_received(message, packet):
-                # todo, we don't send anything from the call initiator from the call receiver yet...
-                pass
+
+                # send audio received from call receiver to call initiator websocket
+                asyncio.run(websocket_response.send_bytes(message))
 
             # create link
             link = RNS.Link(server_destination)
@@ -250,12 +253,14 @@ class ReticulumWebChat:
             # client connected to us
             def client_connected(link):
                 print("client connected")
+                self.link_call_audio = link
                 link.set_link_closed_callback(client_disconnected)
                 link.set_packet_callback(server_packet_received)
 
             # client disconnected from us
             def client_disconnected(link):
                 print("client disconnected")
+                self.link_call_audio = None
 
             # client sent us a packet
             def server_packet_received(message, packet):
@@ -275,7 +280,26 @@ class ReticulumWebChat:
             # handle websocket messages until disconnected
             async for msg in websocket_response:
                 msg: WSMessage = msg
-                if msg.type == WSMsgType.ERROR:
+                if msg.type == WSMsgType.BINARY:
+                    try:
+
+                        # drop audio packet if it is too big to send
+                        if len(msg.data) > RNS.Link.MDU:
+                            print("dropping packet " + str(len(msg.data)) + " bytes exceeds the link packet MDU of " + str(RNS.Link.MDU) + " bytes")
+                            continue
+
+                        # send codec2 audio received from call receiver on websocket, to call initiator over reticulum link
+                        if self.link_call_audio is not None:
+                            print("sending bytes to call initiator: {}".format(len(msg.data)))
+                            RNS.Packet(self.link_call_audio, msg.data).send()
+                        else:
+                            print("link to call initiator not available")
+
+                    except Exception as e:
+                        # ignore errors while handling message
+                        print("failed to process client message")
+                        print(e)
+                elif msg.type == WSMsgType.ERROR:
                     # ignore errors while handling message
                     print('ws connection error %s' % websocket_response.exception())
 

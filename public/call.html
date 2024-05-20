@@ -101,8 +101,25 @@
 
             // connect to websocket
             callWebsocket = new WebSocket(location.origin.replace(/^http/, 'ws') + "/call/initiate/" + destinationHash);
-            callWebsocket.onopen = () => {
-                console.log("connected to websocket");
+            callWebsocket.onmessage = async function(event) {
+
+                // get encoded codec2 bytes from websocket message
+                const encoded = await event.data.arrayBuffer();
+
+                // decode codec2 audio
+                const decoded = await Codec2Lib.runDecode(codecModeElement.value, encoded);
+
+                // convert decoded codec2 to wav audio
+                const wavAudio = await Codec2Lib.rawToWav(decoded);
+
+                // play wav audio buffer
+                let audioCtx = new AudioContext()
+                const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
+                const sampleSource = audioCtx.createBufferSource();
+                sampleSource.buffer = audioBuffer;
+                sampleSource.connect(audioCtx.destination)
+                sampleSource.start(0);
+
             };
 
             // record mic to send to websocket
@@ -186,6 +203,28 @@
             sampleSource.start(0);
 
         };
+
+        // record mic to send to websocket
+        await startRecordingMicrophone((encoded) => {
+
+            // do nothing if websocket closed
+            if(listenWebsocket.readyState !== WebSocket.OPEN){
+                return;
+            }
+
+            // do nothing when audio muted
+            if(checkboxMuteMicElement.checked){
+                return;
+            }
+
+            // send encoded audio to websocket
+            listenWebsocket.send(encoded);
+
+            // update stats
+            encodedBytesSent += encoded.length;
+            encodedBytesSentElement.innerText = formatBytes(encodedBytesSent);
+
+        });
 
     }
 
