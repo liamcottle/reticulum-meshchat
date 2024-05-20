@@ -25,7 +25,6 @@ class AudioCall:
     # handle link being closed
     def on_link_closed(self, link):
         print("[AudioCall] on_link_closed")
-        self.hangup()
 
     # handle packet received over link
     def on_packet(self, message, packet):
