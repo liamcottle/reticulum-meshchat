@@ -51,6 +51,42 @@
     var callWebsocket = null;
     var listenWebsocket = null;
 
+    async function startRecordingMicrophone(onAudioAvailable) {
+        try {
+
+            // load audio worklet module
+            audioContext = new AudioContext({ sampleRate: 8000 });
+            await audioContext.audioWorklet.addModule('assets/js/codec2-emscripten/processor.js');
+            audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+
+            // handle audio received from audio worklet
+            audioWorkletNode.port.onmessage = async (event) => {
+
+                // convert audio received from worklet processor to wav
+                const buffer = encodeWAV(event.data, 8000);
+
+                // convert wav audio to codec2
+                const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
+                const encoded = await Codec2Lib.runEncode(codecModeElement.value, rawBuffer);
+
+                // pass encoded audio to callback
+                onAudioAvailable(encoded);
+
+            };
+
+            // request access to the microphone
+            microphoneMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // send mic audio to audio worklet
+            mediaStreamSource = audioContext.createMediaStreamSource(microphoneMediaStream);
+            mediaStreamSource.connect(audioWorkletNode);
+
+        } catch(e) {
+            alert(e);
+            console.log(e);
+        }
+    }
+
     async function startStreaming() {
         try {
 
@@ -69,24 +105,8 @@
                 console.log("connected to websocket");
             };
 
-            // load audio worklet module
-            audioContext = new AudioContext({ sampleRate: 8000 });
-            await audioContext.audioWorklet.addModule('assets/js/codec2-emscripten/processor.js');
-            audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-processor');
-
-            // handle audio received from audio worklet
-            audioWorkletNode.port.onmessage = async (event) => {
-
-                // convert audio received from worklet processor to wav
-                const buffer = encodeWAV(event.data, 8000);
-
-                // convert wav audio to codec2
-                const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
-                const encoded = await Codec2Lib.runEncode(codecModeElement.value, rawBuffer);
-
-                // update stats
-                encodedBytesSent += encoded.length;
-                encodedBytesSentElement.innerText = formatBytes(encodedBytesSent);
+            // record mic to send to websocket
+            await startRecordingMicrophone((encoded) => {
 
                 // do nothing if websocket closed
                 if(callWebsocket.readyState !== WebSocket.OPEN){
@@ -101,14 +121,11 @@
                 // send encoded audio to websocket
                 callWebsocket.send(encoded);
 
-            };
+                // update stats
+                encodedBytesSent += encoded.length;
+                encodedBytesSentElement.innerText = formatBytes(encodedBytesSent);
 
-            // request access to the microphone
-            microphoneMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-            // send mic audio to audio worklet
-            mediaStreamSource = audioContext.createMediaStreamSource(microphoneMediaStream);
-            mediaStreamSource.connect(audioWorkletNode);
+            });
 
         } catch(error) {
             alert(error);
