@@ -454,11 +454,6 @@
                     // update stats
                     this.rxBytes += payload.length;
 
-                    // do nothing if muted
-                    if(this.isSoundMuted){
-                        return;
-                    }
-
                     // decode audio call payload
                     const audioCallPayload = AudioCallPayload.decode(payload);
 
@@ -476,6 +471,11 @@
 
                             // update ui
                             this.remoteAudioCodec = "Codec2 Mode " + mode;
+
+                            // do nothing if muted
+                            if(this.isSoundMuted){
+                                return;
+                            }
 
                             // decode codec2 audio
                             const decoded = await Codec2Lib.runDecode(mode, encoded);
