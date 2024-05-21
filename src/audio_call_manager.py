@@ -184,7 +184,7 @@ class AudioCallReceiver:
 
         self.manager = manager
 
-        # create destination for receiver audio calls
+        # create destination for receiving audio calls
         self.destination = RNS.Destination(
             self.manager.identity,
             RNS.Destination.IN,
