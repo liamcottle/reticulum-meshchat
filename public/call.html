@@ -422,16 +422,16 @@
                 // listen to audio from call
                 this.ws.onmessage = async (event) => {
 
-                    // do nothing if muted
-                    if(this.isSoundMuted){
-                        return;
-                    }
-
                     // get encoded codec2 bytes from websocket message
                     const encoded = await event.data.arrayBuffer();
 
                     // update stats
                     this.rxBytes += encoded.byteLength;
+
+                    // do nothing if muted
+                    if(this.isSoundMuted){
+                        return;
+                    }
 
                     // decode codec2 audio
                     const decoded = await Codec2Lib.runDecode(this.codecMode, encoded);
