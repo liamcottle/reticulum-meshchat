@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import List
 
 import RNS
@@ -130,15 +131,22 @@ class AudioCallManager:
             self.audio_calls.remove(audio_call)
 
     # attempts to initiate a call to the provided destination and returns the link hash on success
-    # FIXME: implement timeout. at the moment, it loops forever if no path is found
-    async def initiate(self, destination_hash: bytes) -> bytes:
+    async def initiate(self, destination_hash: bytes, timeout_seconds: int = 15) -> bytes | None:
 
-        # wait until we have a path to the destination
-        # FIXME: implement timeout instead of looping forever
+        # check if we have a path to the destination
         if not RNS.Transport.has_path(destination_hash):
+
+            # we don't have a path, so we need to request it
             RNS.Transport.request_path(destination_hash)
-            while not RNS.Transport.has_path(destination_hash):
+
+            # wait until we have a path, or give up after the configured timeout
+            timeout_after_seconds = time.time() + timeout_seconds
+            while not RNS.Transport.has_path(destination_hash) and time.time() < timeout_after_seconds:
                 await asyncio.sleep(0.1)
+
+        # if we still don't have a path, we can't establish a link, so bail out
+        if not RNS.Transport.has_path(destination_hash):
+            return None
 
         # create outbound destination to initiate audio calls
         server_identity = RNS.Identity.recall(destination_hash)

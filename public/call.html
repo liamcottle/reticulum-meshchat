@@ -344,7 +344,11 @@
                 try {
 
                     // initiate call
-                    const response = await axios.get(`/api/v1/calls/initiate/${destinationHash}`);
+                    const response = await axios.get(`/api/v1/calls/initiate/${destinationHash}`, {
+                        params: {
+                            timeout: 15, // how long to attempt to initiate call
+                        },
+                    });
 
                     // get call hash from response
                     const hash = response.data.hash;
@@ -372,8 +376,13 @@
                     alert("timed out attempting to join call");
 
                 } catch(e) {
-                    alert("failed to initiate call");
+
                     console.log(e);
+
+                    // show error message from response, or fallback to default
+                    const message = e.response?.data?.message ?? "failed to initiate call";
+                    alert(message);
+
                 } finally {
                     // hide loading
                     this.isInitiatingCall = false;

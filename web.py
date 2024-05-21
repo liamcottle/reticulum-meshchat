@@ -304,12 +304,19 @@ class ReticulumWebChat:
 
             # get path params
             destination_hash = request.match_info.get("destination_hash", "")
+            timeout_seconds = int(request.query.get("timeout", 15))
+
+            print(timeout_seconds)
 
             # convert destination hash to bytes
             destination_hash = bytes.fromhex(destination_hash)
 
             # initiate audio call
-            link_hash = await self.audio_call_manager.initiate(destination_hash)
+            link_hash = await self.audio_call_manager.initiate(destination_hash, timeout_seconds)
+            if link_hash is None:
+                return web.json_response({
+                    "message": "timed out initiating call",
+                }, status=503)
 
             return web.json_response({
                 "hash": link_hash.hex(),
