@@ -30,6 +30,8 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 
 ## Beta Features
 
+- Support for Audio Calls to other [Reticulum WebChat](https://github.com/liamcottle/reticulum-webchat) users.
+  - Audio is encoded with [codec2](https://github.com/drowe67/codec2) to support low bandwidth links.
 - Support for browsing pages, and downloading files hosted on Nomad Network Nodes.
 
 > NOTE: micron format parsing is still in development, some pages may not render or work correctly at all.
