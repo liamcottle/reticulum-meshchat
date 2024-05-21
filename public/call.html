@@ -11,6 +11,9 @@
     <script src="assets/js/axios@1.6.8/dist/axios.min.js"></script>
     <script src="assets/js/vue@3.4.26/dist/vue.global.js"></script>
 
+    <!-- protobuf -->
+    <script src="assets/js/protobuf.js@6.11.0/dist/protobuf.min.js"></script>
+
     <!-- codec2 -->
     <script src="assets/js/codec2-emscripten/c2enc.js"></script>
     <script src="assets/js/codec2-emscripten/c2dec.js"></script>
@@ -72,15 +75,15 @@
                     <div>
                         <div class="mb-1 text-sm font-medium text-gray-900">Codec2 Mode</div>
                         <select v-model="codecMode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option value="3200">3200</option>
-                            <option value="2400">2400</option>
-                            <option value="1600">1600</option>
-                            <option value="1400">1400</option>
-                            <option value="1300">1300</option>
-                            <option value="1200">1200</option>
-                            <option value="700C">700C</option>
-                            <option value="450">450</option>
-                            <option value="450PWB">450PWB</option>
+                            <option value="MODE_3200">3200</option>
+                            <option value="MODE_2400">2400</option>
+                            <option value="MODE_1600">1600</option>
+                            <option value="MODE_1400">1400</option>
+                            <option value="MODE_1300">1300</option>
+                            <option value="MODE_1200">1200</option>
+                            <option value="MODE_700C">700C</option>
+                            <option value="MODE_450">450</option>
+                            <option value="MODE_450PWB">450PWB</option>
                         </select>
                     </div>
 
@@ -285,7 +288,7 @@
 
                 isMicMuted: false,
                 isSoundMuted: false,
-                codecMode: "1200",
+                codecMode: "MODE_1200", // seems to be the smallest size with the best quality from my testing
                 sampleRate: 8000,
 
                 audioContext: null,
@@ -376,6 +379,11 @@
                 this.txBytes = 0;
                 this.rxBytes = 0;
 
+                // load protobufs
+                const root = await protobuf.load("assets/proto/audio_call.proto");
+                const AudioCallPayload = root.lookupType("AudioCallPayload");
+                const Codec2AudioMode = root.lookupEnum("Codec2Audio.Mode");
+
                 // connect to websocket
                 this.ws = new WebSocket(location.origin.replace(/^http/, 'ws') + `/api/v1/calls/${callHash}/audio`);
 
@@ -387,7 +395,7 @@
                     await this.updateCall(callHash);
 
                     // send mic audio over call
-                    await this.startRecordingMicrophone((encoded) => {
+                    await this.startRecordingMicrophone((codec2Mode, encoded) => {
 
                         // do nothing if websocket closed
                         if(this.ws.readyState !== WebSocket.OPEN){
@@ -399,11 +407,21 @@
                             return;
                         }
 
-                        // send encoded audio to websocket
-                        this.ws.send(encoded);
+                        // encode audio call payload as protobuf
+                        const audioCallPayload = AudioCallPayload.encode(AudioCallPayload.fromObject({
+                            audioData: {
+                                codec2Audio: {
+                                    mode: "MODE_" + codec2Mode, // convert to value expected by protobuf
+                                    encoded: encoded, // must be passed in as a Uint8Array
+                                },
+                            },
+                        })).finish();
+
+                        // send payload to websocket
+                        this.ws.send(audioCallPayload);
 
                         // update stats
-                        this.txBytes += encoded.length;
+                        this.txBytes += audioCallPayload.length;
 
                     });
 
@@ -422,30 +440,49 @@
                 // listen to audio from call
                 this.ws.onmessage = async (event) => {
 
-                    // get encoded codec2 bytes from websocket message
-                    const encoded = await event.data.arrayBuffer();
+                    // get audio call payload bytes from websocket message
+                    const payload = new Uint8Array(await event.data.arrayBuffer());
 
                     // update stats
-                    this.rxBytes += encoded.byteLength;
+                    this.rxBytes += payload.length;
 
                     // do nothing if muted
                     if(this.isSoundMuted){
                         return;
                     }
 
-                    // decode codec2 audio
-                    const decoded = await Codec2Lib.runDecode(this.codecMode, encoded);
+                    // decode audio call payload
+                    const audioCallPayload = AudioCallPayload.decode(payload);
 
-                    // convert decoded codec2 to wav audio
-                    const wavAudio = await Codec2Lib.rawToWav(decoded);
+                    // handle audio data
+                    const audioData = audioCallPayload.audioData;
+                    if(audioData){
 
-                    // play wav audio buffer
-                    let audioCtx = new AudioContext()
-                    const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
-                    const sampleSource = audioCtx.createBufferSource();
-                    sampleSource.buffer = audioBuffer;
-                    sampleSource.connect(audioCtx.destination)
-                    sampleSource.start(0);
+                        // handle codec2 encoded audio
+                        const codec2Audio = audioData.codec2Audio;
+                        if(codec2Audio){
+
+                            // get mode and encoded audio from protobuf
+                            const mode = Codec2AudioMode.valuesById[codec2Audio.mode].replace("MODE_", "");
+                            const encoded = new Uint8Array(codec2Audio.encoded);
+
+                            // decode codec2 audio
+                            const decoded = await Codec2Lib.runDecode(mode, encoded);
+
+                            // convert decoded codec2 to wav audio
+                            const wavAudio = await Codec2Lib.rawToWav(decoded);
+
+                            // play wav audio buffer
+                            let audioCtx = new AudioContext()
+                            const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
+                            const sampleSource = audioCtx.createBufferSource();
+                            sampleSource.buffer = audioBuffer;
+                            sampleSource.connect(audioCtx.destination)
+                            sampleSource.start(0);
+
+                        }
+
+                    }
 
                 };
 
@@ -515,12 +552,15 @@
                         // convert audio received from worklet processor to wav
                         const buffer = this.encodeWAV(event.data, this.sampleRate);
 
+                        // convert codec mode string from ui, to expected mode
+                        const codecMode = this.codecMode.replace("MODE_", "");
+
                         // convert wav audio to codec2
                         const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
-                        const encoded = await Codec2Lib.runEncode(this.codecMode, rawBuffer);
+                        const encoded = await Codec2Lib.runEncode(codecMode, rawBuffer);
 
                         // pass encoded audio to callback
-                        onAudioAvailable(encoded);
+                        onAudioAvailable(codecMode, new Uint8Array(encoded.buffer));
 
                     };
 

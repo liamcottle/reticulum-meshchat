@@ -1,0 +1,31 @@
+syntax = "proto2";
+
+// raw payload sent over the websocket
+message AudioCallPayload {
+  optional AudioData audioData = 1;
+}
+
+// a message containing some sort of audio data
+message AudioData {
+  optional Codec2Audio codec2Audio = 1;
+}
+
+// audio encoded with codec2
+message Codec2Audio {
+
+  required Mode mode = 1; // codec2 mode used for encoding
+  required bytes encoded = 2; // audio encoded as codec2
+
+  enum Mode {
+    MODE_3200 = 0;
+    MODE_2400 = 1;
+    MODE_1600 = 2;
+    MODE_1400 = 3;
+    MODE_1300 = 4;
+    MODE_1200 = 5;
+    MODE_700C = 6;
+    MODE_450 = 7;
+    MODE_450PWB = 8;
+  }
+
+}
