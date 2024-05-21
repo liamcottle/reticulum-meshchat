@@ -72,18 +72,23 @@
                         <div class="text-xs text-gray-600">{{ formatBytes(rxBytes) }}</div>
                     </div>
 
+                    <div class="mb-2">
+                        <div class="mb-1 text-sm font-medium text-gray-900">Incoming Audio</div>
+                        <div class="text-xs text-gray-600">{{ remoteAudioCodec || "Unknown" }}</div>
+                    </div>
+
                     <div>
-                        <div class="mb-1 text-sm font-medium text-gray-900">Codec2 Mode</div>
+                        <div class="mb-1 text-sm font-medium text-gray-900">Outgoing Audio</div>
                         <select v-model="codecMode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option value="MODE_3200">3200</option>
-                            <option value="MODE_2400">2400</option>
-                            <option value="MODE_1600">1600</option>
-                            <option value="MODE_1400">1400</option>
-                            <option value="MODE_1300">1300</option>
-                            <option value="MODE_1200">1200</option>
-                            <option value="MODE_700C">700C</option>
-                            <option value="MODE_450">450</option>
-                            <option value="MODE_450PWB">450PWB</option>
+                            <option value="MODE_3200">Codec2 3200</option>
+                            <option value="MODE_2400">Codec2 2400</option>
+                            <option value="MODE_1600">Codec2 1600</option>
+                            <option value="MODE_1400">Codec2 1400</option>
+                            <option value="MODE_1300">Codec2 1300</option>
+                            <option value="MODE_1200">Codec2 1200</option>
+                            <option value="MODE_700C">Codec2 700C</option>
+                            <option value="MODE_450">Codec2 450</option>
+                            <option value="MODE_450PWB">Codec2 450PWB</option>
                         </select>
                     </div>
 
@@ -291,6 +296,8 @@
                 codecMode: "MODE_1200", // seems to be the smallest size with the best quality from my testing
                 sampleRate: 8000,
 
+                remoteAudioCodec: null,
+
                 audioContext: null,
                 mediaStreamSource: null,
                 audioWorkletNode: null,
@@ -374,6 +381,7 @@
 
                 // update ui
                 this.callHash = callHash;
+                this.remoteAudioCodec = null;
 
                 // reset stats
                 this.txBytes = 0;
@@ -465,6 +473,9 @@
                             // get mode and encoded audio from protobuf
                             const mode = Codec2AudioMode.valuesById[codec2Audio.mode].replace("MODE_", "");
                             const encoded = new Uint8Array(codec2Audio.encoded);
+
+                            // update ui
+                            this.remoteAudioCodec = "Codec2 Mode " + mode;
 
                             // decode codec2 audio
                             const decoded = await Codec2Lib.runDecode(mode, encoded);
