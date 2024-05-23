@@ -1366,14 +1366,27 @@ def main():
     if args.identity_file is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load(args.identity_file)
-        print("Reticulum Identity <{}> has been loaded from file.".format(identity.hash.hex()))
+        print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), args.identity_file))
     elif args.identity_base64 is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load_private_key(base64.b64decode(args.identity_base64))
         print("Reticulum Identity <{}> has been loaded from base64.".format(identity.hash.hex()))
     else:
-        identity = RNS.Identity(create_keys=True)
-        print("Reticulum Identity <{}> has been randomly generated.".format(identity.hash.hex()))
+
+        # configure path to default identity file
+        default_identity_file = os.path.join("storage", "identity")
+
+        # if default identity file does not exist, generate a new identity and save it
+        if not os.path.exists(default_identity_file):
+            identity = RNS.Identity(create_keys=True)
+            with open(default_identity_file, "wb") as file:
+                file.write(identity.get_private_key())
+            print("Reticulum Identity <{}> has been randomly generated and saved to {}.".format(identity.hash.hex(), default_identity_file))
+
+        # default identity file exists, load it
+        identity = RNS.Identity(create_keys=False)
+        identity.load(default_identity_file)
+        print("Reticulum Identity <{}> has been loaded from file.".format(identity.hash.hex()))
 
     # init app
     reticulum_webchat = ReticulumWebChat(identity, args.storage_dir, args.reticulum_config_dir)

@@ -91,20 +91,29 @@ options:
 
 ## Using an existing Reticulum Identity
 
-By default, a random identity is generated every time you run the script.
+The first time you run this application, a new Reticulum identity is generated and saved to `storage/identity`.
 
-This is handy for quickly testing out the web ui, however you may want to use an existing identity when chatting with others.
+If you want to use an existing identity;
 
-To generate a new identity, you can use the [rnid](https://reticulum.network/manual/using.html#the-rnid-utility) utility provided by Reticulum.
+- You can overwrite `storage/identity` with another identity file.
+- Or, you can pass in a custom identity file path as a command line argument.
 
-```
-rnid --generate ./new_identity
-```
-
-You can then use the following to run the web ui with your new identity file;
+To use a custom identity file, provide the `--identity-file` argument followed by the path to your custom identity file.
 
 ```
-python web.py --identity-file ./new_identity
+python web.py --identity-file ./custom_identity_file
+```
+
+If you would like to generate a new identity, you can use the [rnid](https://reticulum.network/manual/using.html#the-rnid-utility) utility provided by Reticulum.
+
+```
+rnid --generate ./new_identity_file
+```
+
+If you don't have access to the `rnid` command, you can use the following:
+
+```
+python web.py --generate-identity-file ./new_identity_file
 ```
 
 Alternatively, you can provide a base64 encoded private key, like so;
