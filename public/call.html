@@ -321,6 +321,15 @@
                 this.updateCallsList();
             }, 3000);
 
+            // parse url params
+            var queryParams = new URLSearchParams(location.search);
+            var queryDestinationHash = queryParams.get('destination_hash');
+
+            // autofill destination hash to call when query param provided in url
+            if(queryDestinationHash){
+                this.destinationHash = queryDestinationHash;
+            }
+
         },
         methods: {
             async initiateCall(destinationHash) {
