@@ -132,6 +132,8 @@ You can build a standalone Windows Installer `.msi` with the following command;
 python setup.py bdist_msi
 ```
 
+> Note: This command only works when run from a Windows machine.
+
 ## TODO
 
 - [ ] add build script for macos binary
