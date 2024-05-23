@@ -1373,8 +1373,12 @@ def main():
         print("Reticulum Identity <{}> has been loaded from base64.".format(identity.hash.hex()))
     else:
 
+        # ensure provided storage dir exists, or the default storage dir exists
+        base_storage_dir = args.storage_dir or os.path.join("storage")
+        os.makedirs(base_storage_dir, exist_ok=True)
+
         # configure path to default identity file
-        default_identity_file = os.path.join("storage", "identity")
+        default_identity_file = os.path.join(base_storage_dir, "identity")
 
         # if default identity file does not exist, generate a new identity and save it
         if not os.path.exists(default_identity_file):
