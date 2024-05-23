@@ -12,6 +12,7 @@ setup(
             shortcut_name='ReticulumWebChat', # name shown in shortcut
             shortcut_dir='ProgramMenuFolder', # put the shortcut in windows start menu
             icon='logo/icon.ico', # set the icon for the exe
+            copyright='Copyright (c) 2024 Liam Cottle',
         ),
     ],
     options={
