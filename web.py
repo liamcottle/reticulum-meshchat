@@ -759,8 +759,10 @@ class ReticulumWebChat:
         # get remote destination hash
         # we need to know the remote identity to determine their destination hash
         remote_destination_hash = None
+        remote_destination_hash_hex = None
         if remote_identity is not None:
             remote_destination_hash = RNS.Destination.hash(remote_identity, "call", "audio")
+            remote_destination_hash_hex = remote_destination_hash.hex()
 
         # determine path to remote destination
         path = None
@@ -782,7 +784,7 @@ class ReticulumWebChat:
 
         return {
             "hash": audio_call.link.hash.hex(),
-            "remote_destination_hash": remote_destination_hash.hex(),
+            "remote_destination_hash": remote_destination_hash_hex,
             "remote_identity_hash": remote_identity_hash,
             "is_active": audio_call.is_active(),
             "is_outbound": audio_call.is_outbound,
