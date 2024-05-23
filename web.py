@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import sys
 import time
 from datetime import datetime, timezone
 from typing import Callable, List
@@ -19,6 +20,17 @@ from peewee import SqliteDatabase
 import database
 from lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment
 from src.audio_call_manager import AudioCall, AudioCallManager
+
+
+# NOTE: this is required to be able to pack our app with cxfreeze as an exe, otherwise it can't access bundled assets
+# this returns a file path based on if we are running web.py directly, or if we have packed it as an exe with cxfreeze
+# https://cx-freeze.readthedocs.io/en/latest/faq.html#using-data-files
+def get_file_path(filename):
+    if getattr(sys, "frozen", False):
+        datadir = os.path.dirname(sys.executable)
+    else:
+        datadir = os.path.dirname(__file__)
+    return os.path.join(datadir, filename)
 
 
 class ReticulumWebChat:
@@ -116,7 +128,7 @@ class ReticulumWebChat:
         # serve index.html
         @routes.get("/")
         async def index(request):
-            return web.FileResponse(path="public/index.html")
+            return web.FileResponse(path=get_file_path("public/index.html"))
 
         # handle websocket clients
         @routes.get("/ws")
@@ -562,7 +574,7 @@ class ReticulumWebChat:
         # create and run web app
         app = web.Application()
         app.add_routes(routes)
-        app.add_routes([web.static('/', "public")])  # serve anything in public folder
+        app.add_routes([web.static('/', get_file_path("public/"))])  # serve anything in public folder
         app.on_shutdown.append(self.shutdown)  # need to force close websockets and stop reticulum now
         app.on_startup.append(on_startup)
         web.run_app(app, host=host, port=port)

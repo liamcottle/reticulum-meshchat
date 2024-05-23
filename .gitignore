@@ -1,1 +1,6 @@
+# build files
+build/
+dist/
+
+# local storage
 storage/
