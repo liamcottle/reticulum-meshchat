@@ -124,7 +124,7 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 > NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
 
-# Build from Source
+## Build from Source
 
 You can build a standalone Windows Installer `.msi` with the following command;
 
