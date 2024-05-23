@@ -140,3 +140,7 @@ python setup.py bdist_msi
 - [ ] button to forget peers and contacts
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
 - [ ] support for managing Reticulum config/interfaces via the web ui
+
+## License
+
+MIT
