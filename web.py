@@ -175,6 +175,19 @@ class ReticulumWebChat:
                 "audio_calls": audio_calls,
             })
 
+        # clear call history
+        @routes.post("/api/v1/calls/clear-call-history")
+        async def index(request):
+
+            # delete inactive calls, which are classed as call history
+            for audio_call in self.audio_call_manager.audio_calls:
+                if audio_call.is_active() is False:
+                    self.audio_call_manager.delete_audio_call(audio_call)
+
+            return web.json_response({
+                "message": "Call history has been cleared",
+            })
+
         # hangup all calls
         @routes.get("/api/v1/calls/hangup-all")
         async def index(request):

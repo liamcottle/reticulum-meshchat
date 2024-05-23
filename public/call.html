@@ -239,6 +239,11 @@
                         </svg>
                     </div>
                     <div class="my-auto">Call History</div>
+                    <div class="ml-auto">
+                        <button @click="clearCallHistory" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            Clear All
+                        </button>
+                    </div>
                 </div>
                 <div class="divide-y">
                     <div v-for="audioCall in inactiveAudioCalls" class="group flex p-2">
@@ -722,6 +727,26 @@
 
                     // delete call
                     await window.axios.delete(`/api/v1/calls/${callHash}`);
+
+                    // update ui
+                    await this.updateCallsList()
+
+                } catch(e) {
+                    // do nothing on error
+                }
+
+            },
+            async clearCallHistory() {
+
+                // confirm user wants to clear call history
+                if(!confirm("Are you sure you want to clear your call history?")){
+                    return;
+                }
+
+                try {
+
+                    // clear call history
+                    await window.axios.post(`/api/v1/calls/clear-call-history`);
 
                     // update ui
                     await this.updateCallsList()

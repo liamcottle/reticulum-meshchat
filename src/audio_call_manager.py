@@ -132,7 +132,11 @@ class AudioCallManager:
     def delete_audio_call_by_link_hash(self, link_hash: bytes):
         audio_call = self.find_audio_call_by_link_hash(link_hash)
         if audio_call is not None:
-            self.audio_calls.remove(audio_call)
+            self.delete_audio_call(audio_call)
+
+    # delete an existing audio call
+    def delete_audio_call(self, audio_call: AudioCall):
+        self.audio_calls.remove(audio_call)
 
     # hangup all calls
     def hangup_all(self):
