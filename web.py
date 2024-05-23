@@ -175,6 +175,14 @@ class ReticulumWebChat:
                 "audio_calls": audio_calls,
             })
 
+        # hangup all calls
+        @routes.get("/api/v1/calls/hangup-all")
+        async def index(request):
+            self.audio_call_manager.hangup_all()
+            return web.json_response({
+                "message": "All calls have been hungup",
+            })
+
         # get call
         @routes.get("/api/v1/calls/{audio_call_link_hash}")
         async def index(request):
@@ -325,7 +333,7 @@ class ReticulumWebChat:
             audio_call.hangup()
 
             return web.json_response({
-                "message": "call has been hungup",
+                "message": "Call has been hungup",
             })
 
         # announce

@@ -134,6 +134,12 @@ class AudioCallManager:
         if audio_call is not None:
             self.audio_calls.remove(audio_call)
 
+    # hangup all calls
+    def hangup_all(self):
+        for audio_call in self.audio_calls:
+            audio_call.hangup()
+        return None
+
     # attempts to initiate a call to the provided destination and returns the link hash on success
     async def initiate(self, destination_hash: bytes, timeout_seconds: int = 15) -> bytes:
 
