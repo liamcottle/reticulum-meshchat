@@ -227,15 +227,18 @@ class ReticulumWebChat:
             destination_hash = bytes.fromhex(destination_hash)
 
             # initiate audio call
-            link_hash = await self.audio_call_manager.initiate(destination_hash, timeout_seconds)
-            if link_hash is None:
-                return web.json_response({
-                    "message": "timed out initiating call",
-                }, status=503)
+            try:
 
-            return web.json_response({
-                "hash": link_hash.hex(),
-            })
+                link_hash = await self.audio_call_manager.initiate(destination_hash, timeout_seconds)
+                return web.json_response({
+                    "hash": link_hash.hex(),
+                })
+
+            except Exception as e:
+
+                return web.json_response({
+                    "message": "Call Failed: {}".format(str(e)),
+                }, status=503)
 
         # handle websocket client for sending and receiving audio packets in a call
         @routes.get("/api/v1/calls/{audio_call_link_hash}/audio")

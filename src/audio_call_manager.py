@@ -8,6 +8,10 @@ import RNS
 # todo allowlist/denylist for incoming calls
 
 
+class CallFailedException(Exception):
+    pass
+
+
 class AudioCall:
 
     def __init__(self, link: RNS.Link, is_outbound: bool):
@@ -131,7 +135,7 @@ class AudioCallManager:
             self.audio_calls.remove(audio_call)
 
     # attempts to initiate a call to the provided destination and returns the link hash on success
-    async def initiate(self, destination_hash: bytes, timeout_seconds: int = 15) -> bytes | None:
+    async def initiate(self, destination_hash: bytes, timeout_seconds: int = 15) -> bytes:
 
         # check if we have a path to the destination
         if not RNS.Transport.has_path(destination_hash):
@@ -146,7 +150,7 @@ class AudioCallManager:
 
         # if we still don't have a path, we can't establish a link, so bail out
         if not RNS.Transport.has_path(destination_hash):
-            return None
+            raise CallFailedException("Could not find path to destination.")
 
         # create outbound destination to initiate audio calls
         server_identity = RNS.Identity.recall(destination_hash)
