@@ -134,6 +134,7 @@ python setup.py bdist_msi
 
 ## TODO
 
+- [ ] auto build and release windows installer file via github actions
 - [ ] conversations/contacts list ui with unread indicators
 - [ ] button to add peer to contacts, and show a tab for contacts, separate from peers list
 - [ ] allow setting a custom name to show for a contact
