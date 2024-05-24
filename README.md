@@ -126,8 +126,8 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 ## Build from Source
 
-`build_macos.sh` - Builds a `.dmg` containing a `.app`
-`build_windows.bat` - Builds a `.msi` Windows Installer
+- `build_macos.sh` - Builds a `.dmg` containing a `.app`
+- `build_windows.bat` - Builds a `.msi` Windows Installer
 
 > Note: `build_macos.sh` must be run on a Mac, and `build_windows.bat` must be run on a Windows PC.
 
