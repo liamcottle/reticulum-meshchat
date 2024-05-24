@@ -43,6 +43,10 @@ setup(
         },
         'bdist_mac': {
             'iconfile': "macos/icon.icns",
+            'include_resources': [
+                # we use this script to launch as a terminal app
+                ('macos/ReticulumWebChat.sh', '../MacOS/ReticulumWebChat.sh'),
+            ],
             'plist_items': [
                 # we want ReticulumWebChat.app to execute ReticulumWebChat.sh instead of the python binary, as we need to launch it via terminal
                 ('CFBundleExecutable', 'ReticulumWebChat.sh'),

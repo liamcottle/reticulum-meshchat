@@ -1,12 +1,9 @@
 #!/bin/sh
 
-# build .app for mac
-python setup.py bdist_mac
+# ensure macos/ReticulumWebChat.sh is executable before the cxfreeze copies it inside the .app
+chmod +x macos/ReticulumWebChat.sh
 
-# copy shell script to .app
-for DIR in ./build/ReticulumWebChat-*.app/Contents/MacOS; do
-  cp ./macos/ReticulumWebChat.sh "$DIR/ReticulumWebChat.sh"
-  chmod +x "$DIR/ReticulumWebChat.sh"
-done
+# build macos .app and put in .dmg
+python setup.py bdist_dmg
 
 # todo codesign?
