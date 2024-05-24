@@ -126,13 +126,10 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 ## Build from Source
 
-You can build a standalone Windows Installer `.msi` with the following command;
+`build_macos.sh` - Builds a `.dmg` containing a `.app`
+`build_windows.bat` - Builds a `.msi` Windows Installer
 
-```
-python setup.py bdist_msi
-```
-
-> Note: This command only works when run from a Windows machine.
+> Note: `build_macos.sh` must be run on a Mac, and `build_windows.bat` must be run on a Windows PC.
 
 ## TODO
 
