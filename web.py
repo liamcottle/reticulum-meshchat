@@ -1390,7 +1390,7 @@ def main():
         # default identity file exists, load it
         identity = RNS.Identity(create_keys=False)
         identity.load(default_identity_file)
-        print("Reticulum Identity <{}> has been loaded from file.".format(identity.hash.hex()))
+        print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), default_identity_file))
 
     # init app
     reticulum_webchat = ReticulumWebChat(identity, args.storage_dir, args.reticulum_config_dir)
