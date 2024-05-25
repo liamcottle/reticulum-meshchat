@@ -145,7 +145,7 @@ class AudioCallManager:
         return None
 
     # attempts to initiate a call to the provided destination and returns the link hash on success
-    async def initiate(self, destination_hash: bytes, timeout_seconds: int = 15) -> bytes:
+    async def initiate(self, destination_hash: bytes, timeout_seconds: int = 15) -> AudioCall:
 
         # determine when to timeout
         timeout_after_seconds = time.time() + timeout_seconds
@@ -177,9 +177,6 @@ class AudioCallManager:
         # create link
         link = RNS.Link(server_destination)
 
-        # register link state callbacks
-        link.set_link_established_callback(self.on_link_established)
-
         # wait until we have established a link, or give up after the configured timeout
         while link.status is not RNS.Link.ACTIVE and time.time() < timeout_after_seconds:
             await asyncio.sleep(0.1)
@@ -188,18 +185,16 @@ class AudioCallManager:
         if link.status is not RNS.Link.ACTIVE:
             raise CallFailedException("Could not establish link to destination.")
 
-        return link.hash
-
-    def on_link_established(self, link: RNS.Link):
-
-        # todo: this can be optional, it's only being sent by default for ui, can be removed
-        link.identify(self.identity)
-
-        # create audio call
+        # link is now established, create audio call
         audio_call = AudioCall(link, is_outbound=True)
 
         # handle new outgoing call
         self.handle_outgoing_call(audio_call)
+
+        # todo: this can be optional, it's only being sent by default for ui, can be removed
+        link.identify(self.identity)
+
+        return audio_call
 
 
 class AudioCallReceiver:

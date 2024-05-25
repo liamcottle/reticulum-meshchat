@@ -364,30 +364,11 @@
                         },
                     });
 
-                    // get call hash from response
-                    const hash = response.data.hash;
+                    // get audio call from response
+                    const audioCall = response.data.audio_call;
 
                     // join call
-                    const maxJoinAttempts = 15;
-                    for(var i = 0; i < maxJoinAttempts; i++){
-                        try {
-
-                            // wait 1 second before attempting to join call
-                            await new Promise((resolve, reject) => setTimeout(resolve, 1000));
-
-                            // attempt to join call
-                            await this.joinCall(hash);
-
-                            // success, we no longer need to attempt to join
-                            return;
-
-                        } catch(e) {
-                            console.log(e);
-                        }
-                    }
-
-                    // failed to join call
-                    alert("timed out attempting to join call");
+                    await this.joinCall(audioCall.hash);
 
                 } catch(e) {
 

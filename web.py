@@ -260,9 +260,9 @@ class ReticulumWebChat:
             # initiate audio call
             try:
 
-                link_hash = await self.audio_call_manager.initiate(destination_hash, timeout_seconds)
+                audio_call = await self.audio_call_manager.initiate(destination_hash, timeout_seconds)
                 return web.json_response({
-                    "hash": link_hash.hex(),
+                    "audio_call": self.convert_audio_call_to_dict(audio_call),
                 })
 
             except Exception as e:
