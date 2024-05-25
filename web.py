@@ -254,8 +254,6 @@ class ReticulumWebChat:
             destination_hash = request.match_info.get("destination_hash", "")
             timeout_seconds = int(request.query.get("timeout", 15))
 
-            print(timeout_seconds)
-
             # convert destination hash to bytes
             destination_hash = bytes.fromhex(destination_hash)
 
