@@ -1,0 +1,303 @@
+<html>
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Network | Reticulum WebChat</title>
+
+    <!-- scripts -->
+    <script src="assets/js/tailwindcss/tailwind-v3.4.3-forms-v0.5.7.js"></script>
+    <script src="assets/js/axios@1.6.8/dist/axios.min.js"></script>
+    <script src="assets/js/vue@3.4.26/dist/vue.global.js"></script>
+
+    <!-- anychart -->
+    <script src="https://cdn.anychart.com/releases/8.8.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.8.0/js/anychart-graph.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.8.0/js/anychart-data-adapter.min.js"></script>
+
+</head>
+<body class="bg-gray-100">
+<div id="app">
+    <div id="chart" class="w-full h-full"></div>
+</div>
+<script>
+    Vue.createApp({
+        data() {
+            return {
+                config: null,
+                interfaces: [],
+                pathTable: [],
+                announces: {},
+            };
+        },
+        mounted: function() {
+            this.update();
+        },
+        methods: {
+            async getInterfaceStats() {
+                try {
+                    const response = await axios.get(`/api/v1/interface-stats`);
+                    this.interfaces = response.data.interface_stats?.interfaces ?? [];
+                } catch(e) {
+                    alert("failed to load interface stats");
+                    console.log(e);
+                }
+            },
+            async getPathTable() {
+                try {
+                    const response = await axios.get(`/api/v1/path-table`);
+                    this.pathTable = response.data.path_table;
+                } catch(e) {
+                    alert("failed to load path table");
+                    console.log(e);
+                }
+            },
+            async getConfig() {
+                try {
+                    const response = await axios.get("/api/v1/config");
+                    this.config = response.data.config;
+                } catch(e) {
+                    alert("failed to load config");
+                    console.error(e);
+                }
+            },
+            async getAnnounces() {
+                try {
+
+                    // fetch announces
+                    const response = await window.axios.get(`/api/v1/announces`);
+
+                    // cache announces
+                    this.announces = {};
+                    for(const announce of response.data.announces){
+                        this.announces[announce.destination_hash] = announce;
+                    }
+
+                } catch(e) {
+                    // do nothing if failed to load announces
+                    console.log(e);
+                }
+            },
+            async update() {
+
+                await this.getConfig();
+                await this.getInterfaceStats();
+                await this.getPathTable();
+                await this.getAnnounces();
+
+                const nodes = [];
+                const edges = [];
+
+                // add me
+                nodes.push({
+                    id: "me",
+                    group: "me",
+                });
+
+                // add interfaces
+                for(const entry of this.interfaces){
+
+                    // add interface node
+                    nodes.push({
+                        id: entry.name,
+                        group: "interface",
+                        meta: {
+                            interface: entry,
+                        },
+                        fill: {
+                            // interface colour by status
+                            color: entry.status ? '#22c55e' : '#ef4444',
+                        },
+                    });
+
+                    // add edge from me to interface
+                    edges.push({
+                        "from": "me",
+                        "to": entry.name,
+                    });
+
+                }
+
+                // add paths for announces
+                for(const entry of this.pathTable){
+
+                    // find what announced this path, or skip showing it for now
+                    const announce = this.announces[entry.hash];
+                    if(!announce){
+                        continue;
+                    }
+
+                    // add node
+                    nodes.push({
+                        id: entry.hash,
+                        group: `aspect:${announce.aspect}`,
+                        meta: {
+                            announce: announce,
+                        },
+                    });
+
+                    // add edge from interface to announced aspect
+                    edges.push({
+                        "from": entry.interface,
+                        "to": entry.hash,
+                    });
+
+                }
+
+                // create a network graph chart
+                var chart = anychart.graph({
+                    "nodes": nodes,
+                    "edges": edges,
+                });
+
+                // set the title and enable tooltips
+                chart.title("Reticulum Mesh Network");
+                chart.nodes().tooltip().enabled(true);
+
+                // set default node style
+                chart.nodes()
+                    .height(10)
+                    .stroke('black')
+                    .fill('#6b7280');
+
+                // set styles for group
+                const meGroup = chart.group('me');
+                if(meGroup){
+                    meGroup.height(50)
+                        .shape('circle')
+                        .stroke('black')
+                        .fill('#EAB308');
+                }
+
+                // set styles for group
+                const interfaceGroup = chart.group('interface');
+                if(interfaceGroup){
+                    interfaceGroup
+                        .height(25)
+                        .shape('circle')
+                        .stroke('black')
+                        .fill('#22C55E');
+                }
+
+                // set styles for group
+                const lxmfDeliveryGroup = chart.group('aspect:lxmf.delivery');
+                if(lxmfDeliveryGroup){
+                    lxmfDeliveryGroup
+                        .height(10)
+                        .shape('circle')
+                        .stroke('black')
+                        .fill('#3b82f6');
+                }
+
+                // set styles for group
+                const nomadNetworkNodeGroup = chart.group('aspect:nomadnetwork.node');
+                if(nomadNetworkNodeGroup){
+                    nomadNetworkNodeGroup
+                        .height(10)
+                        .shape('circle')
+                        .stroke('black')
+                        .fill('#3b82f6');
+                }
+
+                // configure tooltips for nodes
+                chart.nodes().tooltip().format((context) => {
+
+                    // node id we want to make a tooltip for
+                    const nodeId = context.id;
+
+                    // find existing node by id
+                    const existingNode = nodes.find((node) => node.id === nodeId);
+                    if(existingNode){
+
+                        // format tooltip for me
+                        if(existingNode.group === "me"){
+                            return [
+                                `${this.config?.display_name ?? 'This Device'}`,
+                                `Identity: ${this.config?.identity_hash ?? 'Unknown'}`,
+                            ].join("\n");
+                        }
+
+                        // format tooltip for interface
+                        if(existingNode.group === "interface"){
+                            const _interface = existingNode.meta.interface;
+                            return [
+                                `Interface`,
+                                `Name: ${_interface.name}`,
+                                `State: ${_interface.status ? 'Online' : 'Offline'}`,
+                                `Bitrate: ${this.formatBitsPerSecond(_interface.bitrate)}`,
+                                `TX: ${this.formatBytes(_interface.txb)}`,
+                                `RX: ${this.formatBytes(_interface.rxb)}`,
+                            ].join("\n");
+                        }
+
+                        // format tooltip for lxmf.delivery
+                        if(existingNode.group === "aspect:lxmf.delivery"){
+                            const _announce = existingNode.meta.announce;
+                            const name = _announce.app_data ? atob(_announce.app_data) : "Anonymous Peer";
+                            return [
+                                `Name: ${name}`,
+                                `Aspect: ${_announce.aspect}`,
+                                `Identity: ${_announce.identity_hash}`,
+                                `Destination: ${_announce.destination_hash}`,
+                                `Announced At: ${_announce.updated_at}`,
+                            ].join("\n");
+                        }
+
+                        // format tooltip for nomadnetwork.node
+                        if(existingNode.group === "aspect:nomadnetwork.node"){
+                            const _announce = existingNode.meta.announce;
+                            const name = _announce.app_data ? atob(_announce.app_data) : "Anonymous Node";
+                            return [
+                                `Name: ${name}`,
+                                `Aspect: ${_announce.aspect}`,
+                                `Identity: ${_announce.identity_hash}`,
+                                `Destination: ${_announce.destination_hash}`,
+                                `Announced At: ${_announce.updated_at}`,
+                            ].join("\n");
+                        }
+
+                    }
+
+                    // fallback to showing id
+                    return nodeId;
+
+                });
+
+                // draw the chart
+                chart.container("chart").draw();
+
+            },
+            formatBytes: function(bytes) {
+
+                if(bytes === 0){
+                    return '0 Bytes';
+                }
+
+                const k = 1024;
+                const decimals = 0;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+
+            },
+            formatBitsPerSecond: function(bits) {
+                if (bits === 0) {
+                    return '0 bps';
+                }
+
+                const k = 1000; // Use 1000 instead of 1024 for network speeds
+                const decimals = 0;
+                const sizes = ['bps', 'kbps', 'Mbps', 'Gbps', 'Tbps', 'Pbps', 'Ebps', 'Zbps', 'Ybps'];
+
+                const i = Math.floor(Math.log(bits) / Math.log(k));
+
+                return parseFloat((bits / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+            },
+        },
+    }).mount('#app');
+</script>
+</body>
+</html>
