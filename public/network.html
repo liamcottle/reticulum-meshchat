@@ -134,14 +134,69 @@
                         group: `aspect:${announce.aspect}`,
                         meta: {
                             announce: announce,
+                            path: entry,
                         },
                     });
 
+                    // hops == 1 -> show node on the interface itself
+                    // hops == 2 -> show node on first intermediate hop
+                    // hops >= 3 -> show node on next intermediate hop
+
                     // add edge from interface to announced aspect
-                    edges.push({
-                        "from": entry.interface,
-                        "to": entry.hash,
-                    });
+                    if(entry.hops === 1){
+                        edges.push({
+                            "from": entry.interface,
+                            "to": entry.hash,
+                        });
+                        continue;
+                    }
+
+                    // this path entry has multiple hops, create intermediate hop nodes so we can visualise each hop
+                    var intermediateHopNodeId = null;
+                    for(var i = 1; i < entry.hops; i++){
+
+                        const hopNumber = i + 1;
+                        const previousIntermediateHopNodeId = intermediateHopNodeId;
+                        intermediateHopNodeId = `${entry.interface}_hops_${hopNumber}`;
+
+                        // find existing intermediate hop node, or create it if it doesn't exist
+                        const existingIntermediateHopNode = nodes.find((node) => node.id === intermediateHopNodeId);
+                        if(!existingIntermediateHopNode){
+
+                            // add intermediate hop node
+                            nodes.push({
+                                id: intermediateHopNodeId,
+                                group: `intermediate-hop-node`,
+                                meta: {
+                                    interface_name: entry.interface,
+                                    hop_number: hopNumber,
+                                },
+                            });
+
+                            // if there is no previous intermediate hop node, we should add an edge to the actual interface
+                            if(previousIntermediateHopNodeId == null){
+                                edges.push({
+                                    "from": entry.interface,
+                                    "to": intermediateHopNodeId,
+                                });
+                            } else {
+                                edges.push({
+                                    "from": previousIntermediateHopNodeId,
+                                    "to": intermediateHopNodeId,
+                                });
+                            }
+
+                        }
+
+                    }
+
+                    // add edge from intermediate hop node to announced aspect
+                    if(intermediateHopNodeId){
+                        edges.push({
+                            "from": intermediateHopNodeId,
+                            "to": entry.hash,
+                        });
+                    }
 
                 }
 
@@ -178,6 +233,16 @@
                         .shape('circle')
                         .stroke('black')
                         .fill('#22C55E');
+                }
+
+                // set styles for group
+                const intermediateHopNodeGroup = chart.group('intermediate-hop-node');
+                if(intermediateHopNodeGroup){
+                    intermediateHopNodeGroup
+                        .height(25)
+                        .shape('circle')
+                        .stroke('black')
+                        .fill('#6b7280');
                 }
 
                 // set styles for group
@@ -231,15 +296,26 @@
                             ].join("\n");
                         }
 
+                        // format tooltip for intermediate-hop-node
+                        if(existingNode.group === "intermediate-hop-node"){
+                            const iterfaceName = existingNode.meta.interface_name;
+                            const hopNumber = existingNode.meta.hop_number;
+                            return [
+                                `${hopNumber} ${hopNumber === 1 ? 'Hop' : 'Hops'} via ${iterfaceName}`,
+                            ].join("\n");
+                        }
+
                         // format tooltip for lxmf.delivery
                         if(existingNode.group === "aspect:lxmf.delivery"){
                             const _announce = existingNode.meta.announce;
+                            const _path = existingNode.meta.path;
                             const name = _announce.app_data ? atob(_announce.app_data) : "Anonymous Peer";
                             return [
                                 `Name: ${name}`,
                                 `Aspect: ${_announce.aspect}`,
                                 `Identity: ${_announce.identity_hash}`,
                                 `Destination: ${_announce.destination_hash}`,
+                                `Path: ${_path.hops} ${_path.hops === 1 ? 'Hop' : 'Hops'} via ${_path.interface}`,
                                 `Announced At: ${_announce.updated_at}`,
                             ].join("\n");
                         }
@@ -247,12 +323,14 @@
                         // format tooltip for nomadnetwork.node
                         if(existingNode.group === "aspect:nomadnetwork.node"){
                             const _announce = existingNode.meta.announce;
+                            const _path = existingNode.meta.path;
                             const name = _announce.app_data ? atob(_announce.app_data) : "Anonymous Node";
                             return [
                                 `Name: ${name}`,
                                 `Aspect: ${_announce.aspect}`,
                                 `Identity: ${_announce.identity_hash}`,
                                 `Destination: ${_announce.destination_hash}`,
+                                `Path: ${_path.hops} ${_path.hops === 1 ? 'Hop' : 'Hops'} via ${_path.interface}`,
                                 `Announced At: ${_announce.updated_at}`,
                             ].join("\n");
                         }
