@@ -543,22 +543,29 @@
 
                 <!-- browser navigation -->
                 <div class="flex w-full border-gray-300 border-b p-2">
-                    <div @click="loadNodePage(selectedNode.destination_hash, '/page/index.mu')" class="my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
+                    <button @click="loadNodePage(selectedNode.destination_hash, '/page/index.mu')" type="button" class="my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                             <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
                         </svg>
-                    </div>
-                    <div @click="reloadNodePage" class="ml-1 my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
+                    </button>
+                    <button @click="reloadNodePage" type="button" class="ml-1 my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                             <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clip-rule="evenodd" />
                         </svg>
-                    </div>
+                    </button>
                     <button @click="loadPreviousNodePage" type="button" :disabled="nodePagePathHistory.length === 0" :class="[ nodePagePathHistory.length > 0 ? 'text-gray-500 bg-gray-200 hover:bg-gray-300' : 'text-gray-400 bg-gray-100']" class="ml-1 my-auto rounded p-1 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                             <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div class="my-auto ml-2">{{ nodePagePath }}</div>
+                    <div class="my-auto mx-2 w-full">
+                        <input v-model="nodePagePathUrlInput" @keyup.enter="onNodePageUrlClick(nodePagePathUrlInput)" type="text" placeholder="Enter Destination URL" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 py-1.5">
+                    </div>
+                    <button @click="onNodePageUrlClick(nodePagePathUrlInput)" type="button" class="my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- page content -->
@@ -635,6 +642,7 @@
                 isLoadingNodePage: false,
                 nodePageRequestSequence: 0,
                 nodePagePath: null,
+                nodePagePathUrlInput: null,
                 nodePageContent: null,
                 nodePageProgress: 0,
                 nodePagePathHistory: [],
@@ -1177,8 +1185,11 @@
                 this.nodePageContent = null;
                 this.nodePageProgress = 0;
 
+                // update url bar
+                this.nodePagePathUrlInput = this.nodePagePath;
+
                 // add to previous page to history if we are not loading that previous page
-                if(addToHistory && previousNodePagePath != null){
+                if(addToHistory && previousNodePagePath != null && previousNodePagePath !== this.nodePagePath){
                     this.nodePagePathHistory.push(previousNodePagePath);
                 }
 
