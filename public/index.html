@@ -548,6 +548,11 @@
                             <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
                         </svg>
                     </div>
+                    <button @click="loadPreviousNodePage()" type="button" :disabled="nodePagePathHistory.length === 0" :class="[ nodePagePathHistory.length > 0 ? 'text-gray-500 bg-gray-200 hover:bg-gray-300' : 'text-gray-400 bg-gray-100']" class="ml-1 my-auto rounded p-1 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                            <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
                     <div class="my-auto ml-2">{{ nodePagePath }}</div>
                 </div>
 
@@ -627,6 +632,7 @@
                 nodePagePath: null,
                 nodePageContent: null,
                 nodePageProgress: 0,
+                nodePagePathHistory: [],
 
                 isDownloadingNodeFile: false,
                 nodeFilePath: null,
@@ -1151,16 +1157,24 @@
                     // do nothing if failed to load messages
                 }
             },
-            async loadNodePage(destinationHash, pagePath) {
+            async loadNodePage(destinationHash, pagePath, addToHistory = true) {
 
                 // get new sequence for this page load
                 const seq = ++this.nodePageRequestSequence;
+
+                // get previous page path
+                const previousNodePagePath = this.nodePagePath;
 
                 // update ui
                 this.isLoadingNodePage = true;
                 this.nodePagePath = `${destinationHash}:${pagePath}`;
                 this.nodePageContent = null;
                 this.nodePageProgress = 0;
+
+                // add to previous page to history if we are not loading that previous page
+                if(addToHistory && previousNodePagePath != null){
+                    this.nodePagePathHistory.push(previousNodePagePath);
+                }
 
                 this.downloadNomadNetPage(destinationHash, pagePath, (pageContent) => {
 
@@ -1206,6 +1220,18 @@
 
                 });
             },
+            async loadPreviousNodePage() {
+
+                // get the previous path from history, or do nothing
+                const previousNodePagePath = this.nodePagePathHistory.pop();
+                if(!previousNodePagePath){
+                    return;
+                }
+
+                // load the page
+                this.onNodePageUrlClick(previousNodePagePath, false);
+
+            },
             parseNomadnetworkUrl: function(url) {
 
                 // parse relative urls
@@ -1244,7 +1270,7 @@
                 return null;
 
             },
-            onNodePageUrlClick: function(url) {
+            onNodePageUrlClick: function(url, addToHistory = true) {
 
                 // open http urls in new tab
                 if(url.startsWith("http://") || url.startsWith("https://")){
@@ -1305,7 +1331,7 @@
                     };
 
                     // navigate to node page
-                    this.loadNodePage(destinationHash, parsedUrl.path);
+                    this.loadNodePage(destinationHash, parsedUrl.path, addToHistory);
                     return;
 
                 }
