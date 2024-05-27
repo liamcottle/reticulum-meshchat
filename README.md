@@ -98,7 +98,7 @@ To allow them to discover the new path their packets should take to reach you, y
 
 **Discover Peers and start sending messages**
 
-In the Reticulum Network, you can control an unlimited number of destination addresses. One of these specifically could be an LXMF delivery address.
+In the Reticulum Network, you can control an unlimited number of destination addresses. One of these can be an LXMF delivery address.
 
 Your Reticulum Identity allows you to have an LXMF address. Think of an LXMF address as your very own, secure, end-to-end encrypted, unspoofable, email address routed over a mesh network.
 
