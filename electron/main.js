@@ -32,8 +32,8 @@ app.whenReady().then(async () => {
 
     // create browser window
     mainWindow = new BrowserWindow({
-        width: 1024,
-        height: 768,
+        width: 1500,
+        height: 800,
         webPreferences: {
             // used to inject logging over ipc
             preload: path.join(__dirname, 'preload.js'),
