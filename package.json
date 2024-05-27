@@ -17,7 +17,6 @@
   "build": {
     "appId": "com.liamcottle.reticulumwebchat",
     "productName": "Reticulum WebChat",
-    "artifactName": "ReticulumWebChat-v${version}.${ext}",
     "asar": false,
     "files": [
       "electron/**/*"
@@ -36,13 +35,30 @@
     ],
     "mac": {
       "target": "dmg",
-      "identity": null
+      "identity": null,
+      "artifactName": "ReticulumWebChat-v${version}-${os}.${ext}"
     },
     "win": {
-      "target": "portable"
+      "artifactName": "ReticulumWebChat-v${version}-${os}.${ext}",
+      "target": [
+        {
+          "target": "portable"
+        },
+        {
+          "target": "nsis"
+        }
+      ]
     },
     "dmg": {
       "writeUpdateInfo": false
+    },
+    "portable": {
+      "artifactName": "ReticulumWebChat-v${version}-${os}-portable.${ext}"
+    },
+    "nsis": {
+      "artifactName": "ReticulumWebChat-v${version}-${os}-installer.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
