@@ -38,6 +38,14 @@ A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client 
 
 > NOTE: micron format parsing is still in development, some pages may not render or work correctly at all.
 
+## Download
+
+You can download the latest version for Windows and Mac from the [releases](https://github.com/liamcottle/reticulum-webchat/releases) page.
+
+Alternatively, you can download the source and run it manually from a command line.
+
+See the ["How to use it?"](#how-to-use-it) section below on how to do this.
+
 ## How does it work?
 
 - A python script ([web.py](./web.py)) runs a Reticulum instance and a WebSocket server.
