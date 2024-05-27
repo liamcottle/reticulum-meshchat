@@ -40,9 +40,6 @@ app.whenReady().then(async () => {
         },
     });
 
-    // open dev tools
-    mainWindow.webContents.openDevTools();
-
     // navigate to loading page
     await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
