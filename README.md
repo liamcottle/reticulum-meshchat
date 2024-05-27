@@ -133,6 +133,7 @@ To run as a standalone application, we need to compile the python application to
 To build a `.dmg` containing a `.app` for Mac, run the following:
 
 ```
+npm install
 npm run dist
 ```
 
