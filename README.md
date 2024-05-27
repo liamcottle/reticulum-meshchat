@@ -125,7 +125,7 @@ Remember, in order to connect with other peers or nodes, they must announce on t
 
 ## How to use it?
 
-You will need to clone the repo, and run `web.py`.
+If you don't want to, or can't [download](https://github.com/liamcottle/reticulum-webchat#download) a standalone application, you will need to clone the source code from this repo, and then run `web.py`.
 
 ```
 git clone https://github.com/liamcottle/reticulum-webchat
