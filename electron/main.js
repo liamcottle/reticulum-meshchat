@@ -99,3 +99,8 @@ function quit() {
 app.on('window-all-closed', () => {
     quit();
 });
+
+// make sure child process is killed if app is quiting
+app.on('quit', () => {
+    quit();
+});
