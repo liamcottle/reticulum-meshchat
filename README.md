@@ -18,7 +18,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 
 <img src="./screenshots/screenshot.png">
 
-## Tell me more?
+## What does it do?
 
 - It can communicate with any other [LXMF](https://github.com/markqvist/lxmf) client.
 - It can browse micron pages and download files from [Nomad Network](https://github.com/markqvist/nomadnet) nodes.
