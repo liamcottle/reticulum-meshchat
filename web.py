@@ -130,6 +130,13 @@ class ReticulumWebChat:
         async def index(request):
             return web.FileResponse(path=get_file_path("public/index.html"))
 
+        # serve ping
+        @routes.get("/api/v1/status")
+        async def index(request):
+            return web.json_response({
+                "status": "ok",
+            })
+
         # handle websocket clients
         @routes.get("/ws")
         async def ws(request):

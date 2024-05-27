@@ -1,0 +1,70 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Reticulum WebChat</title>
+    <script src="./assets/js/tailwindcss/tailwind-v3.4.3-forms-v0.5.7.js"></script>
+</head>
+<body class="bg-gray-100 flex">
+
+<div class="flex flex-col mx-auto my-auto">
+
+    <!-- logo -->
+    <div class="mx-auto my-auto">
+        <img class="w-24 h-24" src="./assets/images/logo.png"/>
+    </div>
+
+    <!-- about -->
+    <div class="mx-auto text-center mb-2">
+        <div class="font-bold">Reticulum WebChat</div>
+        <div class="text-sm">v1.0.0 Developed by Liam Cottle</div>
+    </div>
+
+    <!-- loading spinner -->
+    <div class="mx-auto">
+        <svg class="animate-spin h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+    </div>
+
+</div>
+
+<script>
+
+    check();
+
+    async function check() {
+
+        try {
+
+            // fetch status api
+            const url = "http://localhost:9337/api/v1/status";
+            const result = await fetch(url, {
+                cache: "no-store", // don't read page from cache, we want to make sure server is up
+            });
+
+            // check status api says ok
+            const status = result.status;
+            const data = await result.json();
+            if(status === 200 && data.status === "ok"){
+                onReady();
+                return;
+            }
+
+        } catch(e) {}
+
+        // try again shortly
+        setTimeout(check, 250);
+
+    }
+
+    function onReady() {
+        window.location.href = "http://localhost:9337";
+    }
+
+</script>
+
+</body>
+</html>
