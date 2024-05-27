@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.liamcottle.reticulumwebchat",
     "productName": "Reticulum WebChat",
+    "artifactName": "ReticulumWebChat-v${version}.${ext}",
     "asar": false,
     "files": [
       "electron/**/*"
