@@ -34,10 +34,14 @@
       }
     ],
     "mac": {
+      "target": "dmg",
       "identity": null
     },
     "win": {
       "target": "portable"
+    },
+    "dmg": {
+      "writeUpdateInfo": false
     }
   }
 }
