@@ -114,7 +114,7 @@ Remember, in order to connect with other peers or nodes, they must announce on t
 
 **Configuring additional Network Interfaces**
 
-> TODO: this section is yet to be written. For now, you can check out the [official documentation for configuring interfaces](https://reticulum.network/manual/interfaces.html) in the Reticulum Config file. This file is located at `~/.reticulum/config`
+> TODO: this section is yet to be written. For now, you can check out the [official documentation for configuring interfaces](https://reticulum.network/manual/interfaces.html) in the Reticulum config file. This file is located at `~/.reticulum/config`
 
 ## How does it work?
 
