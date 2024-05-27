@@ -141,6 +141,7 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 - [ ] button to forget peers and contacts
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
 - [ ] support for managing Reticulum config/interfaces via the web ui
+- [ ] support for micron input fields, to allow interacting with pages like Retipedia
 
 ## License
 
