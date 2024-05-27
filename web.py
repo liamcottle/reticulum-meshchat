@@ -678,10 +678,10 @@ class ReticulumWebChat:
 
             # handle file download failure
             def on_file_download_failure(failure_reason):
-                asyncio.run(client.send_str(json.dumps({
+                asyncio.create_task(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
-                        "status": "error",
+                        "status": "failure",
                         "failure_reason": failure_reason,
                         "destination_hash": destination_hash.hex(),
                         "file_path": file_path,
@@ -730,10 +730,10 @@ class ReticulumWebChat:
 
             # handle page download failure
             def on_page_download_failure(failure_reason):
-                asyncio.run(client.send_str(json.dumps({
+                asyncio.create_task(client.send_str(json.dumps({
                     "type": "nomadnet.page.download",
                     "nomadnet_page_download": {
-                        "status": "error",
+                        "status": "failure",
                         "failure_reason": failure_reason,
                         "destination_hash": destination_hash.hex(),
                         "page_path": page_path,
