@@ -36,6 +36,8 @@ setup(
             # it also prevents assert statements from executing, removes docstrings and sets __debug__ to False.
             # https://stackoverflow.com/a/57948104
             "optimize": 2,
+            # change where exe is built to
+            'build_exe': 'build/exe',
         },
         'build_msi': {
             # use a static upgrade code to allow installer to remove existing files on upgrade

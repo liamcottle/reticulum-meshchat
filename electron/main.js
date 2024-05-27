@@ -2,45 +2,87 @@ const { app, BrowserWindow } = require('electron');
 const { spawn } = require('child_process');
 const path = require('node:path');
 
-// remember child process for exe so when can kill it when app exits
+// remember main window
+var mainWindow = null;
+
+// remember child process for exe so we can kill it when app exits
 var exeChildProcess = null;
+
+function log(message) {
+
+    // make sure main window exists
+    if(!mainWindow){
+        return;
+    }
+
+    // make sure window is not destroyed
+    if(mainWindow.isDestroyed()){
+        return;
+    }
+
+    // log to electron console
+    console.log(message);
+
+    // log to web console
+    mainWindow.webContents.send('log', message);
+
+}
 
 app.whenReady().then(async () => {
 
     // create browser window
-    const win = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 1024,
         height: 768,
-    })
+        webPreferences: {
+            // used to inject logging over ipc
+            preload: path.join(__dirname, 'preload.js'),
+        },
+    });
+
+    // open dev tools
+    mainWindow.webContents.openDevTools();
 
     // navigate to loading page
-    await win.loadFile(path.join(__dirname, 'loading.html'));
+    await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
-    // find path to reticulum webchat python/cxfreexe executable
-    const exe = path.join(__dirname, '..', 'build/exe.macosx-12.4-x86_64-3.11/ReticulumWebChat');
+    // find path to python/cxfreeze reticulum webchat executable
+    const exe = path.join(__dirname, 'build/exe/ReticulumWebChat');
 
-    // spawn exe
-    exeChildProcess = spawn(exe, [
-        '--headless',
-        '--port', '9337', // FIXME: let system pick a random unused port?
-    ]);
+    try {
 
-    // listen to stdout
-    exeChildProcess.stdout.setEncoding('utf8');
-    exeChildProcess.stdout.on('data', function(data) {
-        console.log('stdout: ' + data);
-    });
+        // spawn executable
+        exeChildProcess = await spawn(exe, [
+            '--headless', // reticulum webchat usually launches default web browser, we don't want this when using electron
+            '--port', '9337', // FIXME: let system pick a random unused port?
+            '--storage-dir', path.join(app.getPath('home'), '.reticulum-webchat'), // ~/.reticulum-webchat
+        ]);
 
-    // listen to stderror
-    exeChildProcess.stderr.setEncoding('utf8');
-    exeChildProcess.stderr.on('data', function(data) {
-        console.log('stderr: ' + data);
-    });
+        // log stdout
+        exeChildProcess.stdout.setEncoding('utf8');
+        exeChildProcess.stdout.on('data', function(data) {
+            log(data.toString());
+        });
 
-    // listen to process exit
-    exeChildProcess.on('exit', function(code) {
-        console.log("exit: " + code);
-    });
+        // log stderr
+        exeChildProcess.stderr.setEncoding('utf8');
+        exeChildProcess.stderr.on('data', function(data) {
+            log(data.toString());
+        });
+
+        // log errors
+        exeChildProcess.on('error', function(error) {
+            log(error);
+        });
+
+        // quit electron app if exe dies
+        exeChildProcess.on('exit', function(code) {
+            quit();
+        });
+
+    } catch(e) {
+        log(e);
+    }
 
 });
 
@@ -56,6 +98,7 @@ function quit() {
 
 }
 
+// quit electron if all windows are closed
 app.on('window-all-closed', () => {
     quit();
 });

@@ -3,12 +3,32 @@
   "version": "1.0.0",
   "description": "",
   "main": "electron/main.js",
+  "postinstall": "electron-builder install-app-deps",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "python setup.py build && electron-builder"
   },
   "license": "MIT",
   "devDependencies": {
-    "electron": "^30.0.8"
+    "electron": "^30.0.8",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.liamcottle.reticulumwebchat",
+    "asar": false,
+    "files": [
+      "electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "electron/build"
+    },
+    "extraFiles": [
+      {
+        "from": "build/exe",
+        "to": "Resources/app/electron/build/exe",
+        "filter": ["**/*"]
+      }
+    ]
   }
 }
