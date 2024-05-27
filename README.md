@@ -126,9 +126,11 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 ## Build Electron Application
 
-Reticulum WebChat can be run via a command line, as explained above, or as a standalone Electron app.
+Reticulum WebChat can be run from source via a command line, as explained above, or as a standalone application.
 
-To run as a standalone application, we need to compile the python application to an executable with [cxfreeze](https://github.com/marcelotduarte/cx_Freeze) and then build an [electron](https://www.electronjs.org/) app which includes a bundled browser that can interact with the compiled python executable.
+To run as a standalone application, we need to compile the python script and dependencies to an executable with [cxfreeze](https://github.com/marcelotduarte/cx_Freeze) and then build an [Electron](https://www.electronjs.org/) app which includes a bundled browser that can interact with the compiled python executable.
+
+This allows for the entire application to be run by double clicking a single file without the need for a user to manually install python, nor run any commands in a command line application.
 
 To build a `.exe` when running on Windows or a `.dmg` when running on a Mac, run the following;
 
