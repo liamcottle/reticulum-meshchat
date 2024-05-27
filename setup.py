@@ -39,9 +39,5 @@ setup(
             # change where exe is built to
             'build_exe': 'build/exe',
         },
-        'build_msi': {
-            # use a static upgrade code to allow installer to remove existing files on upgrade
-            'upgrade_code': '{6c69616d-ae73-460c-88e8-399b3134134e}',
-        },
     },
 )
