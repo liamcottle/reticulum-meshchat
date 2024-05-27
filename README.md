@@ -146,7 +146,6 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
 ## TODO
 
-- [ ] add build script for macos binary
 - [ ] auto build and release windows and macos binaries via github actions
 - [ ] conversations/contacts list ui with unread indicators
 - [ ] button to add peer to contacts, and show a tab for contacts, separate from peers list
