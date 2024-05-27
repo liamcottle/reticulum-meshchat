@@ -14,7 +14,16 @@
 
 ## What is Reticulum WebChat?
 
-A simple open-source web based [LXMF](https://github.com/markqvist/lxmf) client for [Reticulum](https://github.com/markqvist/Reticulum).
+A simple mesh network communications app powered by the [Reticulum Network](https://github.com/markqvist/Reticulum).
+
+- It can communicate with any other [LXMF](https://github.com/markqvist/lxmf) client.
+- It can browse micron pages and download files from [Nomad Network](https://github.com/markqvist/nomadnet) nodes.
+- It can send and receive messages, files and audio calls with peers;
+  - Over your local network through Ethernet and WiFi, completely automatically.
+  - Over the internet by connecting through a server hosted by yourself or the community.
+  - Over low-powered, license-free, ISM band LoRa Radio, with an [RNode](https://github.com/markqvist/RNode_Firmware).
+  - ...and via any other interface supported by the Reticulum Network Stack.
+  
 
 <img src="./screenshots/screenshot.png">
 
