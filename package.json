@@ -12,7 +12,7 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^30.0.8",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.6.3"
   },
   "build": {
     "appId": "com.liamcottle.reticulumwebchat",
@@ -27,7 +27,9 @@
       {
         "from": "build/exe",
         "to": "Resources/app/electron/build/exe",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ]
   }
