@@ -43,17 +43,5 @@ setup(
             # use a static upgrade code to allow installer to remove existing files on upgrade
             'upgrade_code': '{6c69616d-ae73-460c-88e8-399b3134134e}',
         },
-        'bdist_mac': {
-            'bundle_name': 'ReticulumWebChat', # creates ReticulumWebChat.app
-            'iconfile': 'macos/icon.icns',
-            'include_resources': [
-                # we use this script to launch as a terminal app
-                ('macos/ReticulumWebChat.sh', '../MacOS/ReticulumWebChat.sh'),
-            ],
-            'plist_items': [
-                # we want ReticulumWebChat.app to execute ReticulumWebChat.sh instead of the python binary, as we need to launch it via terminal
-                ('CFBundleExecutable', 'ReticulumWebChat.sh'),
-            ],
-        },
     },
 )

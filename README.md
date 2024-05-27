@@ -124,12 +124,19 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 > NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
 
-## Build from Source
+## Build Electron Application
 
-- `build_macos.sh` - Builds a `.dmg` containing a `.app`
-- `build_windows.bat` - Builds a `.msi` Windows Installer
+Reticulum WebChat can be run via a command line, as explained above, or as a standalone Electron app.
 
-> Note: `build_macos.sh` must be run on a Mac, and `build_windows.bat` must be run on a Windows PC.
+To run as a standalone application, we need to compile the python application to an executable with [cxfreeze](https://github.com/marcelotduarte/cx_Freeze) and then build an [electron](https://www.electronjs.org/) app which includes a bundled browser that can interact with the compiled python executable.
+
+To build a `.dmg` containing a `.app` for Mac, run the following:
+
+```
+npm run dist
+```
+
+> Note: cxfreeze only supports building an executable for the current platform. You will need a Mac to build for Mac, and a Windows PC to build for Windows.
 
 ## TODO
 
