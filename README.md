@@ -56,6 +56,66 @@ Alternatively, you can download the source and run it manually from a command li
 
 See the ["How to use it?"](#how-to-use-it) section below on how to do this.
 
+## Getting Started
+
+Once you've downloaded, installed and launched Reticulum WebChat, there's a few things you need to do in order to start communicating with other people on the network.
+
+1. Create an Identity
+2. Configure your Display Name
+3. Send an Announce
+4. Discover Peers and start sending messages
+5. Configuring additional Network Interfaces
+
+**Create an Identity**
+
+On the Reticulum Network, anyone can have any number of Identities. You may opt to use your real name, or you may decide to be completely anonymous. The choice is yours.
+
+A Reticulum Identity is a public/private key-pair. You control the private key used to generate destination addresses, encrypt content and prove receipt of data with unforgeable delivery acknowledgements.
+
+Your public key is shared with the network when you send an announce, and allows others on the network to automatically discover a route to a destination you control.
+
+At this time, Reticulum WebChat generates a new Identity the first time you launch it. A future update will allow you to create and manage multiple identities.
+
+For now, if you want to change, or reset your identity, you can access the identity file at `~/.reticulum-webchat/identity`.
+
+**Configure your Display Name**
+
+The next thing you should do, is set a display name. Your display name is what everyone else on the network will see when looking for someone to communicate with from the Peers list.
+
+You can do this in the `My Identity` section in the bottom left corner. Enter a new display name, and then press `Save`.
+
+**Send an Announce**
+
+When using the Reticulum Network, in order to be contactable, you need to send an `Announce`. You can send an announce as often, or as infrequently as you like.
+
+Sending an announce allows other peers on the network to discover the next-hop across the network their packets should take to arrive at a destination that your identity controls.
+
+If you never send an announce, you will be invisible and no one will ever be able to send anything to you.
+
+When you move across the network, and change entrypoints, such as moving from your home WiFi network, to plugging in to an Ethernet port in a local library or even climbing a mountain and using an RNode over LoRa radio, other peers on the network will only know the previous path to your destinations.
+
+To allow them to discover the new path their packets should take to reach you, you should send an announce.
+
+**Discover Peers and start sending messages**
+
+In the Reticulum Network, you can control an unlimited number of destination addresses. One of these specifically could be an LXMF delivery address.
+
+Your Reticulum Identity allows you to have an LXMF address. Think of an LXMF address as your very own, secure, end-to-end encrypted, unspoofable, email address routed over a mesh network.
+
+When someone else on the network announces themselves (more specifically, their LXMF address), they will show up in the Peers tab.
+
+You can click on any of these discovered peers to open a messaging interface. From here, you can send text messages, files and inline images. If they respond, their messages will show up there too.
+
+As well as being able to announce your LXMF address, Reticulum WebChat can also discover Nomad Network Nodes hosted by other users. From the Nodes tab, you are free to explore pages and download files they may be publicly sharing on the network.
+
+A future update is planned to allow you to host your own Node and share pages and files with other peers on the network. For now, you could use the official [Nomad Network](https://github.com/markqvist/nomadnet) client to do this.
+
+Remember, in order to connect with other peers or nodes, they must announce on the network. So don't forget to announce if you want to be discovered!
+
+**Configuring additional Network Interfaces**
+
+> TODO: this section is yet to be written. For now, you can check out the [official documentation for configuring interfaces](https://reticulum.network/manual/interfaces.html) in the Reticulum Config file. This file is located at `~/.reticulum/config`
+
 ## How does it work?
 
 - A python script ([web.py](./web.py)) runs a Reticulum instance and a WebSocket server.
