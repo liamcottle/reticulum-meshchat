@@ -130,7 +130,7 @@ Reticulum WebChat can be run via a command line, as explained above, or as a sta
 
 To run as a standalone application, we need to compile the python application to an executable with [cxfreeze](https://github.com/marcelotduarte/cx_Freeze) and then build an [electron](https://www.electronjs.org/) app which includes a bundled browser that can interact with the compiled python executable.
 
-To build a `.dmg` containing a `.app` for Mac, run the following:
+To build a `.exe` when running on Windows or a `.dmg` when running on a Mac, run the following;
 
 ```
 pip install -r requirements.txt
@@ -139,6 +139,8 @@ npm run dist
 ```
 
 > Note: cxfreeze only supports building an executable for the current platform. You will need a Mac to build for Mac, and a Windows PC to build for Windows.
+
+Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
 ## TODO
 
