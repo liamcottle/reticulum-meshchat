@@ -231,6 +231,7 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
 - [ ] support for managing Reticulum config/interfaces via the web ui
 - [ ] support for micron input fields, to allow interacting with pages like Retipedia
+- [ ] add setting to allow auto announcing at a configurable interval
 
 ## License
 
