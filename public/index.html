@@ -985,6 +985,11 @@
                     return;
                 }
 
+                this.openLXMFConversation(destinationHash);
+
+            },
+            openLXMFConversation(destinationHash) {
+
                 // attempt to find existing peer so we can show their name
                 const existingPeer = this.peers[destinationHash];
                 if(existingPeer){
@@ -1357,6 +1362,15 @@
                 if(url.startsWith("http://") || url.startsWith("https://")){
                     window.open(url, "_blank");
                     return;
+                }
+
+                // lxmf urls should open the conversation
+                if(url.startsWith("lxmf@")){
+                    const destinationHash = url.replace("lxmf@", "");
+                    if(destinationHash.length === 32){
+                        this.openLXMFConversation(destinationHash);
+                        return;
+                    }
                 }
 
                 // attempt to parse url
