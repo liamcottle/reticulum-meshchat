@@ -1246,7 +1246,7 @@ class NomadnetDownloader:
         self.on_progress_update = on_progress_update
 
     # setup link to destination and request download
-    async def download(self, path_lookup_timeout: int = 15):
+    async def download(self, path_lookup_timeout: int = 15, link_establishment_timeout: int = 15):
 
         # determine when to timeout
         timeout_after_seconds = time.time() + path_lookup_timeout
@@ -1277,7 +1277,18 @@ class NomadnetDownloader:
         )
 
         # create link to destination
-        RNS.Link(destination, established_callback=self.link_established)
+        link = RNS.Link(destination, established_callback=self.link_established)
+
+        # determine when to timeout
+        timeout_after_seconds = time.time() + link_establishment_timeout
+
+        # wait until we have established a link, or give up after the configured timeout
+        while link.status is not RNS.Link.ACTIVE and time.time() < timeout_after_seconds:
+            await asyncio.sleep(0.1)
+
+        # if we still haven't established a link, bail out
+        if link.status is not RNS.Link.ACTIVE:
+            self.on_download_failure("Could not establish link to destination.")
 
     # link to destination was established, we should now request the download
     def link_established(self, link):
