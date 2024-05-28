@@ -46,7 +46,7 @@ jobs:
           artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
 
   build_mac:
-    runs-on: macos-latest
+    runs-on: macos-13
     permissions:
       contents: write
     steps:
