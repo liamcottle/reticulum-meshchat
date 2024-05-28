@@ -1,0 +1,54 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v1
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Deps
+        run: pip install -r requirements.txt
+
+      - name: Install NodeJS Deps
+        run: npm install
+
+      - name: Build Electron App
+        run: npm run dist
+
+      - name: Get Tag
+        id: get_tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo ${GITHUB_REF/refs\/tags\//}
+          echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+
+      - name: Get Name of Installer Artifact
+        id: get_installer_artifact_name
+        run: |
+          INSTALLER_ARTIFACT_PATHNAME=$(ls dist/*-win-installer.exe | head -n 1)
+          INSTALLER_ARTIFACT_NAME=$(basename $INSTALLER_ARTIFACT_PATHNAME)
+          echo ::set-output name=INSTALLER_ARTIFACT_NAME::${INSTALLER_ARTIFACT_NAME}
+          echo ::set-output name=INSTALLER_ARTIFACT_PATHNAME::${INSTALLER_ARTIFACT_PATHNAME}
+
+      - name: Get Name of Portable Artifact
+        id: get_portable_artifact_name
+        run: |
+          PORTABLE_ARTIFACT_PATHNAME=$(ls dist/*-win-portable.exe | head -n 1)
+          PORTABLE_ARTIFACT_NAME=$(basename $PORTABLE_ARTIFACT_PATHNAME)
+          echo ::set-output name=PORTABLE_ARTIFACT_NAME::${PORTABLE_ARTIFACT_NAME}
+          echo ::set-output name=PORTABLE_ARTIFACT_PATHNAME::${PORTABLE_ARTIFACT_PATHNAME}
