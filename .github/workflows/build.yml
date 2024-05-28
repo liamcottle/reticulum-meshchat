@@ -1,7 +1,9 @@
 name: Build and Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - '*'
 
 jobs:
 
@@ -38,9 +40,10 @@ jobs:
         with:
           draft: true
           allowUpdates: true
-          name: "test release"
-          commit: "master"
-          tag: "master"
+          replacesArtifacts: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          name: v${{github.ref_name}}
           artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
 
   build_mac:
@@ -76,7 +79,8 @@ jobs:
         with:
           draft: true
           allowUpdates: true
-          name: "test release"
-          commit: "master"
-          tag: "master"
+          replacesArtifacts: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          name: v${{github.ref_name}}
           artifacts: "dist/*-mac.dmg"
