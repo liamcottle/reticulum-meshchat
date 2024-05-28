@@ -36,7 +36,11 @@
     "mac": {
       "target": "dmg",
       "identity": null,
-      "artifactName": "ReticulumWebChat-v${version}-${os}.${ext}"
+      "artifactName": "ReticulumWebChat-v${version}-${os}.${ext}",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Microphone access is only needed for Audio Calls",
+        "com.apple.security.device.audio-input": true
+      }
     },
     "win": {
       "artifactName": "ReticulumWebChat-v${version}-${os}.${ext}",

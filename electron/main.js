@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, systemPreferences } = require('electron');
 const electronPrompt = require('electron-prompt');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -65,6 +65,9 @@ app.whenReady().then(async () => {
     if(!fs.existsSync(exe)){
         exe = path.join(__dirname, '..', 'build/exe/ReticulumWebChat');
     }
+
+    // ask user for microphone access for audio calls to work
+    await systemPreferences.askForMediaAccess('microphone');
 
     try {
 
