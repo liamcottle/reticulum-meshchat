@@ -39,16 +39,18 @@ jobs:
 
       - name: Get Name of Installer Artifact
         id: get_installer_artifact_name
+        shell: pwsh
         run: |
-          INSTALLER_ARTIFACT_PATHNAME=$(ls dist/*-win-installer.exe | head -n 1)
-          INSTALLER_ARTIFACT_NAME=$(basename $INSTALLER_ARTIFACT_PATHNAME)
-          echo ::set-output name=INSTALLER_ARTIFACT_NAME::${INSTALLER_ARTIFACT_NAME}
-          echo ::set-output name=INSTALLER_ARTIFACT_PATHNAME::${INSTALLER_ARTIFACT_PATHNAME}
+          $artifactPathname = (Get-ChildItem -Path dist -Filter *-win-installer.exe | Select-Object -First 1).FullName
+          $artifactName = Split-Path -Path $artifactPathname -Leaf
+          echo "::set-output name=INSTALLER_ARTIFACT_NAME::$artifactName"
+          echo "::set-output name=INSTALLER_ARTIFACT_PATHNAME::$artifactPathname"
 
       - name: Get Name of Portable Artifact
         id: get_portable_artifact_name
+        shell: pwsh
         run: |
-          PORTABLE_ARTIFACT_PATHNAME=$(ls dist/*-win-portable.exe | head -n 1)
-          PORTABLE_ARTIFACT_NAME=$(basename $PORTABLE_ARTIFACT_PATHNAME)
-          echo ::set-output name=PORTABLE_ARTIFACT_NAME::${PORTABLE_ARTIFACT_NAME}
-          echo ::set-output name=PORTABLE_ARTIFACT_PATHNAME::${PORTABLE_ARTIFACT_PATHNAME}
+          $artifactPathname = (Get-ChildItem -Path dist -Filter *-win-portable.exe | Select-Object -First 1).FullName
+          $artifactName = Split-Path -Path $artifactPathname -Leaf
+          echo "::set-output name=PORTABLE_ARTIFACT_NAME::$artifactName"
+          echo "::set-output name=PORTABLE_ARTIFACT_PATHNAME::$artifactPathname"
