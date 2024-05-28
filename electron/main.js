@@ -10,6 +10,11 @@ var mainWindow = null;
 // remember child process for exe so we can kill it when app exits
 var exeChildProcess = null;
 
+// allow fetching app version via ipc
+ipcMain.handle('app-version', async() => {
+    return app.getVersion();
+});
+
 // add support for showing a prompt window via ipc
 ipcMain.handle('prompt', async(event, message) => {
     return await electronPrompt({
