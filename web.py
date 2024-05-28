@@ -16,6 +16,7 @@ import base64
 import webbrowser
 
 from peewee import SqliteDatabase
+from serial.tools import list_ports
 
 import database
 from lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment
@@ -135,6 +136,22 @@ class ReticulumWebChat:
         async def index(request):
             return web.json_response({
                 "status": "ok",
+            })
+
+        # fetch com ports
+        @routes.get("/api/v1/comports")
+        async def index(request):
+
+            comports = []
+            for comport in list_ports.comports():
+                comports.append({
+                    "device": comport.device,
+                    "product": comport.product,
+                    "serial_number": comport.serial_number,
+                })
+
+            return web.json_response({
+                "comports": comports,
             })
 
         # handle websocket clients
