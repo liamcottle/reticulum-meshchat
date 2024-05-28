@@ -224,7 +224,6 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
 ## TODO
 
-- [ ] auto build and release windows and macos binaries via github actions
 - [ ] conversations/contacts list ui with unread indicators
 - [ ] button to add peer to contacts, and show a tab for contacts, separate from peers list
 - [ ] allow setting a custom name to show for a contact
