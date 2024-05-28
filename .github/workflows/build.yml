@@ -35,5 +35,9 @@ jobs:
         id: create_release
         uses: ncipollo/release-action@v1
         with:
+          draft: true
+          allowUpdates: true
+          name: "test release"
           commit: "master"
+          tag: "master"
           artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
