@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+
+  build_windows:
     runs-on: windows-latest
     permissions:
       contents: write
@@ -41,3 +42,41 @@ jobs:
           commit: "master"
           tag: "master"
           artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
+
+  build_mac:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v1
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Deps
+        run: pip install -r requirements.txt
+
+      - name: Install NodeJS Deps
+        run: npm install
+
+      - name: Build Electron App
+        run: npm run dist
+
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          draft: true
+          allowUpdates: true
+          name: "test release"
+          commit: "master"
+          tag: "master"
+          artifacts: "dist/*-mac.dmg"
