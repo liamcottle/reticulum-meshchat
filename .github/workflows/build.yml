@@ -43,7 +43,6 @@ jobs:
           replacesArtifacts: true
           omitDraftDuringUpdate: true
           omitNameDuringUpdate: true
-          name: v${{github.ref_name}}
           artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
 
   build_mac:
@@ -82,5 +81,4 @@ jobs:
           replacesArtifacts: true
           omitDraftDuringUpdate: true
           omitNameDuringUpdate: true
-          name: v${{github.ref_name}}
           artifacts: "dist/*-mac.dmg"
