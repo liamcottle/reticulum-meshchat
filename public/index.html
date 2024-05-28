@@ -45,16 +45,26 @@
                         </div>
                     </div>
                 </div>
-                <a @click="sendAnnounce" href="javascript:void(0)" class="rounded-full">
-                    <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
-                        <div>
+                <button @click="startNewLXMFConversation" type="button" class="rounded-full">
+                    <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                            </svg>
+                        </span>
+                        <span class="my-auto mx-1 text-sm">Compose</span>
+                    </span>
+                </button>
+                <button @click="sendAnnounce" type="button" class="rounded-full">
+                    <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
+                        <span>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
                             </svg>
-                        </div>
-                        <div class="my-auto mx-1 text-sm">Announce</div>
-                    </div>
-                </a>
+                        </span>
+                        <span class="my-auto mx-1 text-sm">Announce</span>
+                    </span>
+                </button>
             </div>
         </div>
     </div>
@@ -967,6 +977,34 @@
                     "display_name": this.displayName,
                 });
             },
+            async startNewLXMFConversation() {
+
+                // ask for destination address
+                const destinationHash = await this.prompt("Enter LXMF Address");
+                if(!destinationHash){
+                    return;
+                }
+
+                // attempt to find existing peer so we can show their name
+                const existingPeer = this.peers[destinationHash];
+                if(existingPeer){
+                    this.onPeerClick(existingPeer);
+                    return;
+                }
+
+                // simple attempt to prevent garbage input
+                if(destinationHash.length !== 32){
+                    alert("Invalid Address");
+                    return;
+                }
+
+                // we didn't find an existing peer, so just use an unknown name
+                this.onPeerClick({
+                    name: "Unknown Peer",
+                    destination_hash: destinationHash,
+                });
+
+            },
             downloadNomadNetFile(destinationHash, filePath, onSuccessCallback, onFailureCallback, onProgressCallback) {
 
                 // do nothing if not connected to websocket
@@ -1658,6 +1696,15 @@
                     // ignore error hanging up call
                 }
 
+            },
+            async prompt(message) {
+                if(window.electron){
+                    // running inside electron, use ipc prompt
+                    return await window.electron.prompt(message);
+                } else {
+                    // running inside normal browser, use browser prompt
+                    return window.prompt(message);
+                }
             },
         },
         computed: {

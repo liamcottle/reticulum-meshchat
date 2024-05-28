@@ -1,5 +1,7 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const electronPrompt = require('electron-prompt');
 const { spawn } = require('child_process');
+const fs = require('fs');
 const path = require('node:path');
 
 // remember main window
@@ -7,6 +9,19 @@ var mainWindow = null;
 
 // remember child process for exe so we can kill it when app exits
 var exeChildProcess = null;
+
+// add support for showing a prompt window via ipc
+ipcMain.handle('prompt', async(event, message) => {
+    return await electronPrompt({
+        title: message,
+        label: '',
+        value: '',
+        type: 'input',
+        inputAttrs: {
+            type: 'text',
+        },
+    });
+});
 
 function log(message) {
 
@@ -44,7 +59,12 @@ app.whenReady().then(async () => {
     await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
     // find path to python/cxfreeze reticulum webchat executable
-    const exe = path.join(__dirname, 'build/exe/ReticulumWebChat');
+    var exe = path.join(__dirname, 'build/exe/ReticulumWebChat');
+
+    // if dist exe doesn't exist, check local build
+    if(!fs.existsSync(exe)){
+        exe = path.join(__dirname, '..', 'build/exe/ReticulumWebChat');
+    }
 
     try {
 

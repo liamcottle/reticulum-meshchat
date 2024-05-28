@@ -60,5 +60,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
+  },
+  "dependencies": {
+    "electron-prompt": "^1.7.0"
   }
 }
