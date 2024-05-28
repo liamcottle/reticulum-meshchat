@@ -59,11 +59,12 @@ app.whenReady().then(async () => {
     await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
     // find path to python/cxfreeze reticulum webchat executable
-    var exe = path.join(__dirname, 'build/exe/ReticulumWebChat');
+    const exeName = process.platform === "win32" ? "ReticulumWebChat.exe" : "ReticulumWebChat";
+    var exe = path.join(__dirname, `build/exe/${exeName}`);
 
     // if dist exe doesn't exist, check local build
     if(!fs.existsSync(exe)){
-        exe = path.join(__dirname, '..', 'build/exe/ReticulumWebChat');
+        exe = path.join(__dirname, '..', `build/exe/${exeName}`);
     }
 
     // ask mac users for microphone access for audio calls to work
