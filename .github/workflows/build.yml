@@ -35,5 +35,5 @@ jobs:
         id: create_release
         uses: ncipollo/release-action@v1
         with:
-          tag: "$(git rev-parse --short=7 HEAD)"
+          commit: "master"
           artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
