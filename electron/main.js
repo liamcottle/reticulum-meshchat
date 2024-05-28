@@ -66,8 +66,10 @@ app.whenReady().then(async () => {
         exe = path.join(__dirname, '..', 'build/exe/ReticulumWebChat');
     }
 
-    // ask user for microphone access for audio calls to work
-    await systemPreferences.askForMediaAccess('microphone');
+    // ask mac users for microphone access for audio calls to work
+    if(process.platform === "darwin"){
+        await systemPreferences.askForMediaAccess('microphone');
+    }
 
     try {
 
