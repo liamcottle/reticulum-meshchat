@@ -687,6 +687,13 @@
                     <div class="ml-2">Reticulum WebChat must be restarted for any interface changes to take effect.</div>
                 </div>
 
+                <button @click="tab = 'interfaces.add'" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    <span>Add Interface</span>
+                </button>
+
                 <!-- interface list -->
                 <div v-for="(iface, interface_name) of interfaces" class="border rounded bg-white shadow overflow-hidden">
 
@@ -728,7 +735,7 @@
                                 </span>
 
                                 <!-- tcp client interface -->
-                                <span v-if="iface.type === 'TCPClientInterface'">
+                                <span v-else-if="iface.type === 'TCPClientInterface'">
                                     {{ iface.type }} • {{ iface.target_host }}:{{ iface.target_port }}
                                 </span>
 
@@ -798,6 +805,51 @@
                 </div>
             </div>
 
+            <!-- add interface tab -->
+            <div v-if="tab === 'interfaces.add'" class="overflow-y-auto p-2 space-y-2">
+
+                <!-- add interface form -->
+                <div class="bg-white rounded shadow divide-y divide-gray-200">
+                    <div class="p-2 font-bold">Add Interface</div>
+                    <div class="p-2 space-y-3">
+
+                        <!-- interface name -->
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Name</label>
+                            <input type="text" placeholder="New Interface Name" v-model="newInterfaceName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface type -->
+                        <div class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Type</label>
+                            <select v-model="newInterfaceType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="AutoInterface">AutoInterface</option>
+                                <option value="TCPClientInterface">TCPClientInterface</option>
+                            </select>
+                        </div>
+
+                        <!-- interface target host -->
+                        <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Target Host</label>
+                            <input type="text" placeholder="example.com" v-model="newInterfaceTargetHost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface target port -->
+                        <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Target Port</label>
+                            <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- add button -->
+                        <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                            Add Interface
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
         </div>
 
     </div>
@@ -860,6 +912,11 @@
 
                 interfaces: {},
                 interfaceStats: {},
+
+                newInterfaceName: null,
+                newInterfaceType: "TCPClientInterface",
+                newInterfaceTargetHost: null,
+                newInterfaceTargetPort: null,
 
             };
         },
@@ -1992,6 +2049,42 @@
                     });
                 } catch(e) {
                     alert("failed to delete interface");
+                    console.log(e);
+                }
+
+                // reload interfaces
+                await this.loadInterfaces();
+
+            },
+            async addInterface() {
+
+                try {
+
+                    // add interface
+                    const response = await window.axios.post(`/api/v1/reticulum/interfaces/add`, {
+                        name: this.newInterfaceName,
+                        type: this.newInterfaceType,
+                        target_host: this.newInterfaceTargetHost,
+                        target_port: this.newInterfaceTargetPort,
+                    });
+
+                    // clear add interface form
+                    this.newInterfaceName = null;
+                    this.newInterfaceType = "TCPClientInterface";
+                    this.newInterfaceTargetHost = null;
+                    this.newInterfaceTargetPort = null;
+
+                    // go to interfaces tab
+                    this.tab = "interfaces";
+
+                    // show success message
+                    if(response.data.message){
+                        alert(response.data.message);
+                    }
+
+                } catch(e) {
+                    const message = e.response?.data?.message ?? "failed to add interface";
+                    alert(message);
                     console.log(e);
                 }
 

@@ -186,7 +186,7 @@ class ReticulumWebChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Interface Enabled",
+                "message": "Interface is now enabled",
             })
 
         # disable reticulum interface
@@ -209,7 +209,7 @@ class ReticulumWebChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Interface Disabled",
+                "message": "Interface is now disabled",
             })
 
         # delete reticulum interface
@@ -228,7 +228,71 @@ class ReticulumWebChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Interface Deleted",
+                "message": "Interface has been deleted",
+            })
+
+        # add reticulum interface
+        @routes.post("/api/v1/reticulum/interfaces/add")
+        async def index(request):
+
+            # get request data
+            data = await request.json()
+            interface_name = data.get('name')
+            interface_type = data.get('type')
+
+            # ensure name is provided
+            if interface_name is None or interface_name == "":
+                return web.json_response({
+                    "message": "Name is required",
+                }, status=422)
+
+            # ensure type name provided
+            if interface_type is None or interface_type == "":
+                return web.json_response({
+                    "message": "Type is required",
+                }, status=422)
+
+            # get existing interfaces
+            interfaces = {}
+            if "interfaces" in self.reticulum.config:
+                interfaces = self.reticulum.config["interfaces"]
+
+            # create interface details
+            interface_details = {
+                "type": interface_type,
+                "interface_enabled": str(data.get('enabled', False)),
+            }
+
+            # handle tcp client interface
+            if interface_type == "TCPClientInterface":
+
+                interface_target_host = data.get('target_host')
+                interface_target_port = data.get('target_port')
+
+                # ensure target host provided
+                if interface_target_host is None or interface_target_host == "":
+                    return web.json_response({
+                        "message": "Target Host is required",
+                    }, status=422)
+
+                # ensure target port provided
+                if interface_target_port is None or interface_target_port == "":
+                    return web.json_response({
+                        "message": "Target Port is required",
+                    }, status=422)
+
+                interface_details["target_host"] = data.get('target_host')
+                interface_details["target_port"] = data.get('target_port')
+
+            # merge new interface into existing interfaces
+            interfaces[interface_name] = interface_details
+            self.reticulum.config["interfaces"] = interfaces
+
+            # save config
+            self.reticulum.config.write()
+
+            return web.json_response({
+                "message": "Interface has been added",
             })
 
         # handle websocket clients
