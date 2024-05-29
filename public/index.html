@@ -835,6 +835,7 @@
                         <div class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Type</label>
                             <select v-model="newInterfaceType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option disabled selected>--</option>
                                 <option value="AutoInterface">AutoInterface</option>
                                 <option value="RNodeInterface">RNodeInterface</option>
                                 <option value="TCPClientInterface">TCPClientInterface</option>
@@ -965,7 +966,7 @@
                 interfaceStats: {},
 
                 newInterfaceName: null,
-                newInterfaceType: "TCPClientInterface",
+                newInterfaceType: null,
                 newInterfaceTargetHost: null,
                 newInterfaceTargetPort: null,
 
@@ -2149,7 +2150,7 @@
 
                     // clear add interface form
                     this.newInterfaceName = null;
-                    this.newInterfaceType = "TCPClientInterface";
+                    this.newInterfaceType = null;
                     // tcp client interface
                     this.newInterfaceTargetHost = null;
                     this.newInterfaceTargetPort = null;
