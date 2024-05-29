@@ -717,17 +717,41 @@
 
                         </div>
 
+                        <!-- interface details -->
                         <div>
                             <div class="font-semibold leading-5">{{ interface_name }}</div>
-                            <div class="text-sm">{{ iface.type ?? 'Unknown Interface Type' }}</div>
+                            <div class="text-sm flex space-x-1">
+
+                                <!-- auto interface -->
+                                <span v-if="iface.type === 'AutoInterface'">
+                                    {{ iface.type }} • Ethernet and WiFi
+                                </span>
+
+                                <!-- tcp client interface -->
+                                <span v-if="iface.type === 'TCPClientInterface'">
+                                    {{ iface.type }} • {{ iface.target_host }}:{{ iface.target_port }}
+                                </span>
+
+                                <!-- rnode interface details -->
+                                <span v-else-if="iface.type === 'RNodeInterface'">
+                                   {{ iface.type }} • {{ iface.port }} • freq={{ iface.frequency }} • bw={{ iface.bandwidth }} • power={{ iface.txpower }}dBm • sf={{ iface.spreadingfactor }} • cr={{ iface.codingrate }}
+                                </span>
+
+                                <!-- unknown interface types -->
+                                <span v-else>
+                                   {{ iface.type ?? 'Unknown Interface Type' }}
+                                </span>
+
+                            </div>
                         </div>
 
+                        <!-- enabled state badge -->
                         <div class="ml-auto my-auto mr-2">
                             <span v-if="isInterfaceEnabled(iface)"class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Enabled</span>
                             <span v-else class="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">Disabled</span>
                         </div>
 
-                        <!-- toggle interface enabled -->
+                        <!-- enable/disable interface button -->
                         <div class="my-auto mr-2">
                             <button v-if="isInterfaceEnabled(iface)" @click="disableInterface(interface_name)" type="button" class="cursor-pointer">
                                 <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
@@ -745,7 +769,7 @@
                             </button>
                         </div>
 
-                        <!-- delete button -->
+                        <!-- delete interface button -->
                         <div class="my-auto mr-2">
                             <button @click="deleteInterface(interface_name)" type="button" class="cursor-pointer">
                             <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
@@ -758,30 +782,7 @@
 
                     </div>
 
-                    <!-- details -->
-                    <div class="p-2 text-sm">
-
-                        <!-- tcp interface details -->
-                        <div v-if="iface.type === 'TCPClientInterface'">
-                            <div>{{ iface.target_host }}:{{ iface.target_port }}</div>
-                        </div>
-
-                        <!-- rnode interface details -->
-                        <div v-else-if="iface.type === 'RNodeInterface'">
-                            <div>Port: {{ iface.port }}</div>
-                            <div>Frequency: {{ iface.frequency }}</div>
-                            <div>Bandwidth: {{ iface.bandwidth }}</div>
-                            <div>TX Power: {{ iface.txpower }}</div>
-                            <div>Spreading Factor: {{ iface.spreadingfactor }}</div>
-                            <div>Coding Rate: {{ iface.codingrate }}</div>
-                        </div>
-
-                        <!-- other interface details -->
-                        <div v-else>No Information Available</div>
-
-                    </div>
-
-                    <div class="flex bg-gray-50 p-1 text-sm text-gray-500 border-t space-x-1">
+                    <div class="flex bg-gray-50 p-1 text-sm text-gray-500 space-x-1">
 
                         <!-- status -->
                         <div v-if="findInterfaceStats(interface_name)?.status === true" class="text-sm text-green-500">Connected</div>
