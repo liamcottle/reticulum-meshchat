@@ -104,6 +104,18 @@
                             </button>
                         </li>
 
+                        <!-- interfaces -->
+                        <li>
+                            <button @click="tab = 'interfaces'" type="button" :class="[ tab === 'interfaces' ? 'bg-blue-100 text-blue-800 group:text-blue-800 hover:bg-blue-100' : '']" class="w-full text-gray-800 hover:bg-gray-100 group flex gap-x-3 rounded-r-full p-2 mr-2 text-sm leading-6 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                                <span class="my-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256">
+                                        <path d="M232,112H136V88h8a16,16,0,0,0,16-16V40a16,16,0,0,0-16-16H112A16,16,0,0,0,96,40V72a16,16,0,0,0,16,16h8v24H24a8,8,0,0,0,0,16H56v32H48a16,16,0,0,0-16,16v32a16,16,0,0,0,16,16H80a16,16,0,0,0,16-16V176a16,16,0,0,0-16-16H72V128H184v32h-8a16,16,0,0,0-16,16v32a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V176a16,16,0,0,0-16-16h-8V128h32a8,8,0,0,0,0-16ZM112,40h32V72H112ZM80,208H48V176H80Zm128,0H176V176h32Z"></path>
+                                    </svg>
+                                </span>
+                                <span class="my-auto">Interfaces</span>
+                            </button>
+                        </li>
+
                     </ul>
                 </div>
 
@@ -202,11 +214,9 @@
             </div>
         </div>
 
-        <!-- peers/nodes sidebar -->
-        <div class="flex flex-col w-80 min-w-80">
-
-            <!-- messages -->
-            <div v-if="tab === 'messages'" class="flex-1 flex flex-col bg-white border-r overflow-hidden">
+        <!-- messages sidebar -->
+        <div v-if="tab === 'messages'" class="flex flex-col w-80 min-w-80">
+            <div class="flex-1 flex flex-col bg-white border-r overflow-hidden">
 
                 <!-- search -->
                 <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
@@ -259,9 +269,11 @@
                 </div>
 
             </div>
+        </div>
 
-            <!-- nomadnetwork -->
-            <div v-if="tab === 'nomadnetwork'" class="flex-1 flex flex-col bg-white border-r overflow-hidden">
+        <!-- nomadnetwork sidebar -->
+        <div v-if="tab === 'nomadnetwork'" class="flex flex-col w-80 min-w-80">
+            <div class="flex-1 flex flex-col bg-white border-r overflow-hidden">
 
                 <!-- search -->
                 <div v-if="nodesCount > 0" class="p-1 border-b border-gray-300">
@@ -314,7 +326,6 @@
                 </div>
 
             </div>
-
         </div>
 
         <!-- main view -->
@@ -663,6 +674,81 @@
 
             </template>
 
+            <!-- interfaces tab -->
+            <div v-if="tab === 'interfaces'" class="space-y-2">
+                <div v-for="(iface, interface_name) of interfaces" class="border rounded bg-white shadow">
+
+                    <div class="flex py-2 border-b">
+
+                        <!-- icon -->
+                        <div class="my-auto mx-2">
+
+                            <svg v-if="iface.type === 'AutoInterface'" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" class="size-6">
+                                <path d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z"></path>
+                            </svg>
+
+                            <svg v-else-if="iface.type === 'RNodeInterface'" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" class="size-6">
+                                <path d="M128,88a40,40,0,1,0,40,40A40,40,0,0,0,128,88Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,152Zm73.71,7.14a80,80,0,0,1-14.08,22.2,8,8,0,0,1-11.92-10.67,63.95,63.95,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67,80.08,80.08,0,0,1,14.08,84.47ZM69,103.09a64,64,0,0,0,11.26,67.58,8,8,0,0,1-11.92,10.67,79.93,79.93,0,0,1,0-106.67A8,8,0,1,1,80.29,85.34,63.77,63.77,0,0,0,69,103.09ZM248,128a119.58,119.58,0,0,1-34.29,84,8,8,0,1,1-11.42-11.2,103.9,103.9,0,0,0,0-145.56A8,8,0,1,1,213.71,44,119.58,119.58,0,0,1,248,128ZM53.71,200.78A8,8,0,1,1,42.29,212a119.87,119.87,0,0,1,0-168,8,8,0,1,1,11.42,11.2,103.9,103.9,0,0,0,0,145.56Z"></path>
+                            </svg>
+
+                            <svg v-else-if="iface.type === 'TCPClientInterface' || iface.type === 'UDPInterface'" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" class="size-6">
+                                <path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"></path>
+                            </svg>
+
+                            <svg v-else-if="iface.type === 'SerialInterface'" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" class="size-6">
+                                <path d="M252.44,121.34l-48-32A8,8,0,0,0,192,96v24H72V72h33a32,32,0,1,0,0-16H72A16,16,0,0,0,56,72v48H8a8,8,0,0,0,0,16H56v48a16,16,0,0,0,16,16h32v8a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V176a16,16,0,0,0-16-16H120a16,16,0,0,0-16,16v8H72V136H192v24a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM136,48a16,16,0,1,1-16,16A16,16,0,0,1,136,48ZM120,176h32v32H120Zm88-30.95V111l25.58,17Z"></path>
+                            </svg>
+
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" class="size-6">
+                                <path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path>
+                            </svg>
+
+                        </div>
+
+                        <div>
+                            <div class="font-semibold leading-5">{{ interface_name }}</div>
+                            <div class="text-sm">{{ iface.type ?? 'Unknown Interface Type' }}</div>
+                        </div>
+
+                        <!-- delete button -->
+                        <div class="ml-auto my-auto mr-2">
+                            <button @click="deleteInterface(interface_name)" type="button" class="cursor-pointer">
+                            <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </span>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- details -->
+                    <div class="p-2 text-sm">
+
+                        <!-- tcp interface details -->
+                        <div v-if="iface.type === 'TCPClientInterface'">
+                            <div>Target: {{ iface.target_host }}:{{ iface.target_port }}</div>
+                        </div>
+
+                        <!-- rnode interface details -->
+                        <div v-if="iface.type === 'RNodeInterface'">
+                            <div>Port: {{ iface.port }}</div>
+                            <div>Frequency: {{ iface.frequency }}</div>
+                            <div>Bandwidth: {{ iface.bandwidth }}</div>
+                            <div>TX Power: {{ iface.txpower }}</div>
+                            <div>Spreading Factor: {{ iface.spreadingfactor }}</div>
+                            <div>Coding Rate: {{ iface.codingrate }}</div>
+                        </div>
+
+                        <!-- state -->
+                        <div class="text-sm" :class="[ isInterfaceEnabled(iface) ? 'text-green-500' : 'text-red-500']">{{ isInterfaceEnabled(iface) ? 'Enabled' : 'Disabled' }}</div>
+
+                    </div>
+
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -693,7 +779,7 @@
                 audioCalls: [],
                 lxmfDeliveryAnnounces: [],
 
-                tab: "messages",
+                tab: "interfaces",
                 peers: {},
                 peersSearchTerm: "",
                 selectedPeer: null,
@@ -723,6 +809,8 @@
                 nomadnetPageDownloadCallbacks: {},
                 nomadnetFileDownloadCallbacks: {},
 
+                interfaces: {},
+
             };
         },
         mounted: function() {
@@ -730,6 +818,8 @@
             this.connectWebsocket();
             this.getLxmfDeliveryAnnounces();
             this.getNomadnetworkNodeAnnounces();
+            this.loadInterfaces();
+
             window.onNodePageUrlClick = (url) => {
                 this.onNodePageUrlClick(url);
             };
@@ -1272,6 +1362,19 @@
                     // do nothing if failed to load messages
                 }
             },
+            async loadInterfaces() {
+                try {
+
+                    // fetch interfaces
+                    const response = await window.axios.get(`/api/v1/reticulum/interfaces`);
+
+                    // update ui
+                    this.interfaces = response.data.interfaces;
+
+                } catch(e) {
+                    // do nothing if failed to load interfaces
+                }
+            },
             async loadNodePage(destinationHash, pagePath, addToHistory = true, loadFromCache = true) {
 
                 // get new sequence for this page load
@@ -1726,6 +1829,27 @@
                 await this.loadLxmfMessages(this.selectedPeer.destination_hash);
 
             },
+            async deleteInterface(interfaceName) {
+
+                // ask user to confirm deleting conversation history
+                if(!confirm("Are you sure you want to delete this interface? This can not be undone!")){
+                    return;
+                }
+
+                // delete interface
+                try {
+                    await window.axios.post(`/api/v1/reticulum/interfaces/delete`, {
+                        name: interfaceName,
+                    });
+                } catch(e) {
+                    alert("failed to delete interface");
+                    console.log(e);
+                }
+
+                // reload interfaces
+                await this.loadInterfaces();
+
+            },
             onChatItemClick: function(chatItem) {
                 if(!chatItem.is_actions_expanded){
                     chatItem.is_actions_expanded = true;
@@ -1777,6 +1901,11 @@
                     // running inside normal browser, use browser prompt
                     return window.prompt(message);
                 }
+            },
+            isInterfaceEnabled: function(iface) {
+                const rawValue = iface.enabled ?? iface.interface_enabled;
+                const value = rawValue.toLowerCase();
+                return value === "on" || value === "yes" || value === "true";
             },
         },
         computed: {

@@ -166,6 +166,25 @@ class ReticulumWebChat:
                 "interfaces": interfaces,
             })
 
+        # delete reticulum interface
+        @routes.post("/api/v1/reticulum/interfaces/delete")
+        async def index(request):
+
+            # get request data
+            data = await request.json()
+            interface_name = data.get('name')
+
+            # delete interface
+            if "interfaces" in self.reticulum.config:
+                del self.reticulum.config["interfaces"][interface_name]
+
+            # save config
+            self.reticulum.config.write()
+
+            return web.json_response({
+                "message": "Interface deleted",
+            })
+
         # handle websocket clients
         @routes.get("/ws")
         async def ws(request):
