@@ -272,6 +272,10 @@ class ReticulumWebChat:
             # update interface details
             interface_details["type"] = interface_type
 
+            # if interface doesn't have enabled or interface_enabled setting already, enable it by default
+            if "enabled" not in interface_details and "interface_enabled" not in interface_details:
+                interface_details["interface_enabled"] = "true"
+
             # handle tcp client interface
             if interface_type == "TCPClientInterface":
 
