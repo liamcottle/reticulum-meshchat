@@ -829,6 +829,7 @@
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900">Name</label>
                             <input type="text" placeholder="New Interface Name" v-model="newInterfaceName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <div class="text-xs text-gray-600">Interface names must be unique.</div>
                         </div>
 
                         <!-- interface type -->
@@ -840,6 +841,9 @@
                                 <option value="RNodeInterface">RNodeInterface</option>
                                 <option value="TCPClientInterface">TCPClientInterface</option>
                             </select>
+                            <div class="text-xs text-gray-600">
+                                Need help? <a class="text-blue-500 underline" href="https://markqvist.github.io/Reticulum/manual/interfaces.html" target="_blank">Reticulum Docs: Configuring Interfaces</a>
+                            </div>
                         </div>
 
                         <!-- interface target host -->
