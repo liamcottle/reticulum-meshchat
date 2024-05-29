@@ -257,6 +257,12 @@ class ReticulumWebChat:
             if "interfaces" in self.reticulum.config:
                 interfaces = self.reticulum.config["interfaces"]
 
+            # ensure name is not for an existing interface, to prevent overwriting
+            if interface_name in interfaces:
+                return web.json_response({
+                    "message": "Name is already in use by another interface",
+                }, status=422)
+
             # create interface details
             interface_details = {
                 "type": interface_type,
