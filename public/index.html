@@ -688,7 +688,7 @@
                 </div>
 
                 <!-- interface list -->
-                <div v-for="(iface, interface_name) of interfaces" class="border rounded bg-white shadow">
+                <div v-for="(iface, interface_name) of interfaces" class="border rounded bg-white shadow overflow-hidden">
 
                     <div class="flex py-2 border-b">
 
@@ -722,8 +722,13 @@
                             <div class="text-sm">{{ iface.type ?? 'Unknown Interface Type' }}</div>
                         </div>
 
-                        <!-- toggle interface enabled -->
                         <div class="ml-auto my-auto mr-2">
+                            <span v-if="isInterfaceEnabled(iface)"class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Enabled</span>
+                            <span v-else class="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">Disabled</span>
+                        </div>
+
+                        <!-- toggle interface enabled -->
+                        <div class="my-auto mr-2">
                             <button v-if="isInterfaceEnabled(iface)" @click="disableInterface(interface_name)" type="button" class="cursor-pointer">
                                 <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -758,11 +763,11 @@
 
                         <!-- tcp interface details -->
                         <div v-if="iface.type === 'TCPClientInterface'">
-                            <div>Target: {{ iface.target_host }}:{{ iface.target_port }}</div>
+                            <div>{{ iface.target_host }}:{{ iface.target_port }}</div>
                         </div>
 
                         <!-- rnode interface details -->
-                        <div v-if="iface.type === 'RNodeInterface'">
+                        <div v-else-if="iface.type === 'RNodeInterface'">
                             <div>Port: {{ iface.port }}</div>
                             <div>Frequency: {{ iface.frequency }}</div>
                             <div>Bandwidth: {{ iface.bandwidth }}</div>
@@ -771,8 +776,21 @@
                             <div>Coding Rate: {{ iface.codingrate }}</div>
                         </div>
 
-                        <!-- state -->
-                        <div class="text-sm" :class="[ isInterfaceEnabled(iface) ? 'text-green-500' : 'text-red-500']">{{ isInterfaceEnabled(iface) ? 'Enabled' : 'Disabled' }}</div>
+                        <!-- other interface details -->
+                        <div v-else>No Information Available</div>
+
+                    </div>
+
+                    <div class="flex bg-gray-50 p-1 text-sm text-gray-500 border-t space-x-1">
+
+                        <!-- status -->
+                        <div v-if="findInterfaceStats(interface_name)?.status === true" class="text-sm text-green-500">Connected</div>
+                        <div v-else class="text-sm text-red-500">Disconnected</div>
+
+                        <!-- stats -->
+                        <div>• Bitrate: {{ formatBitsPerSecond(findInterfaceStats(interface_name)?.bitrate ?? 0) }}</div>
+                        <div>• TX: {{ formatBytes(findInterfaceStats(interface_name)?.txb ?? 0) }}</div>
+                        <div>• RX: {{ formatBytes(findInterfaceStats(interface_name)?.rxb ?? 0) }}</div>
 
                     </div>
 
@@ -840,6 +858,7 @@
                 nomadnetFileDownloadCallbacks: {},
 
                 interfaces: {},
+                interfaceStats: {},
 
             };
         },
@@ -849,6 +868,7 @@
             this.getLxmfDeliveryAnnounces();
             this.getNomadnetworkNodeAnnounces();
             this.loadInterfaces();
+            this.updateInterfaceStats();
 
             window.onNodePageUrlClick = (url) => {
                 this.onNodePageUrlClick(url);
@@ -857,9 +877,10 @@
             // update calls list
             this.updateCallsList();
 
-            // update calls list every 5 seconds
+            // update info every 5 seconds
             setInterval(() => {
                 this.updateCallsList();
+                this.updateInterfaceStats();
             }, 3000);
 
         },
@@ -1405,6 +1426,33 @@
                     // do nothing if failed to load interfaces
                 }
             },
+            async updateInterfaceStats() {
+                try {
+
+                    // fetch interface stats
+                    const response = await window.axios.get(`/api/v1/interface-stats`);
+
+                    // update data
+                    const interfaces = response.data.interface_stats?.interfaces ?? [];
+                    for(const iface of interfaces){
+                        this.interfaceStats[iface.name] = iface;
+                    }
+
+                } catch(e) {
+                    // do nothing if failed to load interfaces
+                }
+            },
+            findInterfaceStats(interfaceName) {
+
+                const iface = this.interfaces[interfaceName];
+                if(iface){
+                    const interfaceNameWithType = `${iface.type}[${interfaceName}]`;
+                    return this.interfaceStats[interfaceNameWithType];
+                }
+
+                return null;
+
+            },
             async loadNodePage(destinationHash, pagePath, addToHistory = true, loadFromCache = true) {
 
                 // get new sequence for this page load
@@ -1825,6 +1873,19 @@
 
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
 
+            },
+            formatBitsPerSecond: function(bits) {
+                if (bits === 0) {
+                    return '0 bps';
+                }
+
+                const k = 1000; // Use 1000 instead of 1024 for network speeds
+                const decimals = 0;
+                const sizes = ['bps', 'kbps', 'Mbps', 'Gbps', 'Tbps', 'Pbps', 'Ebps', 'Zbps', 'Ybps'];
+
+                const i = Math.floor(Math.log(bits) / Math.log(k));
+
+                return parseFloat((bits / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
             },
             arrayBufferToBase64: function(arrayBuffer) {
                 var binary = '';
