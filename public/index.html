@@ -836,6 +836,7 @@
                             <label class="block mb-2 text-sm font-medium text-gray-900">Type</label>
                             <select v-model="newInterfaceType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                 <option value="AutoInterface">AutoInterface</option>
+                                <option value="RNodeInterface">RNodeInterface</option>
                                 <option value="TCPClientInterface">TCPClientInterface</option>
                             </select>
                         </div>
@@ -850,6 +851,44 @@
                         <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Target Port</label>
                             <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface port -->
+                        <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Port</label>
+                            <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
+                            </select>
+                        </div>
+
+                        <!-- interface frequency -->
+                        <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Frequency</label>
+                            <input type="text" v-model="newInterfaceFrequency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface bandwidth -->
+                        <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Bandwidth</label>
+                            <input type="text" v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface txpower -->
+                        <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Transmit Power</label>
+                            <input type="text" v-model="newInterfaceTxpower" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface spreading factor -->
+                        <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Spreading Factor</label>
+                            <input type="text" v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface coding rate -->
+                        <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Coding Rate</label>
+                            <input type="text" v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         </div>
 
                         <!-- add button -->
@@ -930,6 +969,15 @@
                 newInterfaceTargetHost: null,
                 newInterfaceTargetPort: null,
 
+                newInterfacePort: null,
+                newInterfaceFrequency: null,
+                newInterfaceBandwidth: null,
+                newInterfaceTxpower: null,
+                newInterfaceSpreadingFactor: null,
+                newInterfaceCodingRate: null,
+
+                comports: [],
+
             };
         },
         mounted: function() {
@@ -939,6 +987,8 @@
             this.getNomadnetworkNodeAnnounces();
             this.loadInterfaces();
             this.updateInterfaceStats();
+
+            this.loadComports();
 
             window.onNodePageUrlClick = (url) => {
                 this.onNodePageUrlClick(url);
@@ -1492,6 +1542,14 @@
                     // update ui
                     this.interfaces = response.data.interfaces;
 
+                } catch(e) {
+                    // do nothing if failed to load interfaces
+                }
+            },
+            async loadComports() {
+                try {
+                    const response = await window.axios.get(`/api/v1/comports`);
+                    this.comports = response.data.comports;
                 } catch(e) {
                     // do nothing if failed to load interfaces
                 }
@@ -2074,17 +2132,34 @@
 
                     // add interface
                     const response = await window.axios.post(`/api/v1/reticulum/interfaces/add`, {
+                        // required values
                         name: this.newInterfaceName,
                         type: this.newInterfaceType,
+                        // tcp client interface
                         target_host: this.newInterfaceTargetHost,
                         target_port: this.newInterfaceTargetPort,
+                        // rnode interface
+                        port: this.newInterfacePort,
+                        frequency: this.newInterfaceFrequency,
+                        bandwidth: this.newInterfaceBandwidth,
+                        txpower: this.newInterfaceTxpower,
+                        spreadingfactor: this.newInterfaceSpreadingFactor,
+                        codingrate: this.newInterfaceCodingRate,
                     });
 
                     // clear add interface form
                     this.newInterfaceName = null;
                     this.newInterfaceType = "TCPClientInterface";
+                    // tcp client interface
                     this.newInterfaceTargetHost = null;
                     this.newInterfaceTargetPort = null;
+                    // rnode interface
+                    this.newInterfacePort = null;
+                    this.newInterfaceFrequency = null;
+                    this.newInterfaceBandwidth = null;
+                    this.newInterfaceTxpower = null;
+                    this.newInterfaceSpreadingFactor = null;
+                    this.newInterfaceCodingRate = null;
 
                     // go to interfaces tab
                     this.tab = "interfaces";

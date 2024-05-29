@@ -290,6 +290,59 @@ class ReticulumWebChat:
                 interface_details["target_host"] = data.get('target_host')
                 interface_details["target_port"] = data.get('target_port')
 
+            # handle rnode interface
+            if interface_type == "RNodeInterface":
+
+                interface_port = data.get('port')
+                interface_frequency = data.get('frequency')
+                interface_bandwidth = data.get('bandwidth')
+                interface_txpower = data.get('txpower')
+                interface_spreadingfactor = data.get('spreadingfactor')
+                interface_codingrate = data.get('codingrate')
+
+                # ensure port provided
+                if interface_port is None or interface_port == "":
+                    return web.json_response({
+                        "message": "Port is required",
+                    }, status=422)
+
+                # ensure frequency provided
+                if interface_frequency is None or interface_frequency == "":
+                    return web.json_response({
+                        "message": "Frequency is required",
+                    }, status=422)
+
+                # ensure bandwidth provided
+                if interface_bandwidth is None or interface_bandwidth == "":
+                    return web.json_response({
+                        "message": "Bandwidth is required",
+                    }, status=422)
+
+                # ensure txpower provided
+                if interface_txpower is None or interface_txpower == "":
+                    return web.json_response({
+                        "message": "TX power is required",
+                    }, status=422)
+
+                # ensure spreading factor provided
+                if interface_spreadingfactor is None or interface_spreadingfactor == "":
+                    return web.json_response({
+                        "message": "Spreading Factor is required",
+                    }, status=422)
+
+                # ensure coding rate provided
+                if interface_codingrate is None or interface_codingrate == "":
+                    return web.json_response({
+                        "message": "Coding Rate is required",
+                    }, status=422)
+
+                interface_details["port"] = interface_port
+                interface_details["frequency"] = interface_frequency
+                interface_details["bandwidth"] = interface_bandwidth
+                interface_details["txpower"] = interface_txpower
+                interface_details["spreadingfactor"] = interface_spreadingfactor
+                interface_details["codingrate"] = interface_codingrate
+
             # merge new interface into existing interfaces
             interfaces[interface_name] = interface_details
             self.reticulum.config["interfaces"] = interfaces
