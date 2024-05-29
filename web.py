@@ -166,6 +166,52 @@ class ReticulumWebChat:
                 "interfaces": interfaces,
             })
 
+        # enable reticulum interface
+        @routes.post("/api/v1/reticulum/interfaces/enable")
+        async def index(request):
+
+            # get request data
+            data = await request.json()
+            interface_name = data.get('name')
+
+            # enable interface
+            if "interfaces" in self.reticulum.config:
+                interface = self.reticulum.config["interfaces"][interface_name]
+                if "enabled" in interface:
+                    interface["enabled"] = "true"
+                if "interface_enabled" in interface:
+                    interface["interface_enabled"] = "true"
+
+            # save config
+            self.reticulum.config.write()
+
+            return web.json_response({
+                "message": "Interface Enabled",
+            })
+
+        # disable reticulum interface
+        @routes.post("/api/v1/reticulum/interfaces/disable")
+        async def index(request):
+
+            # get request data
+            data = await request.json()
+            interface_name = data.get('name')
+
+            # disable interface
+            if "interfaces" in self.reticulum.config:
+                interface = self.reticulum.config["interfaces"][interface_name]
+                if "enabled" in interface:
+                    interface["enabled"] = "false"
+                if "interface_enabled" in interface:
+                    interface["interface_enabled"] = "false"
+
+            # save config
+            self.reticulum.config.write()
+
+            return web.json_response({
+                "message": "Interface Disabled",
+            })
+
         # delete reticulum interface
         @routes.post("/api/v1/reticulum/interfaces/delete")
         async def index(request):
@@ -182,7 +228,7 @@ class ReticulumWebChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Interface deleted",
+                "message": "Interface Deleted",
             })
 
         # handle websocket clients

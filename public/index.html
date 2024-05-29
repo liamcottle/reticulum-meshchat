@@ -710,8 +710,26 @@
                             <div class="text-sm">{{ iface.type ?? 'Unknown Interface Type' }}</div>
                         </div>
 
-                        <!-- delete button -->
+                        <!-- toggle interface enabled -->
                         <div class="ml-auto my-auto mr-2">
+                            <button v-if="isInterfaceEnabled(iface)" @click="disableInterface(interface_name)" type="button" class="cursor-pointer">
+                                <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+                                    </svg>
+                                </span>
+                            </button>
+                            <button v-else @click="enableInterface(interface_name)" type="button" class="cursor-pointer">
+                                <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+
+                        <!-- delete button -->
+                        <div class="my-auto mr-2">
                             <button @click="deleteInterface(interface_name)" type="button" class="cursor-pointer">
                             <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -1829,6 +1847,38 @@
                 await this.loadLxmfMessages(this.selectedPeer.destination_hash);
 
             },
+            async enableInterface(interfaceName) {
+
+                // enable interface
+                try {
+                    await window.axios.post(`/api/v1/reticulum/interfaces/enable`, {
+                        name: interfaceName,
+                    });
+                } catch(e) {
+                    alert("failed to enable interface");
+                    console.log(e);
+                }
+
+                // reload interfaces
+                await this.loadInterfaces();
+
+            },
+            async disableInterface(interfaceName) {
+
+                // disable interface
+                try {
+                    await window.axios.post(`/api/v1/reticulum/interfaces/disable`, {
+                        name: interfaceName,
+                    });
+                } catch(e) {
+                    alert("failed to disable interface");
+                    console.log(e);
+                }
+
+                // reload interfaces
+                await this.loadInterfaces();
+
+            },
             async deleteInterface(interfaceName) {
 
                 // ask user to confirm deleting conversation history
@@ -1904,7 +1954,7 @@
             },
             isInterfaceEnabled: function(iface) {
                 const rawValue = iface.enabled ?? iface.interface_enabled;
-                const value = rawValue.toLowerCase();
+                const value = rawValue?.toLowerCase();
                 return value === "on" || value === "yes" || value === "true";
             },
         },
