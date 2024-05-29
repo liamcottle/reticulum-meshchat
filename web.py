@@ -239,6 +239,7 @@ class ReticulumWebChat:
             data = await request.json()
             interface_name = data.get('name')
             interface_type = data.get('type')
+            allow_overwriting_interface = data.get('allow_overwriting_interface', False)
 
             # ensure name is provided
             if interface_name is None or interface_name == "":
@@ -258,16 +259,18 @@ class ReticulumWebChat:
                 interfaces = self.reticulum.config["interfaces"]
 
             # ensure name is not for an existing interface, to prevent overwriting
-            if interface_name in interfaces:
+            if allow_overwriting_interface is False and interface_name in interfaces:
                 return web.json_response({
                     "message": "Name is already in use by another interface",
                 }, status=422)
 
-            # create interface details
-            interface_details = {
-                "type": interface_type,
-                "interface_enabled": str(data.get('enabled', False)),
-            }
+            # get existing interface details if available
+            interface_details = {}
+            if interface_name in interfaces:
+                interface_details = interfaces[interface_name]
+
+            # update interface details
+            interface_details["type"] = interface_type
 
             # handle tcp client interface
             if interface_type == "TCPClientInterface":
@@ -350,9 +353,15 @@ class ReticulumWebChat:
             # save config
             self.reticulum.config.write()
 
-            return web.json_response({
-                "message": "Interface has been added",
-            })
+            if allow_overwriting_interface:
+                return web.json_response({
+                    "message": "Interface has been saved",
+                })
+            else:
+                return web.json_response({
+                    "message": "Interface has been added",
+                })
+
 
         # handle websocket clients
         @routes.get("/ws")

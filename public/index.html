@@ -699,7 +699,7 @@
                     <div class="ml-2">Reticulum WebChat must be restarted for any interface changes to take effect.</div>
                 </div>
 
-                <button @click="tab = 'interfaces.add'" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                <button @click="showAddInterfaceForm" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
@@ -771,7 +771,7 @@
                         </div>
 
                         <!-- enable/disable interface button -->
-                        <div class="my-auto mr-2">
+                        <div class="my-auto mr-1">
                             <button v-if="isInterfaceEnabled(iface)" @click="disableInterface(interface_name)" type="button" class="cursor-pointer">
                                 <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -785,6 +785,17 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
                                     </svg>
                                 </span>
+                            </button>
+                        </div>
+
+                        <!-- edit interface button -->
+                        <div class="my-auto mr-1">
+                            <button @click="editInterface(interface_name)" type="button" class="cursor-pointer">
+                            <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                </svg>
+                            </span>
                             </button>
                         </div>
 
@@ -822,7 +833,10 @@
 
                 <!-- add interface form -->
                 <div class="bg-white rounded shadow divide-y divide-gray-200">
-                    <div class="p-2 font-bold">Add Interface</div>
+                    <div class="p-2 font-bold">
+                        <span v-if="isEditingInterface">Edit Interface</span>
+                        <span v-else>Add Interface</span>
+                    </div>
                     <div class="p-2 space-y-3">
 
                         <!-- interface name -->
@@ -898,7 +912,8 @@
 
                         <!-- add button -->
                         <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                            Add Interface
+                            <span v-if="isEditingInterface">Save Interface</span>
+                            <span v-else>Add Interface</span>
                         </button>
 
                     </div>
@@ -936,7 +951,7 @@
                 audioCalls: [],
                 lxmfDeliveryAnnounces: [],
 
-                tab: "messages",
+                tab: "interfaces",
                 peers: {},
                 peersSearchTerm: "",
                 selectedPeer: null,
@@ -2110,6 +2125,65 @@
                 await this.loadInterfaces();
 
             },
+            showAddInterfaceForm() {
+                this.resetAddInterfaceForm();
+                this.loadComports();
+                this.isEditingInterface = false;
+                this.tab = "interfaces.add";
+            },
+            showEditInterfaceForm() {
+                this.resetAddInterfaceForm();
+                this.loadComports();
+                this.isEditingInterface = true;
+                this.tab = "interfaces.add";
+            },
+            resetAddInterfaceForm() {
+
+                // clear add interface form
+                this.newInterfaceName = null;
+                this.newInterfaceType = null;
+
+                // tcp client interface
+                this.newInterfaceTargetHost = null;
+                this.newInterfaceTargetPort = null;
+
+                // rnode interface
+                this.newInterfacePort = null;
+                this.newInterfaceFrequency = null;
+                this.newInterfaceBandwidth = null;
+                this.newInterfaceTxpower = null;
+                this.newInterfaceSpreadingFactor = null;
+                this.newInterfaceCodingRate = null;
+
+            },
+            async editInterface(interfaceName) {
+
+                // find interface
+                const iface = this.interfaces[interfaceName];
+                if(!iface){
+                    return;
+                }
+
+                // go to edit interface tab
+                this.showEditInterfaceForm();
+
+                // set form values
+                this.newInterfaceName = interfaceName;
+                this.newInterfaceType = iface.type;
+
+                // tcp client interface
+                this.newInterfaceTargetHost = iface.target_host;
+                this.newInterfaceTargetPort = iface.target_port;
+
+                // rnode interface
+                this.newInterfacePort = iface.port;
+                this.newInterfaceFrequency = iface.frequency;
+                this.newInterfaceBandwidth = iface.bandwidth;
+                this.newInterfaceTxpower = iface.txpower;
+                this.newInterfaceSpreadingFactor = iface.spreadingfactor;
+                this.newInterfaceCodingRate = iface.codingrate;
+
+            },
             async deleteInterface(interfaceName) {
 
                 // ask user to confirm deleting conversation history
@@ -2137,6 +2211,7 @@
 
                     // add interface
                     const response = await window.axios.post(`/api/v1/reticulum/interfaces/add`, {
+                        allow_overwriting_interface: this.isEditingInterface,
                         // required values
                         name: this.newInterfaceName,
                         type: this.newInterfaceType,
@@ -2152,19 +2227,8 @@
                         codingrate: this.newInterfaceCodingRate,
                     });
 
-                    // clear add interface form
-                    this.newInterfaceName = null;
-                    this.newInterfaceType = null;
-                    // tcp client interface
-                    this.newInterfaceTargetHost = null;
-                    this.newInterfaceTargetPort = null;
-                    // rnode interface
-                    this.newInterfacePort = null;
-                    this.newInterfaceFrequency = null;
-                    this.newInterfaceBandwidth = null;
-                    this.newInterfaceTxpower = null;
-                    this.newInterfaceSpreadingFactor = null;
-                    this.newInterfaceCodingRate = null;
+                    // reset add interface form
+                    this.resetAddInterfaceForm();
 
                     // go to interfaces tab
                     this.tab = "interfaces";
