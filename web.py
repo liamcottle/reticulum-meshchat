@@ -697,6 +697,11 @@ class ReticulumWebChat:
             if "transport_id" in interface_stats:
                 interface_stats["transport_id"] = interface_stats["transport_id"].hex()
 
+            # ensure ifac_signature is hex as json_response can't serialize bytes
+            for interface in interface_stats["interfaces"]:
+                if "ifac_signature" in interface and interface["ifac_signature"]:
+                    interface["ifac_signature"] = interface["ifac_signature"].hex()
+
             return web.json_response({
                 "interface_stats": interface_stats,
             })
