@@ -329,13 +329,13 @@
         </div>
 
         <!-- main view -->
-        <div class="flex flex-col flex-1 p-2 overflow-hidden min-w-full sm:min-w-[500px]">
+        <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
 
             <!-- messages tab -->
             <template v-if="tab === 'messages'">
 
                 <!-- peer selected -->
-                <div v-if="selectedPeer" class="flex flex-col h-full border rounded-xl bg-white shadow">
+                <div v-if="selectedPeer" class="m-2 flex flex-col h-full border rounded-xl bg-white shadow">
 
                     <!-- header -->
                     <div class="flex p-2 border-b border-gray-300">
@@ -581,7 +581,7 @@
             <template v-if="tab === 'nomadnetwork'">
 
                 <!-- node -->
-                <div v-if="selectedNode" class="flex flex-col h-full border rounded-xl bg-white shadow overflow-hidden">
+                <div v-if="selectedNode" class="m-2 flex flex-col h-full border rounded-xl bg-white shadow overflow-hidden">
 
                     <!-- header -->
                     <div class="flex p-2 border-b border-gray-300">
@@ -675,7 +675,7 @@
             </template>
 
             <!-- interfaces tab -->
-            <div v-if="tab === 'interfaces'" class="space-y-2">
+            <div v-if="tab === 'interfaces'" class="overflow-y-auto p-2 space-y-2">
                 <div v-for="(iface, interface_name) of interfaces" class="border rounded bg-white shadow">
 
                     <div class="flex py-2 border-b">
