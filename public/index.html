@@ -1442,16 +1442,41 @@
                     // do nothing if failed to load interfaces
                 }
             },
-            findInterfaceStats(interfaceName) {
+            getInterfaceDescription(interfaceName) {
 
+                // the interface-stats api returns interface names like the following;
+                //
+                // "AutoInterface[Default Interface]"
+                // "RNodeInterface[RNode LoRa Interface Fast]"
+                // "TCPInterface[RNS Testnet Amsterdam/amsterdam.connect.reticulum.network:4965]"
+                //
+                // however, the interfaces api just returns;
+                // "Default Interface"
+                // "RNode LoRa Interface Fast"
+                // "RNS Testnet Amsterdam"
+                //
+                // so we need to map the basic interface name to the former, so we can lookup stats for the interface
                 const iface = this.interfaces[interfaceName];
                 if(iface){
-                    const interfaceNameWithType = `${iface.type}[${interfaceName}]`;
-                    return this.interfaceStats[interfaceNameWithType];
+                    switch(iface.type){
+                        case "TCPClientInterface": {
+                            // yes, this is meant to be passed as TCPInterface, even though the interface type includes client...
+                            // example: "TCPInterface[RNS Testnet Amsterdam/amsterdam.connect.reticulum.network:4965]";
+                            return `TCPInterface[${interfaceName}/${iface.target_host}:${iface.target_port}]`;
+                        }
+                        default: {
+                            // example: "RNodeInterface[RNode LoRa Interface Fast]",
+                            return `${iface.type}[${interfaceName}]`;
+                        }
+                    }
                 }
 
                 return null;
 
+            },
+            findInterfaceStats(interfaceName) {
+                const interfaceDescription = this.getInterfaceDescription(interfaceName);
+                return this.interfaceStats[interfaceDescription];
             },
             async loadNodePage(destinationHash, pagePath, addToHistory = true, loadFromCache = true) {
 
