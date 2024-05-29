@@ -229,9 +229,22 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 - [ ] allow setting a custom name to show for a contact
 - [ ] button to forget peers and contacts
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
-- [ ] support for managing Reticulum config/interfaces via the web ui
 - [ ] support for micron input fields, to allow interacting with pages like Retipedia
 - [ ] add setting to allow auto announcing at a configurable interval
+- [ ] support for managing Reticulum interfaces via the web ui
+  - [x] AutoInterface
+  - [x] RNodeInterface
+  - [x] TCPClientInterface
+  - [ ] I2PInterface
+  - [ ] TCPServerInterface
+  - [ ] UDPInterface
+  - [ ] SerialInterface
+  - [ ] PipeInterface
+  - [ ] KISSInterface
+  - [ ] AX25KISSInterface
+  - [ ] Other Options
+    - [ ] network_name
+    - [ ] passphrase
 
 ## License
 
