@@ -70,29 +70,152 @@
     </div>
 
     <!-- middle -->
-    <div class="flex h-full w-full px-2 space-x-2 overflow-auto">
+    <div class="flex h-full w-full overflow-auto">
 
         <!-- sidebar -->
-        <div class="flex flex-col w-80 h-full py-2 space-y-2">
+        <div class="bg-white flex w-72 flex-col">
+            <div class="flex grow flex-col overflow-y-auto border-r border-gray-200 bg-white">
 
-            <!-- peers/nodes -->
-            <div class="flex-1 flex flex-col border rounded-xl bg-white shadow overflow-hidden">
+                <!-- navigation -->
+                <div class="flex-1">
+                    <ul class="py-2 pr-2 space-y-1">
 
-                <!-- tabs -->
-                <div class="border-b border-gray-200">
-                    <div class="-mb-px flex">
-                        <!-- Current: "border-blue-500 text-blue-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
-                        <div @click="tab = 'peers'" class="w-full border-b-2 py-3 px-1 text-center text-sm font-medium cursor-pointer" :class="[ tab === 'peers' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']">Peers</div>
-                        <div @click="tab = 'nodes'" class="w-full border-b-2 py-3 px-1 text-center text-sm font-medium cursor-pointer" :class="[ tab === 'nodes' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']">Nodes</div>
+                        <!-- messages -->
+                        <li>
+                            <button @click="tab = 'messages'" type="button" :class="[ tab === 'messages' ? 'bg-blue-100 text-blue-800 group:text-blue-800 hover:bg-blue-100' : '']" class="w-full text-gray-800 hover:bg-gray-100 group flex gap-x-3 rounded-r-full p-2 mr-2 text-sm leading-6 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                                <span class="my-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+                                    </svg>
+                                </span>
+                                <span class="my-auto">Messages</span>
+                            </button>
+                        </li>
+
+                        <!-- Nomad Net -->
+                        <li>
+                            <button @click="tab = 'nomadnetwork'" type="button" :class="[ tab === 'nomadnetwork' ? 'bg-blue-100 text-blue-800 group:text-blue-800 hover:bg-blue-100' : '']" class="w-full text-gray-800 hover:bg-gray-100 group flex gap-x-3 rounded-r-full p-2 mr-2 text-sm leading-6 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                                <span class="my-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                                    </svg>
+                                </span>
+                                <span class="my-auto">Nomad Network</span>
+                            </button>
+                        </li>
+
+                    </ul>
+                </div>
+
+                <div>
+
+                    <!-- my identity -->
+                    <div v-if="config" class="bg-white border-t">
+                        <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                            <div class="my-auto mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                            </div>
+                            <div class="my-auto">My Identity</div>
+                            <div class="ml-auto">
+                                <button @click="saveDisplayName" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                        <div class="divide-y text-gray-900">
+                            <div class="p-1">
+                                <input v-model="displayName" type="text" placeholder="Display Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            </div>
+                            <div class="p-1">
+                                <div>Identity Hash</div>
+                                <div class="text-sm text-gray-700">{{ config.identity_hash }}</div>
+                            </div>
+                            <div class="p-1">
+                                <div>LXMF Address</div>
+                                <div class="text-sm text-gray-700">{{ config.lxmf_address_hash }}</div>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- audio calls -->
+                    <div v-if="config" class="bg-white border-t">
+                        <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                            <div class="my-auto mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                                </svg>
+                            </div>
+                            <div class="my-auto">Calls</div>
+                            <div class="ml-auto">
+                                <a href="call.html" target="_blank" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                    <span>Open Phone</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
+                                        <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="divide-y text-gray-900">
+                            <div class="p-1">
+                                <div>Audio Call Address</div>
+                                <div class="text-sm text-gray-700">{{ config.audio_call_address_hash }}</div>
+                            </div>
+                            <div class="p-1 flex">
+                                <div>
+                                    <div>Status</div>
+                                    <div class="text-sm text-gray-700">
+                                        <div v-if="activeAudioCalls.length > 0" class="flex space-x-2">
+                                            <span v-if="activeInboundAudioCalls.length > 0">{{ activeInboundAudioCalls.length }} Incoming {{ activeInboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
+                                            <span v-else>{{ activeOutboundAudioCalls.length }} Outgoing {{ activeOutboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
+                                        </div>
+                                        <div v-else>Hung up, waiting for call...</div>
+                                    </div>
+                                </div>
+                                <div v-if="activeAudioCalls.length > 0" class="ml-auto my-auto mr-1 space-x-2">
+
+                                    <!-- view incoming calls -->
+                                    <a href="call.html" target="_blank" title="View Incoming Calls" class="my-auto inline-flex items-center gap-x-1 rounded-full bg-green-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                                            <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
+                                            <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd" />
+                                        </svg>
+
+                                    </a>
+
+                                    <!-- hangup all calls -->
+                                    <button title="Hangup all Calls" @click="hangupAllCalls" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-full bg-red-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 rotate-[135deg] translate-y-0.5">
+                                            <path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- peers/nodes sidebar -->
+        <div class="flex flex-col w-80">
+
+            <!-- messages -->
+            <div v-if="tab === 'messages'" class="flex-1 flex flex-col bg-white border-r overflow-hidden">
+
+                <!-- search -->
+                <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
+                    <input v-model="peersSearchTerm" type="text" :placeholder="`Search ${peersCount} Peers...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                 </div>
 
                 <!-- peers -->
-                <template v-if="tab === 'peers'">
-                    <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
-                        <input v-model="peersSearchTerm" type="text" :placeholder="`Search ${peersCount} peers...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-                    <div v-if="searchedPeers.length > 0" class="overflow-y-scroll">
+                <div class="flex h-full overflow-y-auto">
+                    <div v-if="searchedPeers.length > 0" class="w-full">
                         <div @click="onPeerClick(peer)" v-for="peer of searchedPeers" class="flex cursor-pointer p-2 border-l-2" :class="[ peer.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-200' ]">
                             <div class="my-auto mr-2">
                                 <div class="bg-gray-200 text-gray-500 p-2 rounded">
@@ -133,14 +256,21 @@
 
 
                     </div>
-                </template>
+                </div>
+
+            </div>
+
+            <!-- nomadnetwork -->
+            <div v-if="tab === 'nomadnetwork'" class="flex-1 flex flex-col bg-white border-r overflow-hidden">
+
+                <!-- search -->
+                <div v-if="nodesCount > 0" class="p-1 border-b border-gray-300">
+                    <input v-model="nodesSearchTerm" type="text" :placeholder="`Search ${nodesCount} Nodes...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
 
                 <!-- nodes -->
-                <template v-if="tab === 'nodes'">
-                    <div v-if="nodesCount > 0" class="p-1 border-b border-gray-300">
-                        <input v-model="nodesSearchTerm" type="text" :placeholder="`Search ${nodesCount} nodes...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-                    <div v-if="searchedNodes.length > 0" class="overflow-y-scroll">
+                <div class="flex h-full overflow-y-auto">
+                    <div v-if="searchedNodes.length > 0" class="w-full">
                         <div @click="onNodeClick(node)" v-for="node of searchedNodes" class="flex cursor-pointer p-2 border-l-2" :class="[ node.destination_hash === selectedNode?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-200' ]">
                             <div class="my-auto mr-2">
                                 <div class="bg-gray-200 text-gray-500 p-2 rounded">
@@ -181,105 +311,17 @@
 
 
                     </div>
-                </template>
-
-            </div>
-
-            <!-- my identity -->
-            <div v-if="config" class="border rounded-xl bg-white shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2">
-                    <div class="my-auto mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </div>
-                    <div class="my-auto">My Identity</div>
-                    <div class="ml-auto">
-                        <button @click="saveDisplayName" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                            Save
-                        </button>
-                    </div>
                 </div>
-                <div class="divide-y text-gray-900">
-                    <div class="p-1">
-                        <input v-model="displayName" type="text" placeholder="Display Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-                    <div class="p-1">
-                        <div>Identity Hash</div>
-                        <div class="text-sm text-gray-700">{{ config.identity_hash }}</div>
-                    </div>
-                    <div class="p-1">
-                        <div>LXMF Address</div>
-                        <div class="text-sm text-gray-700">{{ config.lxmf_address_hash }}</div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- audio calls -->
-            <div v-if="config" class="border rounded-xl bg-white shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2">
-                    <div class="my-auto mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-                        </svg>
-                    </div>
-                    <div class="my-auto">Calls</div>
-                    <div class="ml-auto">
-                        <a href="call.html" target="_blank" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                            <span>Open Phone</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
-                                <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-                <div class="divide-y text-gray-900">
-                    <div class="p-1">
-                        <div>Audio Call Address</div>
-                        <div class="text-sm text-gray-700">{{ config.audio_call_address_hash }}</div>
-                    </div>
-                    <div class="p-1 flex">
-                        <div>
-                            <div>Status</div>
-                            <div class="text-sm text-gray-700">
-                                <div v-if="activeAudioCalls.length > 0" class="flex space-x-2">
-                                    <span v-if="activeInboundAudioCalls.length > 0">{{ activeInboundAudioCalls.length }} Incoming {{ activeInboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
-                                    <span v-else>{{ activeOutboundAudioCalls.length }} Outgoing {{ activeOutboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
-                                </div>
-                                <div v-else>Hung up, waiting for call...</div>
-                            </div>
-                        </div>
-                        <div v-if="activeAudioCalls.length > 0" class="ml-auto my-auto mr-1 space-x-2">
-
-                            <!-- view incoming calls -->
-                            <a href="call.html" target="_blank" title="View Incoming Calls" class="my-auto inline-flex items-center gap-x-1 rounded-full bg-green-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                                    <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
-                                    <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd" />
-                                </svg>
-
-                            </a>
-
-                            <!-- hangup all calls -->
-                            <button title="Hangup all Calls" @click="hangupAllCalls" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-full bg-red-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 rotate-[135deg] translate-y-0.5">
-                                    <path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-
-                        </div>
-                    </div>
-                </div>
             </div>
 
         </div>
 
         <!-- main view -->
-        <div class="flex flex-col flex-1 py-2 overflow-hidden min-w-full sm:min-w-[500px]">
+        <div class="flex flex-col flex-1 p-2 overflow-hidden min-w-full sm:min-w-[500px]">
 
-            <!-- peer -->
-            <template v-if="!selectedNode">
+            <!-- messages tab -->
+            <template v-if="tab === 'messages'">
 
                 <!-- peer selected -->
                 <div v-if="selectedPeer" class="flex flex-col h-full border rounded-xl bg-white shadow">
@@ -515,7 +557,7 @@
                 <div v-else class="flex flex-col mx-auto my-auto text-center leading-5">
                     <div class="mx-auto mb-1">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
                         </svg>
                     </div>
                     <div class="font-semibold">No Active Chat</div>
@@ -524,86 +566,102 @@
 
             </template>
 
-            <!-- node -->
-            <div v-if="selectedNode" class="flex flex-col h-full border rounded-xl bg-white shadow overflow-hidden">
+            <!-- nomadnetwork tab -->
+            <template v-if="tab === 'nomadnetwork'">
 
-                <!-- header -->
-                <div class="flex p-2 border-b border-gray-300">
+                <!-- node -->
+                <div v-if="selectedNode" class="flex flex-col h-full border rounded-xl bg-white shadow overflow-hidden">
 
-                    <!-- node info -->
-                    <div class="my-auto">
-                        <div class="font-semibold">{{ selectedNode.name }}</div>
-                        <div class="text-sm"><{{ selectedNode.destination_hash }}> <span v-if="selectedNodePath" @click="onDestinationPathClick(selectedNodePath)" class="cursor-pointer">{{ selectedNodePath.hops }} {{ selectedNodePath.hops === 1 ? 'hop' : 'hops' }} away</span></div>
-                    </div>
+                    <!-- header -->
+                    <div class="flex p-2 border-b border-gray-300">
 
-                    <!-- close button -->
-                    <div class="my-auto ml-auto mr-2">
-                        <div @click="selectedNode = null" href="javascript:void(0)" class="cursor-pointer">
-                            <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
-                                <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                        <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-                                    </svg>
+                        <!-- node info -->
+                        <div class="my-auto">
+                            <div class="font-semibold">{{ selectedNode.name }}</div>
+                            <div class="text-sm"><{{ selectedNode.destination_hash }}> <span v-if="selectedNodePath" @click="onDestinationPathClick(selectedNodePath)" class="cursor-pointer">{{ selectedNodePath.hops }} {{ selectedNodePath.hops === 1 ? 'hop' : 'hops' }} away</span></div>
+                        </div>
+
+                        <!-- close button -->
+                        <div class="my-auto ml-auto mr-2">
+                            <div @click="selectedNode = null" href="javascript:void(0)" class="cursor-pointer">
+                                <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                            <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
-                </div>
-
-                <!-- browser navigation -->
-                <div class="flex w-full border-gray-300 border-b p-2">
-                    <button @click="loadNodePage(selectedNode.destination_hash, '/page/index.mu')" type="button" class="my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                    <button @click="reloadNodePage" type="button" class="ml-1 my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                            <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                    <button @click="loadPreviousNodePage" type="button" :disabled="nodePagePathHistory.length === 0" :class="[ nodePagePathHistory.length > 0 ? 'text-gray-500 bg-gray-200 hover:bg-gray-300' : 'text-gray-400 bg-gray-100']" class="ml-1 my-auto rounded p-1 cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                            <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                    <div class="my-auto mx-2 w-full">
-                        <input v-model="nodePagePathUrlInput" @keyup.enter="onNodePageUrlClick(nodePagePathUrlInput)" type="text" placeholder="Enter Destination URL" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 py-1.5">
+                    <!-- browser navigation -->
+                    <div class="flex w-full border-gray-300 border-b p-2">
+                        <button @click="loadNodePage(selectedNode.destination_hash, '/page/index.mu')" type="button" class="my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button @click="reloadNodePage" type="button" class="ml-1 my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button @click="loadPreviousNodePage" type="button" :disabled="nodePagePathHistory.length === 0" :class="[ nodePagePathHistory.length > 0 ? 'text-gray-500 bg-gray-200 hover:bg-gray-300' : 'text-gray-400 bg-gray-100']" class="ml-1 my-auto rounded p-1 cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div class="my-auto mx-2 w-full">
+                            <input v-model="nodePagePathUrlInput" @keyup.enter="onNodePageUrlClick(nodePagePathUrlInput)" type="text" placeholder="Enter Destination URL" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 py-1.5">
+                        </div>
+                        <button @click="onNodePageUrlClick(nodePagePathUrlInput)" type="button" class="my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
                     </div>
-                    <button @click="onNodePageUrlClick(nodePagePathUrlInput)" type="button" class="my-auto text-gray-500 bg-gray-200 hover:bg-gray-300 rounded p-1 cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                            <path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
 
-                <!-- page content -->
-                <div class="h-full overflow-y-scroll p-3 bg-black text-white">
-                    <div class="flex" v-if="isLoadingNodePage">
-                        <div class="my-auto">
-                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <!-- page content -->
+                    <div class="h-full overflow-y-scroll p-3 bg-black text-white">
+                        <div class="flex" v-if="isLoadingNodePage">
+                            <div class="my-auto">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                            <div class="my-auto">Loading {{ nodePageProgress }}%</div>
+                        </div>
+                        <pre v-else v-html="nodePageContent" class="h-full text-wrap"></pre>
+                    </div>
+
+                    <!-- file download bottom bar -->
+                    <div v-if="isDownloadingNodeFile" class="flex w-full border-gray-300 border-t p-2">
+                        <div class="my-auto mr-2">
+                            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </div>
-                        <div class="my-auto">Loading {{ nodePageProgress }}%</div>
+                        <div class="my-auto">Downloading: {{ nodeFilePath }} ({{ nodeFileProgress }}%)</div>
                     </div>
-                    <pre v-else v-html="nodePageContent" class="h-full text-wrap"></pre>
+
                 </div>
 
-                <!-- file download bottom bar -->
-                <div v-if="isDownloadingNodeFile" class="flex w-full border-gray-300 border-t p-2">
-                    <div class="my-auto mr-2">
-                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <!-- no node selected -->
+                <div v-else class="flex flex-col mx-auto my-auto text-center leading-5">
+                    <div class="mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
                         </svg>
                     </div>
-                    <div class="my-auto">Downloading: {{ nodeFilePath }} ({{ nodeFileProgress }}%)</div>
+                    <div class="font-semibold">No Active Node</div>
+                    <div>Select a Node to start browsing!</div>
                 </div>
 
-            </div>
+            </template>
 
         </div>
 
@@ -635,7 +693,7 @@
                 audioCalls: [],
                 lxmfDeliveryAnnounces: [],
 
-                tab: "peers",
+                tab: "messages",
                 peers: {},
                 peersSearchTerm: "",
                 selectedPeer: null,
@@ -1522,15 +1580,15 @@
 
             },
             onPeerClick: function(peer) {
-                this.selectedNode = null;
                 this.selectedPeer = peer;
+                this.tab = "messages";
                 this.chatItems = [];
                 this.getPeerPath(peer.destination_hash);
                 this.loadLxmfMessages(peer.destination_hash);
             },
             onNodeClick: function(node) {
-                this.selectedPeer = null;
                 this.selectedNode = node;
+                this.tab = "nomadnetwork";
                 this.getNodePath(node.destination_hash);
                 this.loadNodePage(node.destination_hash, "/page/index.mu");
             },
