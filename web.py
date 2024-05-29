@@ -154,6 +154,18 @@ class ReticulumWebChat:
                 "comports": comports,
             })
 
+        # fetch reticulum interfaces
+        @routes.get("/api/v1/reticulum/interfaces")
+        async def index(request):
+
+            interfaces = {}
+            if "interfaces" in self.reticulum.config:
+                interfaces = self.reticulum.config["interfaces"]
+
+            return web.json_response({
+                "interfaces": interfaces,
+            })
+
         # handle websocket clients
         @routes.get("/ws")
         async def ws(request):
