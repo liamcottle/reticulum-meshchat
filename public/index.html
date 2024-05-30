@@ -711,9 +711,11 @@
 
                     <div v-if="findInterfaceStats(interface_name)?.ifac_signature != null" class="bg-gray-50 p-1 text-sm text-gray-500 space-x-1 border-b">
                         <div class="flex text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4 my-auto text-green-500">
-                                <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd" />
-                            </svg>
+                            <div class="my-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4 text-green-500">
+                                    <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
                             <span class="ml-1 my-auto">
                                 <span class="text-green-500">{{ findInterfaceStats(interface_name)?.ifac_size * 8 }}-bit IFAC</span> with sig <span @click="onIFACSignatureClick(findInterfaceStats(interface_name)?.ifac_signature)" class="cursor-pointer">&lt;{{ findInterfaceStats(interface_name)?.ifac_signature?.slice(0, 6) }}...{{ findInterfaceStats(interface_name)?.ifac_signature?.slice(-6) }}&gt;</span>
                             </span>
