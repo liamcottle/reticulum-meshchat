@@ -65,6 +65,7 @@ class ReticulumWebChat:
             database.Config,
             database.Announce,
             database.LxmfMessage,
+            database.LxmfConversationReadState,
         ])
 
         # vacuum database on start to shrink its file size
@@ -852,6 +853,20 @@ class ReticulumWebChat:
                 "conversations": conversations,
             })
 
+        # mark lxmf conversation as read
+        @routes.get("/api/v1/lxmf/conversations/{destination_hash}/mark-as-read")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # mark lxmf conversation as read
+            self.db_mark_lxmf_conversation_as_read(destination_hash)
+
+            return web.json_response({
+                "message": "ok",
+            })
+
         # called when web app has started
         async def on_startup(app):
 
@@ -1297,6 +1312,21 @@ class ReticulumWebChat:
         # upsert to database
         query = database.Announce.insert(data)
         query = query.on_conflict(conflict_target=[database.Announce.destination_hash], update=data)
+        query.execute()
+
+    # upserts lxmf conversation read state to the database
+    def db_mark_lxmf_conversation_as_read(self, destination_hash: str):
+
+        # prepare data to insert or update
+        data = {
+            "destination_hash": destination_hash,
+            "last_read_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+        # upsert to database
+        query = database.LxmfConversationReadState.insert(data)
+        query = query.on_conflict(conflict_target=[database.LxmfConversationReadState.destination_hash], update=data)
         query.execute()
 
     # handle sending an lxmf message to reticulum

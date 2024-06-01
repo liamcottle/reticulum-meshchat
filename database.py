@@ -59,3 +59,17 @@ class LxmfMessage(BaseModel):
     # define table name
     class Meta:
         table_name = "lxmf_messages"
+
+
+class LxmfConversationReadState(BaseModel):
+
+    id = BigAutoField()
+    destination_hash = CharField(unique=True)  # unique destination hash
+    last_read_at = DateTimeField()
+
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+
+    # define table name
+    class Meta:
+        table_name = "lxmf_conversation_read_state"

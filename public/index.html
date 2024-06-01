@@ -2043,8 +2043,13 @@
                 this.loadNodePage(node.destination_hash, "/page/index.mu");
             },
             onConversationClick: function(conversation) {
+
                 // object must stay compatible with format of peers
                 this.onPeerClick(conversation);
+
+                // mark conversation as read
+                this.markConversationAsRead(conversation.destination_hash);
+
             },
             parseSeconds: function(secondsToFormat) {
                 secondsToFormat = Number(secondsToFormat);
@@ -2191,6 +2196,20 @@
 
                 // reload conversation
                 await this.loadLxmfMessages(this.selectedPeer.destination_hash);
+
+            },
+            async markConversationAsRead(destinationHash) {
+
+                // mark conversation as read
+                try {
+                    await window.axios.get(`/api/v1/lxmf/conversations/${this.selectedPeer.destination_hash}/mark-as-read`);
+                } catch(e) {
+                    // do nothing if failed to mark as read
+                    console.log(e);
+                }
+
+                // reload conversations
+                await this.getConversations();
 
             },
             async enableInterface(interfaceName) {
