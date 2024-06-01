@@ -812,16 +812,16 @@ class ReticulumWebChat:
                 SELECT
                     CASE WHEN source_hash < destination_hash THEN source_hash ELSE destination_hash END AS normalized_source,
                     CASE WHEN source_hash < destination_hash THEN destination_hash ELSE source_hash END AS normalized_destination,
-                    MAX(updated_at) AS most_recent_updated_at
+                    MAX(created_at) AS most_recent_created_at
                 FROM lxmf_messages
                 GROUP BY normalized_source, normalized_destination
             )
             SELECT
                 normalized_source AS source_hash,
                 normalized_destination AS destination_hash,
-                most_recent_updated_at
+                most_recent_created_at
             FROM NormalizedMessages
-            ORDER BY most_recent_updated_at DESC;
+            ORDER BY most_recent_created_at DESC;
             """
 
             # execute sql query
@@ -834,7 +834,7 @@ class ReticulumWebChat:
                 # get data from row
                 source_hash = row[0]
                 destination_hash = row[1]
-                updated_at = row[2]
+                created_at = row[2]
 
                 # determine destination hash of other user
                 if source_hash == self.local_lxmf_destination.hexhash:
@@ -847,7 +847,9 @@ class ReticulumWebChat:
                     "name": self.get_lxmf_conversation_name(other_user_hash),
                     "destination_hash": other_user_hash,
                     "is_unread": self.is_lxmf_conversation_unread(other_user_hash),
-                    "updated_at": updated_at,
+                    # we say the conversation was updated when the latest message was created
+                    # otherwise this will go crazy when sending a message, as the updated_at on the latest message changes very frequently
+                    "updated_at": created_at,
                 })
 
             return web.json_response({
