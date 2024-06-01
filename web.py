@@ -801,6 +801,56 @@ class ReticulumWebChat:
                 "message": "ok",
             })
 
+        # get unqiue lxmf conversations
+        @routes.get("/api/v1/lxmf/conversations")
+        async def index(request):
+
+            # sql query to fetch unique source/destination hash pairs ordered by the most recently updated message
+            query = """
+            WITH NormalizedMessages AS (
+                SELECT
+                    CASE WHEN source_hash < destination_hash THEN source_hash ELSE destination_hash END AS normalized_source,
+                    CASE WHEN source_hash < destination_hash THEN destination_hash ELSE source_hash END AS normalized_destination,
+                    MAX(updated_at) AS most_recent_updated_at
+                FROM lxmf_messages
+                GROUP BY normalized_source, normalized_destination
+            )
+            SELECT
+                normalized_source AS source_hash,
+                normalized_destination AS destination_hash,
+                most_recent_updated_at
+            FROM NormalizedMessages
+            ORDER BY most_recent_updated_at DESC;
+            """
+
+            # execute sql query
+            cursor = database.database.execute_sql(query)
+
+            # parse results to get a list of conversations we have sent or received a message from
+            conversations = []
+            for row in cursor.fetchall():
+
+                # get data from row
+                source_hash = row[0]
+                destination_hash = row[1]
+                updated_at = row[2]
+
+                # determine destination hash of other user
+                if source_hash == self.local_lxmf_destination.hexhash:
+                    other_user_hash = destination_hash
+                else:
+                    other_user_hash = source_hash
+
+                # add to conversations
+                conversations.append({
+                    "destination_hash": other_user_hash,
+                    "updated_at": updated_at,
+                })
+
+            return web.json_response({
+                "conversations": conversations,
+            })
+
         # called when web app has started
         async def on_startup(app):
 
