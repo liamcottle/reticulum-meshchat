@@ -843,6 +843,7 @@ class ReticulumWebChat:
 
                 # add to conversations
                 conversations.append({
+                    "name": self.get_lxmf_conversation_name(other_user_hash),
                     "destination_hash": other_user_hash,
                     "updated_at": updated_at,
                 })
@@ -1434,6 +1435,26 @@ class ReticulumWebChat:
             "announce": self.convert_db_announce_to_dict(announce),
         })))
 
+    # get name to show for an lxmf conversation
+    # currently, this will use the app data from the most recent announce
+    # TODO: we should fetch this from our contacts database, when it gets implemented, and if not found, fallback to app data
+    def get_lxmf_conversation_name(self, destination_hash):
+
+        # get lxmf.delivery announce from database for the provided destination hash
+        lxmf_announce = (database.Announce.select()
+                         .where(database.Announce.aspect == "lxmf.delivery")
+                         .where(database.Announce.destination_hash == destination_hash)
+                         .get_or_none())
+
+        # if app data is available in database, it should be base64 encoded text that was announced
+        # we will return this as the conversation name
+        if lxmf_announce is not None and lxmf_announce.app_data is not None:
+            try:
+                return base64.b64decode(lxmf_announce.app_data).decode("utf-8")
+            except:
+                pass
+
+        return "Unknown"
 
 # class to manage config stored in database
 class Config:
