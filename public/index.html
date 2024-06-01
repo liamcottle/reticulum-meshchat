@@ -1160,6 +1160,19 @@
                                 "lxmf_message": json.lxmf_message,
                             });
 
+                            // if inbound message is for a conversation we are currently looking at, mark it as read
+                            if(this.tab === "messages"
+                                && this.messagesTab === "conversations"
+                                && json.lxmf_message.source_hash === this.selectedPeer.destination_hash){
+
+                                // find conversation
+                                const conversation = this.findConversation(this.selectedPeer.destination_hash);
+                                if(conversation){
+                                    this.markConversationAsRead(conversation);
+                                }
+
+                            }
+
                             // auto scroll to bottom if we want to
                             if(this.autoScrollOnNewMessage){
                                 this.scrollMessagesToBottom();
@@ -2433,6 +2446,11 @@
             },
             onIFACSignatureClick: function(ifacSignature) {
                 alert(ifacSignature);
+            },
+            findConversation: function(destinationHash) {
+                return this.conversations.find((conversation) => {
+                    return conversation.destination_hash === destinationHash;
+                });
             },
         },
         computed: {
