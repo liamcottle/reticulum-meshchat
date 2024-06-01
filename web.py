@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from typing import Callable, List
@@ -102,6 +103,44 @@ class ReticulumWebChat:
         # register audio call identity
         self.audio_call_manager = AudioCallManager(identity=self.identity)
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
+
+        # start background thread for auto announce loop
+        thread = threading.Thread(target=self.announce_loop)
+        thread.daemon = True
+        thread.start()
+
+    # automatically announces based on user config
+    def announce_loop(self):
+        while True:
+
+            should_announce = False
+
+            # check if auto announce is enabled
+            if self.config.auto_announce_enabled.get():
+
+                # check if we have announced recently
+                last_announced_at = self.config.last_announced_at.get()
+                if last_announced_at is not None:
+
+                    # determine when next announce should be sent
+                    auto_announce_interval_seconds = self.config.auto_announce_interval_seconds.get()
+                    next_announce_at = last_announced_at + auto_announce_interval_seconds
+
+                    # we should announce if current time has passed next announce at timestamp
+                    if time.time() > next_announce_at:
+                        should_announce = True
+
+                else:
+                    # last announced at is null, so we have never announced, lets do it now
+                    should_announce = True
+
+            # announce
+            if should_announce:
+                self.announce()
+                self.config.last_announced_at.set(int(time.time()))
+
+            # wait 1 second before next loop
+            time.sleep(1)
 
     # handle receiving a new audio call
     def on_incoming_audio_call(self, audio_call: AudioCall):
@@ -1520,7 +1559,7 @@ class ReticulumWebChat:
 class Config:
 
     @staticmethod
-    def get(key: str, default_value=None):
+    def get(key: str, default_value=None) -> str | None:
 
         # get config value from database
         config_item = database.Config.get_or_none(database.Config.key == key)
@@ -1554,15 +1593,63 @@ class Config:
             self.key = key
             self.default_value = default_value
 
-        def get(self, default_value: str = None):
+        def get(self, default_value: str = None) -> str | None:
             _default_value = default_value or self.default_value
             return Config.get(self.key, default_value=_default_value)
 
         def set(self, value: str):
-            return Config.set(self.key, value)
+            Config.set(self.key, value)
+
+    # handle config values that should be bools
+    class BoolConfig:
+
+        def __init__(self, key: str, default_value: bool = False):
+            self.key = key
+            self.default_value = default_value
+
+        def get(self) -> bool:
+
+            # get string value, or return default
+            config_value = Config.get(self.key, default_value=None)
+            if config_value is None:
+                return self.default_value
+
+            return config_value == "true"
+
+        def set(self, value: bool):
+
+            # determine string value for bool
+            if value is True:
+                config_value = "true"
+            else:
+                config_value = "false"
+
+            Config.set(self.key, config_value)
+
+    # handle config values that should be integers
+    class IntConfig:
+
+        def __init__(self, key: str, default_value: int | None = 0):
+            self.key = key
+            self.default_value = default_value
+
+        def get(self) -> int | None:
+
+            # get string value, or return default
+            config_value = Config.get(self.key, default_value=None)
+            if config_value is None:
+                return self.default_value
+
+            return int(config_value)
+
+        def set(self, value: int):
+            Config.set(self.key, str(value))
 
     # all possible config items
     display_name = StringConfig("display_name", "Anonymous Peer")
+    auto_announce_enabled = BoolConfig("auto_announce_enabled", False)
+    auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", False)
+    last_announced_at = IntConfig("last_announced_at", None)
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback
