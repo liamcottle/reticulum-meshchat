@@ -846,6 +846,7 @@ class ReticulumWebChat:
                 conversations.append({
                     "name": self.get_lxmf_conversation_name(other_user_hash),
                     "destination_hash": other_user_hash,
+                    "is_unread": self.is_lxmf_conversation_unread(other_user_hash),
                     "updated_at": updated_at,
                 })
 
@@ -1485,6 +1486,33 @@ class ReticulumWebChat:
                 pass
 
         return "Unknown"
+
+    # returns true if the conversation has messages newer than the last read at timestamp
+    def is_lxmf_conversation_unread(self, destination_hash):
+
+        # get lxmf.delivery announce from database for the provided destination hash
+        lxmf_conversation_read_state = (database.LxmfConversationReadState.select()
+                         .where(database.LxmfConversationReadState.destination_hash == destination_hash)
+                         .get_or_none())
+
+        # user has never read this conversation, so it's unread
+        if lxmf_conversation_read_state is None:
+            return True
+
+        # get most recent incoming message from destination hash
+        latest_incoming_lxmf_message = (database.LxmfMessage.select()
+                        .where(database.LxmfMessage.source_hash == destination_hash)
+                        .order_by(database.LxmfMessage.created_at.desc())
+                        .get_or_none())
+
+        # there's no incoming message, so it can't be unread
+        if latest_incoming_lxmf_message is None:
+            return False
+
+        # conversation is unread if last read at is before the latest incoming message creation date
+        conversation_last_read_at = datetime.strptime(lxmf_conversation_read_state.last_read_at, "%Y-%m-%d %H:%M:%S.%f%z")
+        conversation_latest_message_at = datetime.strptime(latest_incoming_lxmf_message.created_at, "%Y-%m-%d %H:%M:%S.%f%z")
+        return conversation_last_read_at < conversation_latest_message_at
 
 # class to manage config stored in database
 class Config:
