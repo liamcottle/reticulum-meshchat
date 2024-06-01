@@ -137,7 +137,6 @@ class ReticulumWebChat:
             # announce
             if should_announce:
                 self.announce()
-                self.config.last_announced_at.set(int(time.time()))
 
             # wait 1 second before next loop
             time.sleep(1)
@@ -929,6 +928,9 @@ class ReticulumWebChat:
 
     # handle announcing
     def announce(self):
+
+        # update last announced at timestamp
+        self.config.last_announced_at.set(int(time.time()))
 
         # send announce for lxmf
         self.local_lxmf_destination.announce(app_data=self.config.display_name.get().encode("utf-8"))
