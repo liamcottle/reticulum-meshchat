@@ -228,7 +228,73 @@
 
         <!-- messages sidebar -->
         <div v-if="tab === 'messages'" class="flex flex-col w-80 min-w-80">
-            <div class="flex-1 flex flex-col bg-white border-r overflow-hidden">
+
+            <!-- tabs -->
+            <div class="bg-white border-b border-r border-gray-200">
+                <div class="-mb-px flex">
+                    <!-- Current: "border-blue-500 text-blue-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
+                    <div @click="messagesTab = 'conversations'" class="w-full border-b-2 py-3 px-1 text-center text-sm font-medium cursor-pointer" :class="[ messagesTab === 'conversations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']">Conversations</div>
+                    <div @click="messagesTab = 'announces'" class="w-full border-b-2 py-3 px-1 text-center text-sm font-medium cursor-pointer" :class="[ messagesTab === 'announces' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']">Announces</div>
+                </div>
+            </div>
+
+            <!-- conversations -->
+            <div v-if="messagesTab == 'conversations'" class="flex-1 flex flex-col bg-white border-r overflow-hidden">
+
+                <!-- search -->
+                <div v-if="conversations.length > 0" class="p-1 border-b border-gray-300">
+                    <input v-model="conversationsSearchTerm" type="text" :placeholder="`Search ${conversations.length} Conversations...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
+
+                <!-- peers -->
+                <div class="flex h-full overflow-y-auto">
+                    <div v-if="searchedConversations.length > 0" class="w-full">
+                        <div @click="onConversationClick(conversation)" v-for="conversation of searchedConversations" class="flex cursor-pointer p-2 border-l-2" :class="[ conversation.destination_hash === selectedPeer?.destination_hash ? 'bg-gray-100 border-blue-500' : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-200' ]">
+                            <div class="my-auto mr-2">
+                                <div class="bg-gray-200 text-gray-500 p-2 rounded">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-gray-900">{{ conversation.name }}</div>
+                                <div class="text-gray-500 text-sm">{{ formatTimeAgo(conversation.updated_at) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="mx-auto my-auto text-center leading-5">
+
+                        <!-- no conversations at all -->
+                        <div v-if="conversations.length === 0" class="flex flex-col">
+                            <div class="mx-auto mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" />
+                                </svg>
+                            </div>
+                            <div class="font-semibold">No Conversations</div>
+                            <div>Discover peers on the Announces tab</div>
+                        </div>
+
+                        <!-- is searching, but no results -->
+                        <div v-if="conversationsSearchTerm !== '' && conversations.length > 0" class="flex flex-col">
+                            <div class="mx-auto mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                            </div>
+                            <div class="font-semibold">No Search Results</div>
+                            <div>Your search didn't match any Conversations!</div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- discover -->
+            <div v-if="messagesTab == 'announces'" class="flex-1 flex flex-col bg-white border-r overflow-hidden">
 
                 <!-- search -->
                 <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
@@ -281,6 +347,7 @@
                 </div>
 
             </div>
+
         </div>
 
         <!-- nomadnetwork sidebar -->
@@ -976,6 +1043,10 @@
                 selectedNode: null,
                 selectedNodePath: null,
 
+                conversations: [],
+                conversationsSearchTerm: "",
+                messagesTab: "conversations",
+
                 lxmfMessagesRequestSequence: 0,
                 chatItems: [],
 
@@ -1019,6 +1090,7 @@
             this.connectWebsocket();
             this.getLxmfDeliveryAnnounces();
             this.getNomadnetworkNodeAnnounces();
+            this.getConversations();
             this.loadInterfaces();
             this.updateInterfaceStats();
 
@@ -1464,6 +1536,15 @@
 
                 } catch(e) {
                     // do nothing if failed to load announces
+                    console.log(e);
+                }
+            },
+            async getConversations() {
+                try {
+                    const response = await window.axios.get(`/api/v1/lxmf/conversations`);
+                    this.conversations = response.data.conversations;
+                } catch(e) {
+                    // do nothing if failed to load conversations
                     console.log(e);
                 }
             },
@@ -1960,6 +2041,10 @@
                 this.getNodePath(node.destination_hash);
                 this.loadNodePage(node.destination_hash, "/page/index.mu");
             },
+            onConversationClick: function(conversation) {
+                // object must stay compatible with format of peers
+                this.onPeerClick(conversation);
+            },
             parseSeconds: function(secondsToFormat) {
                 secondsToFormat = Number(secondsToFormat);
                 var days = Math.floor(secondsToFormat / (3600 * 24));
@@ -2387,6 +2472,14 @@
                     const matchesAppData = node.name.toLowerCase().includes(search);
                     const matchesDestinationHash = node.destination_hash.toLowerCase().includes(search);
                     return matchesAppData || matchesDestinationHash;
+                });
+            },
+            searchedConversations() {
+                return this.conversations.filter((conversation) => {
+                    const search = this.conversationsSearchTerm.toLowerCase();
+                    const matchesName = conversation.name.toLowerCase().includes(search);
+                    const matchesDestinationHash = conversation.destination_hash.toLowerCase().includes(search);
+                    return matchesName || matchesDestinationHash;
                 });
             },
             canSendMessage() {
