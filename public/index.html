@@ -144,7 +144,7 @@
                             </div>
                             <div class="my-auto">My Identity</div>
                             <div class="ml-auto">
-                                <button @click="saveDisplayName" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <button @click="saveIdentitySettings" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                                     Save
                                 </button>
                             </div>
@@ -160,6 +160,23 @@
                             <div class="p-1">
                                 <div>LXMF Address</div>
                                 <div class="text-sm text-gray-700">{{ config.lxmf_address_hash }}</div>
+                            </div>
+                            <div class="p-1">
+                                <div>Auto Announce</div>
+                                <select v-model="config.auto_announce_interval_seconds" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                    <option value="0">Disabled</option>
+                                    <option value="900">15 Minutes</option>
+                                    <option value="1800">30 Minutes</option>
+                                    <option value="3600">1 Hour</option>
+                                    <option value="10800">3 Hours</option>
+                                    <option value="21600">6 Hours</option>
+                                    <option value="43200">12 Hours</option>
+                                    <option value="86400">24 Hours</option>
+                                </select>
+                                <div class="text-sm text-gray-700">
+                                    <span v-if="config.last_announced_at">Last announced: {{ formatSecondsAgo(config.last_announced_at) }}</span>
+                                    <span v-else>Last announced: Never</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1299,6 +1316,15 @@
                     container.scrollTop = container.scrollHeight;
                 });
             },
+            async getConfig() {
+                try {
+                    const response = await window.axios.get(`/api/v1/config`);
+                    this.config = response.data.config;
+                } catch(e) {
+                    // do nothing if failed to load config
+                    console.log(e);
+                }
+            },
             async sendAnnounce() {
 
                 // do nothing if not connected to websocket
@@ -1317,6 +1343,9 @@
                 } catch(e) {
                     console.error(e);
                 }
+
+                // fetch config so it updates last announced timestamp
+                await this.getConfig();
 
             },
             async sendMessage() {
@@ -1415,9 +1444,10 @@
                 }
 
             },
-            async saveDisplayName() {
+            async saveIdentitySettings() {
                 await this.updateConfig({
                     "display_name": this.displayName,
+                    "auto_announce_interval_seconds": this.config.auto_announce_interval_seconds,
                 });
             },
             async startNewLXMFConversation() {
@@ -2082,10 +2112,22 @@
                 };
             },
             formatTimeAgo: function(datetimeString) {
-
                 const millisecondsAgo = Date.now() - new Date(datetimeString).getTime();
                 const secondsAgo = Math.round(millisecondsAgo / 1000);
-                const parsedSeconds = this.parseSeconds(secondsAgo);
+                return this.formatSecondsAgo(secondsAgo);
+            },
+            formatSecondsAgo: function(seconds) {
+                const secondsAgo = Math.round((Date.now() / 1000) - seconds);
+                return this.formatSeconds(secondsAgo);
+            },
+            formatSeconds: function(seconds) {
+
+                const parsedSeconds = this.parseSeconds(seconds);
+
+                console.log({
+                    seconds: seconds,
+                    parsedSeconds: parsedSeconds,
+                });
 
                 if(parsedSeconds.days > 0){
                     return parsedSeconds.days + " days ago";

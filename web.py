@@ -954,6 +954,19 @@ class ReticulumWebChat:
             if "display_name" in config and config["display_name"] != "":
                 self.config.display_name.set(config["display_name"])
 
+            # update auto announce interval
+            if "auto_announce_interval_seconds" in config:
+
+                # auto auto announce interval
+                auto_announce_interval_seconds = int(config["auto_announce_interval_seconds"])
+                self.config.auto_announce_interval_seconds.set(config["auto_announce_interval_seconds"])
+
+                # enable or disable auto announce based on interval
+                if auto_announce_interval_seconds > 0:
+                    self.config.auto_announce_enabled.set(True)
+                else:
+                    self.config.auto_announce_enabled.set(False)
+
             # send config to websocket clients
             await self.send_config_to_websocket_clients()
 
@@ -1130,6 +1143,9 @@ class ReticulumWebChat:
             "identity_hash": self.identity.hexhash,
             "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             "audio_call_address_hash": self.audio_call_manager.audio_call_receiver.destination.hexhash,
+            "auto_announce_enabled": self.config.auto_announce_enabled.get(),
+            "auto_announce_interval_seconds": self.config.auto_announce_interval_seconds.get(),
+            "last_announced_at": self.config.last_announced_at.get(),
         }
 
     # convert audio call to dict
@@ -1650,7 +1666,7 @@ class Config:
     # all possible config items
     display_name = StringConfig("display_name", "Anonymous Peer")
     auto_announce_enabled = BoolConfig("auto_announce_enabled", False)
-    auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", False)
+    auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", 3600)
     last_announced_at = IntConfig("last_announced_at", None)
 
 
