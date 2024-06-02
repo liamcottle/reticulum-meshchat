@@ -1666,7 +1666,7 @@ class Config:
     # all possible config items
     display_name = StringConfig("display_name", "Anonymous Peer")
     auto_announce_enabled = BoolConfig("auto_announce_enabled", False)
-    auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", 3600)
+    auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", 0)
     last_announced_at = IntConfig("last_announced_at", None)
 
 
