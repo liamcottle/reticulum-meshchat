@@ -12,6 +12,12 @@
     <script src="assets/js/vue@3.4.26/dist/vue.global.js"></script>
     <script src="assets/js/micron-parser.js"></script>
 
+    <!-- codec2 -->
+    <script src="assets/js/codec2-emscripten/c2enc.js"></script>
+    <script src="assets/js/codec2-emscripten/c2dec.js"></script>
+    <script src="assets/js/codec2-emscripten/sox.js"></script>
+    <script src="assets/js/codec2-emscripten/codec2-lib.js"></script>
+
 </head>
 <body class="bg-gray-100">
 <div id="app" class="h-screen w-full flex flex-col">
@@ -522,6 +528,35 @@
                                         <!-- image field -->
                                         <div v-if="chatItem.lxmf_message.fields?.image">
                                             <img @click="openImage(`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`)" :src="`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`" class="w-full rounded-md cursor-pointer"/>
+                                        </div>
+
+                                        <!-- audio field -->
+                                        <div v-if="chatItem.lxmf_message.fields?.audio">
+
+                                            <!-- audio is loaded -->
+                                            <audio v-if="lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash]" controls class="shadow rounded-full mb-1">
+                                                <source :src="lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash]" type="audio/wav"/>
+                                            </audio>
+
+                                            <!-- audio is not yet loaded -->
+                                            <div v-else>
+                                                <button @click="downloadFileFromBase64('audio.bin', chatItem.lxmf_message.fields.audio.audio_bytes)" type="button" class="flex border border-gray-300 hover:bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 font-semibold cursor-pointer space-x-2 bg-[#efefef]">
+                                                    <span class="my-auto">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                          <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
+                                                        </svg>
+                                                    </span>
+                                                    <span class="my-auto w-full">
+                                                        Unsupported Audio (mode {{ chatItem.lxmf_message.fields.audio.audio_mode }})
+                                                    </span>
+                                                    <span class="my-auto">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+                                            </div>
+
                                         </div>
 
                                         <!-- file attachment fields -->
@@ -1167,6 +1202,20 @@
                 newInterfaceCodingRate: null,
 
                 comports: [],
+
+                lxmfMessageAudioAttachmentCache: {},
+                lxmfAudioModeToCodec2ModeMap: {
+                    // https://github.com/markqvist/LXMF/blob/master/LXMF/LXMF.py#L21
+                    0x01: "450PWB", // AM_CODEC2_450PWB
+                    0x02: "450", // AM_CODEC2_450
+                    0x03: "700C", // AM_CODEC2_700C
+                    0x04: "1200", // AM_CODEC2_1200
+                    0x05: "1300", // AM_CODEC2_1300
+                    0x06: "1400", // AM_CODEC2_1400
+                    0x07: "1600", // AM_CODEC2_1600
+                    0x08: "2400", // AM_CODEC2_2400
+                    0x09: "3200", // AM_CODEC2_3200
+                },
 
             };
         },
@@ -2317,6 +2366,9 @@
                 }
                 return window.btoa(binary);
             },
+            base64ToArrayBuffer: function(base64) {
+                return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+            },
             async deleteConversation() {
 
                 // do nothing if no peer selected
@@ -2585,6 +2637,67 @@
                     return conversation.destination_hash === destinationHash;
                 });
             },
+            async processAudioForSelectedPeerChatItems() {
+                for(const chatItem of this.selectedPeerChatItems){
+
+                    // skip if no audio
+                    if(!chatItem.lxmf_message?.fields?.audio){
+                        continue;
+                    }
+
+                    // skip if audio already cached
+                    if(this.lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash]){
+                        continue;
+                    }
+
+                    // decode audio to blob url
+                    const objectUrl = await this.decodeLxmfAudioFieldToBlobUrl(chatItem.lxmf_message.fields.audio);
+                    if(!objectUrl){
+                        continue;
+                    }
+
+                    // update audio cache
+                    this.lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash] = objectUrl;
+
+                }
+            },
+            async decodeLxmfAudioFieldToBlobUrl(audioField) {
+                try {
+
+                    // get audio mode and audio bytes from audio field
+                    const audioMode = audioField.audio_mode;
+                    const audioBytes = audioField.audio_bytes;
+
+                    // determine codec2 mode, or skip if unknown
+                    const codecMode = this.lxmfAudioModeToCodec2ModeMap[audioMode];
+                    if(!codecMode){
+                        console.log("unsupported audio mode: " + audioMode)
+                        return null;
+                    }
+
+                    // convert base64 to uint8 array
+                    const encoded = this.base64ToArrayBuffer(audioBytes);
+
+                    // decode codec2 audio
+                    const decoded = await Codec2Lib.runDecode(codecMode, new Uint8Array(encoded));
+
+                    // convert decoded codec2 to wav audio
+                    const wavAudio = await Codec2Lib.rawToWav(decoded);
+
+                    // create blob from wav audio
+                    const blob = new Blob([wavAudio], {
+                        type: "audio/wav",
+                    });
+
+                    // create object url for blob
+                    return URL.createObjectURL(blob);
+
+                } catch(e) {
+                    // failed to decode lxmf audio field
+                    console.log(e);
+                    return null;
+                }
+            },
         },
         computed: {
             isMobile() {
@@ -2699,6 +2812,14 @@
                     results.push(iface);
                 }
                 return results;
+            },
+        },
+        watch: {
+            async selectedPeerChatItems() {
+
+                // chat items for selected peer changed, so lets process any available audio
+                await this.processAudioForSelectedPeerChatItems();
+
             },
         },
     }).mount('#app');
