@@ -105,12 +105,12 @@ class ReticulumWebChat:
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
 
         # start background thread for auto announce loop
-        thread = threading.Thread(target=self.announce_loop)
+        thread = threading.Thread(target=asyncio.run, args=(self.announce_loop(),))
         thread.daemon = True
         thread.start()
 
     # automatically announces based on user config
-    def announce_loop(self):
+    async def announce_loop(self):
         while True:
 
             should_announce = False
@@ -136,10 +136,10 @@ class ReticulumWebChat:
 
             # announce
             if should_announce:
-                self.announce()
+                await self.announce()
 
             # wait 1 second before next loop
-            time.sleep(1)
+            await asyncio.sleep(1)
 
     # handle receiving a new audio call
     def on_incoming_audio_call(self, audio_call: AudioCall):
@@ -927,7 +927,7 @@ class ReticulumWebChat:
         web.run_app(app, host=host, port=port)
 
     # handle announcing
-    def announce(self):
+    async def announce(self):
 
         # update last announced at timestamp
         self.config.last_announced_at.set(int(time.time()))
@@ -937,6 +937,9 @@ class ReticulumWebChat:
 
         # send announce for audio call
         self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
+
+        # tell websocket clients we just announced
+        await self.send_announced_to_websocket_clients()
 
     # handle data received from websocket client
     async def on_websocket_data_received(self, client, data):
@@ -1009,7 +1012,7 @@ class ReticulumWebChat:
 
         # handle sending an announce
         elif _type == "announce":
-            self.announce()
+            await self.announce()
 
         # handle downloading a file from a nomadnet node
         elif _type == "nomadnet.file.download":
@@ -1134,6 +1137,12 @@ class ReticulumWebChat:
         await self.websocket_broadcast(json.dumps({
             "type": "config",
             "config": self.get_config_dict(),
+        }))
+
+    # broadcasts to all websocket clients that we just announced
+    async def send_announced_to_websocket_clients(self):
+        await self.websocket_broadcast(json.dumps({
+            "type": "announced",
         }))
 
     # returns a dictionary of config
