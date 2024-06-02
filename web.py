@@ -20,7 +20,7 @@ from peewee import SqliteDatabase
 from serial.tools import list_ports
 
 import database
-from src.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment
+from src.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.audio_call_manager import AudioCall, AudioCallManager
 
 
@@ -1009,6 +1009,13 @@ class ReticulumMeshChat:
                 image_bytes = base64.b64decode(data["lxmf_message"]["fields"]["image"]["image_bytes"])
                 image_field = LxmfImageField(image_type, image_bytes)
 
+            # parse audio field
+            audio_field = None
+            if "audio" in fields:
+                audio_mode = data["lxmf_message"]["fields"]["audio"]["audio_mode"]
+                audio_bytes = base64.b64decode(data["lxmf_message"]["fields"]["audio"]["audio_bytes"])
+                audio_field = LxmfAudioField(audio_mode, audio_bytes)
+
             # parse file attachments field
             file_attachments_field = None
             if "file_attachments" in fields:
@@ -1022,7 +1029,10 @@ class ReticulumMeshChat:
                 file_attachments_field = LxmfFileAttachmentsField(file_attachments)
 
             # send lxmf message to destination
-            await self.send_message(destination_hash, content, image_field=image_field, file_attachments_field=file_attachments_field)
+            await self.send_message(destination_hash, content,
+                                    image_field=image_field,
+                                    audio_field=audio_field,
+                                    file_attachments_field=file_attachments_field)
 
             # # TODO: send response to client when marked as delivered?
             # await client.send(json.dumps({
@@ -1269,6 +1279,15 @@ class ReticulumMeshChat:
                     "image_bytes": image_bytes,
                 }
 
+            # handle audio field
+            if field_type == LXMF.FIELD_AUDIO:
+                audio_mode = value[0]
+                audio_bytes = base64.b64encode(value[1]).decode("utf-8")
+                fields["audio"] = {
+                    "audio_mode": audio_mode,
+                    "audio_bytes": audio_bytes,
+                }
+
         # convert 0.0-1.0 progress to 0.00-100 percentage
         progress_percentage = round(lxmf_message.progress * 100, 2)
 
@@ -1420,6 +1439,7 @@ class ReticulumMeshChat:
     # handle sending an lxmf message to reticulum
     async def send_message(self, destination_hash, content: str,
                            image_field: LxmfImageField = None,
+                           audio_field: LxmfAudioField = None,
                            file_attachments_field: LxmfFileAttachmentsField = None):
 
         try:
@@ -1464,6 +1484,13 @@ class ReticulumMeshChat:
                 lxmf_message.fields[LXMF.FIELD_IMAGE] = [
                     image_field.image_type,
                     image_field.image_bytes,
+                ]
+
+            # add audio field
+            if audio_field is not None:
+                lxmf_message.fields[LXMF.FIELD_AUDIO] = [
+                    audio_field.audio_mode,
+                    audio_field.audio_bytes,
                 ]
 
             # register delivery callbacks

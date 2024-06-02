@@ -1,6 +1,14 @@
 from typing import List
 
 
+# helper class for passing around an lxmf audio field
+class LxmfAudioField:
+
+    def __init__(self, audio_mode: int, audio_bytes: bytes):
+        self.audio_mode = audio_mode
+        self.audio_bytes = audio_bytes
+
+
 # helper class for passing around an lxmf image field
 class LxmfImageField:
 
