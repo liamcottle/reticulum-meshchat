@@ -2127,7 +2127,7 @@
             formatTimeAgo: function(datetimeString) {
                 const millisecondsAgo = Date.now() - new Date(datetimeString).getTime();
                 const secondsAgo = Math.round(millisecondsAgo / 1000);
-                return this.formatSecondsAgo(secondsAgo);
+                return this.formatSeconds(secondsAgo);
             },
             formatSecondsAgo: function(seconds) {
                 const secondsAgo = Math.round((Date.now() / 1000) - seconds);
