@@ -2394,6 +2394,11 @@
                     return;
                 }
 
+                // ask user to confirm recording new audio attachment, if an existing audio attachment exists
+                if(this.newMessageAudio && !confirm("An audio recording is already attached. A new recording will replace it. Do you want to continue?")){
+                    return;
+                }
+
                 // start recording microphone
                 this.audioAttachmentMicrophoneRecorder = new Codec2MicrophoneRecorder();
                 this.audioAttachmentRecordingStartedAt = Date.now();
