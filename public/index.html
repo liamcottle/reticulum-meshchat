@@ -17,6 +17,8 @@
     <script src="assets/js/codec2-emscripten/c2dec.js"></script>
     <script src="assets/js/codec2-emscripten/sox.js"></script>
     <script src="assets/js/codec2-emscripten/codec2-lib.js"></script>
+    <script src="assets/js/codec2-emscripten/wav-encoder.js"></script>
+    <script src="assets/js/codec2-emscripten/codec2-microphone-recorder.js"></script>
 
 </head>
 <body class="bg-gray-100">
@@ -661,6 +663,23 @@
                                     </div>
                                 </div>
 
+                                <!-- audio attachment -->
+                                <div v-if="newMessageAudio" class="mb-2">
+                                    <div class="flex flex-wrap gap-1">
+                                        <div class="flex border border-gray-300 rounded text-gray-700 divide-x divide-gray-300 overflow-hidden">
+                                            <div class="my-auto px-1">
+                                                <span class="mr-1">Audio Recording</span>
+                                                <span class="my-auto text-sm text-gray-500">{{ formatBytes(newMessageAudio.audio_blob.size) }}</span>
+                                            </div>
+                                            <div @click="removeAudioAttachment" class="flex my-auto text-sm text-gray-500 h-full px-1 hover:bg-gray-200 cursor-pointer">
+                                                <svg class="w-5 h-5 my-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- file attachments -->
                                 <div v-if="newMessageFiles.length > 0" class="mb-2">
                                     <div class="flex flex-wrap gap-1">
@@ -700,6 +719,24 @@
                                         </svg>
                                         <span class="ml-1">Add Image</span>
                                     </button>
+
+                                    <!-- add audio -->
+                                    <div>
+                                        <button v-if="isRecordingAudioAttachment" @click="stopRecordingAudioAttachment" type="button" class="my-auto mr-1 inline-flex items-center gap-x-1 rounded-md bg-red-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                                                <path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 1 1-6 0V4Z" />
+                                                <path d="M5.5 9.643a.75.75 0 0 0-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-1.5v-1.546A6.001 6.001 0 0 0 16 10v-.357a.75.75 0 0 0-1.5 0V10a4.5 4.5 0 0 1-9 0v-.357Z" />
+                                            </svg>
+                                            <span class="ml-1">Recording: {{ audioAttachmentRecordingDuration }}</span>
+                                        </button>
+                                        <button v-else @click="startRecordingAudioAttachment" type="button" class="my-auto mr-1 inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                                                <path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 1 1-6 0V4Z" />
+                                                <path d="M5.5 9.643a.75.75 0 0 0-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-1.5v-1.546A6.001 6.001 0 0 0 16 10v-.357a.75.75 0 0 0-1.5 0V10a4.5 4.5 0 0 1-9 0v-.357Z" />
+                                            </svg>
+                                            <span class="ml-1">Add Voice</span>
+                                        </button>
+                                    </div>
 
                                     <!-- send message -->
                                     <button @click="sendMessage" :disabled="!canSendMessage" type="button" class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" :class="[ canSendMessage ? 'bg-blue-500 hover:bg-blue-400 focus-visible:outline-blue-500' : 'bg-gray-400 focus-visible:outline-gray-500 cursor-not-allowed']">
@@ -1141,6 +1178,7 @@
                 newMessageText: "",
                 newMessageImage: null,
                 newMessageImageUrl: null,
+                newMessageAudio: null,
                 newMessageFiles: [],
                 isSendingMessage: false,
                 autoScrollOnNewMessage: true,
@@ -1203,6 +1241,11 @@
 
                 comports: [],
 
+                isRecordingAudioAttachment: false,
+                audioAttachmentMicrophoneRecorder: null,
+                audioAttachmentRecordingStartedAt: null,
+                audioAttachmentRecordingDuration: null,
+                audioAttachmentRecordingTimer: null,
                 lxmfMessageAudioAttachmentCache: {},
                 lxmfAudioModeToCodec2ModeMap: {
                     // https://github.com/markqvist/LXMF/blob/master/LXMF/LXMF.py#L21
@@ -1524,6 +1567,14 @@
                         };
                     }
 
+                    // add audio attachment
+                    if(this.newMessageAudio){
+                        fields["audio"] = {
+                            "audio_mode": this.newMessageAudio.audio_mode,
+                            "audio_bytes": this.arrayBufferToBase64(await this.newMessageAudio.audio_blob.arrayBuffer()),
+                        };
+                    }
+
                     // send message to reticulum via websocket
                     this.ws.send(JSON.stringify({
                         "type": "lxmf.delivery",
@@ -1538,6 +1589,7 @@
                     this.newMessageText = "";
                     this.newMessageImage = null;
                     this.newMessageImageUrl = null;
+                    this.newMessageAudio = null;
                     this.newMessageFiles = [];
                     this.clearImageInput();
                     this.clearFileInput();
@@ -2277,6 +2329,12 @@
                 return parsedSeconds.seconds + " seconds ago";
 
             },
+            formatMinutesSeconds: function(seconds) {
+                const parsedSeconds = this.parseSeconds(seconds);
+                const paddedMinutes = parsedSeconds.minutes.toString().padStart(2, "0");
+                const paddedSeconds = parsedSeconds.seconds.toString().padStart(2, "0");
+                return `${paddedMinutes}:${paddedSeconds}`;
+            },
             getNomadnetPageDownloadCallbackKey: function(destinationHash, pagePath) {
                 return `${destinationHash}:${pagePath}`;
             },
@@ -2328,6 +2386,69 @@
             removeImageAttachment: function() {
                 this.newMessageImage = null;
                 this.newMessageImageUrl = null;
+            },
+            async startRecordingAudioAttachment() {
+
+                // do nothing if already recording
+                if(this.isRecordingAudioAttachment){
+                    return;
+                }
+
+                // start recording microphone
+                this.audioAttachmentMicrophoneRecorder = new Codec2MicrophoneRecorder();
+                this.audioAttachmentRecordingStartedAt = Date.now();
+                this.isRecordingAudioAttachment = await this.audioAttachmentMicrophoneRecorder.start();
+
+                // update recording time in ui every second
+                this.audioAttachmentRecordingDuration = this.formatMinutesSeconds(0);
+                this.audioAttachmentRecordingTimer = setInterval(() => {
+                    const recordingDurationMillis = Date.now() - this.audioAttachmentRecordingStartedAt;
+                    const recordingDurationSeconds = recordingDurationMillis / 1000;
+                    this.audioAttachmentRecordingDuration = this.formatMinutesSeconds(recordingDurationSeconds);
+                }, 1000);
+
+                // alert if failed to start recording
+                if(!this.isRecordingAudioAttachment){
+                    alert("failed to start recording");
+                }
+
+            },
+            stopRecordingAudioAttachment: function() {
+
+                // clear audio recording timer
+                clearInterval(this.audioAttachmentRecordingTimer);
+
+                // do nothing if not recording
+                if(!this.isRecordingAudioAttachment){
+                    return;
+                }
+
+                // stop recording microphone and get audio
+                this.isRecordingAudioAttachment = false;
+                const audio = this.audioAttachmentMicrophoneRecorder.stop();
+
+                // do nothing if no audio was provided
+                if(audio.length === 0){
+                    return;
+                }
+
+                // update message audio attachment
+                this.newMessageAudio = {
+                    audio_mode: 0x04, // hardcoded to LXMF.AM_CODEC2_1200 for now
+                    audio_blob: new Blob([audio]),
+                };
+
+            },
+            removeAudioAttachment: function() {
+
+                // ask user to confirm removing audio attachment
+                if(!confirm("Are you sure you want to remove this audio attachment?")){
+                    return;
+                }
+
+                // remove audio
+                this.newMessageAudio = null;
+
             },
             formatBytes: function(bytes) {
 
