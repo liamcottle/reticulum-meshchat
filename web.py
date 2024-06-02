@@ -20,7 +20,7 @@ from peewee import SqliteDatabase
 from serial.tools import list_ports
 
 import database
-from lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment
+from src.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment
 from src.audio_call_manager import AudioCall, AudioCallManager
 
 
