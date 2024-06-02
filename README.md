@@ -1,8 +1,8 @@
 <p align="center">
-<a href="https://github.com/liamcottle/reticulum-webchat"><img src="./logo/logo-chat-bubble.png" width="150"></a>
+<a href="https://github.com/liamcottle/reticulum-meshchat"><img src="./logo/logo-chat-bubble.png" width="150"></a>
 </p>
 
-<h2 align="center">Reticulum WebChat</h2>
+<h2 align="center">Reticulum MeshChat</h2>
 
 <p align="center">
 <a href="https://discord.gg/APQSQZNV7t"><img src="https://img.shields.io/badge/Discord-Liam%20Cottle's%20Discord-%237289DA?style=flat&logo=discord" alt="discord"/></a>
@@ -12,7 +12,7 @@
 <a href="./donate.md"><img src="https://img.shields.io/badge/Donate%20Bitcoin-3FPBfiEwioWHFix3kZqe5bdU9F5o8mG8dh-%23FF9900?style=flat&logo=bitcoin" alt="donate bitcoin"/></a>
 </p>
 
-## What is Reticulum WebChat?
+## What is Reticulum MeshChat?
 
 A simple mesh network communications app powered by the [Reticulum Network Stack](https://github.com/markqvist/Reticulum).
 
@@ -30,7 +30,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 
 ## Features
 
-- Supports sending and receiving messages between [Reticulum WebChat](https://github.com/liamcottle/reticulum-webchat), [Sideband](https://github.com/markqvist/Sideband/) and [Nomadnet](https://github.com/markqvist/nomadnet).
+- Supports sending and receiving messages between [Reticulum MeshChat](https://github.com/liamcottle/reticulum-meshchat), [Sideband](https://github.com/markqvist/Sideband/) and [Nomadnet](https://github.com/markqvist/nomadnet).
 - Supports receiving and saving images and attachments sent from Sideband.
 - Supports sending images and file attachments.
 - Supports saving inbound and outbound messages to a local database.
@@ -40,7 +40,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 
 ## Beta Features
 
-- Support for Audio Calls to other [Reticulum WebChat](https://github.com/liamcottle/reticulum-webchat) users.
+- Support for Audio Calls to other [Reticulum MeshChat](https://github.com/liamcottle/reticulum-meshchat) users.
   - Audio is encoded with [codec2](https://github.com/drowe67/codec2) to support low bandwidth links.
   - Using a microphone requires using the web ui over localhost or https, due to [AudioWorklet](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet) secure context.
   - I have tested two-way audio calls over LoRa with a single hop. It works well when a [reasonable bitrate](https://unsigned.io/understanding-lora-parameters/) is configured on the RNode.
@@ -50,7 +50,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 
 ## Download
 
-You can download the latest version for Windows and Mac from the [releases](https://github.com/liamcottle/reticulum-webchat/releases) page.
+You can download the latest version for Windows and Mac from the [releases](https://github.com/liamcottle/reticulum-meshchat/releases) page.
 
 Alternatively, you can download the source and run it manually from a command line.
 
@@ -58,7 +58,7 @@ See the ["How to use it?"](#how-to-use-it) section below on how to do this.
 
 ## Getting Started
 
-Once you've downloaded, installed and launched Reticulum WebChat, there's a few things you need to do in order to start communicating with other people on the network.
+Once you've downloaded, installed and launched Reticulum MeshChat, there's a few things you need to do in order to start communicating with other people on the network.
 
 1. Create an Identity
 2. Configure your Display Name
@@ -74,9 +74,9 @@ A Reticulum Identity is a public/private key-pair. You control the private key u
 
 Your public key is shared with the network when you send an announce, and allows others on the network to automatically discover a route to a destination you control.
 
-At this time, Reticulum WebChat generates a new Identity the first time you launch it. A future update will allow you to create and manage multiple identities.
+At this time, Reticulum MeshChat generates a new Identity the first time you launch it. A future update will allow you to create and manage multiple identities.
 
-For now, if you want to change, or reset your identity, you can access the identity file at `~/.reticulum-webchat/identity`.
+For now, if you want to change, or reset your identity, you can access the identity file at `~/.reticulum-meshchat/identity`.
 
 **Configure your Display Name**
 
@@ -106,7 +106,7 @@ When someone else on the network announces themselves (more specifically, their 
 
 You can click on any of these discovered peers to open a messaging interface. From here, you can send text messages, files and inline images. If they respond, their messages will show up there too.
 
-As well as being able to announce your LXMF address and discover others, Reticulum WebChat can also discover [Nomad Network](https://github.com/markqvist/nomadnet) nodes hosted by other users. From the Nodes tab, you are free to explore pages and download files they may be publicly sharing on the network.
+As well as being able to announce your LXMF address and discover others, Reticulum MeshChat can also discover [Nomad Network](https://github.com/markqvist/nomadnet) nodes hosted by other users. From the Nodes tab, you are free to explore pages and download files they may be publicly sharing on the network.
 
 A future update is planned to allow you to host your own Node and share pages and files with other peers on the network. For now, you could use the official [Nomad Network](https://github.com/markqvist/nomadnet) client to do this.
 
@@ -128,8 +128,8 @@ Remember, in order to connect with other peers or nodes, they must announce on t
 If you don't want to, or can't [download](#download) a standalone application, you will need to install [Python 3](https://www.python.org/downloads/), clone the source code from this repo, install dependencies and then run `web.py`.
 
 ```
-git clone https://github.com/liamcottle/reticulum-webchat
-cd reticulum-webchat
+git clone https://github.com/liamcottle/reticulum-meshchat
+cd reticulum-meshchat
 pip install -r requirements.txt
 python web.py
 ```
@@ -146,7 +146,7 @@ python web.py --help
 usage: web.py [-h] [--host [HOST]] [--port [PORT]] [--headless] [--identity-file IDENTITY_FILE] [--identity-base64 IDENTITY_BASE64] [--generate-identity-file GENERATE_IDENTITY_FILE] [--generate-identity-base64]
               [--reticulum-config-dir RETICULUM_CONFIG_DIR] [--storage-dir STORAGE_DIR]
 
-ReticulumWebChat
+ReticulumMeshChat
 
 options:
   -h, --help            show this help message and exit
@@ -204,7 +204,7 @@ python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQ
 
 ## Build Electron Application
 
-Reticulum WebChat can be run from source via a command line, as explained above, or as a standalone application.
+Reticulum MeshChat can be run from source via a command line, as explained above, or as a standalone application.
 
 To run as a standalone application, we need to compile the python script and dependencies to an executable with [cxfreeze](https://github.com/marcelotduarte/cx_Freeze) and then build an [Electron](https://www.electronjs.org/) app which includes a bundled browser that can interact with the compiled python executable.
 

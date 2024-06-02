@@ -35,7 +35,7 @@ def get_file_path(filename):
     return os.path.join(datadir, filename)
 
 
-class ReticulumWebChat:
+class ReticulumMeshChat:
 
     def __init__(self, identity: RNS.Identity, storage_dir, reticulum_config_dir):
 
@@ -1853,7 +1853,7 @@ class NomadnetFileDownloader(NomadnetDownloader):
 def main():
 
     # parse command line args
-    parser = argparse.ArgumentParser(description="ReticulumWebChat")
+    parser = argparse.ArgumentParser(description="ReticulumMeshChat")
     parser.add_argument("--host", nargs='?', default="127.0.0.1", type=str, help="The address the web server should listen on.")
     parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
     parser.add_argument("--headless", action='store_true', help="Web browser will not automatically launch when this flag is passed.")
@@ -1918,8 +1918,8 @@ def main():
         print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), default_identity_file))
 
     # init app
-    reticulum_webchat = ReticulumWebChat(identity, args.storage_dir, args.reticulum_config_dir)
-    reticulum_webchat.run(args.host, args.port, launch_browser=args.headless is False)
+    reticulum_meshchat = ReticulumMeshChat(identity, args.storage_dir, args.reticulum_config_dir)
+    reticulum_meshchat.run(args.host, args.port, launch_browser=args.headless is False)
     
     
 if __name__ == "__main__":

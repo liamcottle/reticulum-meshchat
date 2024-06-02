@@ -11,7 +11,7 @@ class MicronParser {
 
     /**
      * Converts micron markup to html.
-     * FIXME: make sure you can't inject javascript into Reticulum WebChat browser from micron page content!
+     * FIXME: make sure you can't inject javascript into Reticulum MeshChat browser from micron page content!
      *
      * Known URL Examples:
      * - :

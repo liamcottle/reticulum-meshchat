@@ -63,8 +63,8 @@ app.whenReady().then(async () => {
     // navigate to loading page
     await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
-    // find path to python/cxfreeze reticulum webchat executable
-    const exeName = process.platform === "win32" ? "ReticulumWebChat.exe" : "ReticulumWebChat";
+    // find path to python/cxfreeze reticulum meshchat executable
+    const exeName = process.platform === "win32" ? "ReticulumMeshChat.exe" : "ReticulumMeshChat";
     var exe = path.join(__dirname, `build/exe/${exeName}`);
 
     // if dist exe doesn't exist, check local build
@@ -81,9 +81,9 @@ app.whenReady().then(async () => {
 
         // spawn executable
         exeChildProcess = await spawn(exe, [
-            '--headless', // reticulum webchat usually launches default web browser, we don't want this when using electron
+            '--headless', // reticulum meshchat usually launches default web browser, we don't want this when using electron
             '--port', '9337', // FIXME: let system pick a random unused port?
-            '--storage-dir', path.join(app.getPath('home'), '.reticulum-webchat'), // ~/.reticulum-webchat
+            '--storage-dir', path.join(app.getPath('home'), '.reticulum-meshchat'), // ~/.reticulum-meshchat
         ]);
 
         // log stdout
