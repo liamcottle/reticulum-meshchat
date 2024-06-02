@@ -232,7 +232,6 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
   - [ ] will probably write a new app for mobile devices once [microReticulum](https://github.com/attermann/microReticulum) supports Links
 - [ ] support for micron input fields, to allow interacting with pages like Retipedia
-- [ ] add setting to allow auto announcing at a configurable interval
 - [ ] support for managing Reticulum interfaces via the web ui
   - [x] AutoInterface
   - [x] RNodeInterface
