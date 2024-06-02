@@ -2137,11 +2137,6 @@
 
                 const parsedSeconds = this.parseSeconds(seconds);
 
-                console.log({
-                    seconds: seconds,
-                    parsedSeconds: parsedSeconds,
-                });
-
                 if(parsedSeconds.days > 0){
                     return parsedSeconds.days + " days ago";
                 }
