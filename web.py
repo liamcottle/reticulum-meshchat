@@ -48,17 +48,17 @@ class ReticulumWebChat:
         # ./storage/identities/<identity_hex>/database.db
 
         # ensure a storage path exists for the loaded identity
-        base_storage_dir = storage_dir or os.path.join("storage")
-        storage_path = os.path.join(base_storage_dir, "identities", identity.hash.hex())
-        print("Using Storage Path: {}".format(storage_path))
-        os.makedirs(storage_path, exist_ok=True)
+        self.storage_dir = storage_dir or os.path.join("storage")
+        self.storage_path = os.path.join(self.storage_dir, "identities", identity.hash.hex())
+        print("Using Storage Path: {}".format(self.storage_path))
+        os.makedirs(self.storage_path, exist_ok=True)
 
         # define path to files based on storage path
-        database_path = os.path.join(storage_path, "database.db")
-        lxmf_router_path = os.path.join(storage_path, "lxmf_router")
+        self.database_path = os.path.join(self.storage_path, "database.db")
+        lxmf_router_path = os.path.join(self.storage_path, "lxmf_router")
 
         # init database
-        sqlite_database = SqliteDatabase(database_path)
+        sqlite_database = SqliteDatabase(self.database_path)
         database.database.initialize(sqlite_database)
         self.db = database.database
         self.db.connect()
@@ -108,6 +108,12 @@ class ReticulumWebChat:
         thread = threading.Thread(target=asyncio.run, args=(self.announce_loop(),))
         thread.daemon = True
         thread.start()
+
+    # gets app version from package.json
+    def get_app_version(self) -> str:
+        with open(get_file_path("package.json")) as f:
+            package_json = json.load(f)
+            return package_json["version"]
 
     # automatically announces based on user config
     async def announce_loop(self):
@@ -442,6 +448,19 @@ class ReticulumWebChat:
             self.websocket_clients.remove(websocket_response)
 
             return websocket_response
+
+        # get app info
+        @routes.get("/api/v1/app/info")
+        async def index(request):
+            return web.json_response({
+                "app_info": {
+                    "version": self.get_app_version(),
+                    "storage_path": self.storage_path,
+                    "database_path": self.database_path,
+                    "database_file_size": os.path.getsize(self.database_path),
+                    "reticulum_config_path": self.reticulum.configpath,
+                },
+            })
 
         # get config
         @routes.get("/api/v1/config")

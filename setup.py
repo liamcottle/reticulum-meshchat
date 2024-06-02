@@ -26,6 +26,7 @@ setup(
             ],
             # files that are required
             'include_files': [
+                'package.json', # used to determine app version from python
                 'public/', # static files served by web server
             ],
             # slim down the build by excluding these unused libs
