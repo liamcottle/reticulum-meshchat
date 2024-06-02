@@ -79,11 +79,20 @@ app.whenReady().then(async () => {
 
     try {
 
+        // determine path for storage
+        const storageDir = path.join(app.getPath('home'), '.reticulum-meshchat'); // ~/.reticulum-meshchat
+
+        // migrate old storage dir to new storage dir
+        const oldStorageDir = path.join(app.getPath('home'), '.reticulum-webchat'); // ~/.reticulum-webchat
+        if(fs.existsSync(oldStorageDir) && !fs.existsSync(storageDir)){
+            fs.renameSync(oldStorageDir, storageDir);
+        }
+
         // spawn executable
         exeChildProcess = await spawn(exe, [
             '--headless', // reticulum meshchat usually launches default web browser, we don't want this when using electron
             '--port', '9337', // FIXME: let system pick a random unused port?
-            '--storage-dir', path.join(app.getPath('home'), '.reticulum-meshchat'), // ~/.reticulum-meshchat
+            '--storage-dir', storageDir,
         ]);
 
         // log stdout
