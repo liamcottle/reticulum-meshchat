@@ -32,7 +32,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 
 - Supports sending and receiving messages between [Reticulum MeshChat](https://github.com/liamcottle/reticulum-meshchat), [Sideband](https://github.com/markqvist/Sideband/) and [Nomadnet](https://github.com/markqvist/nomadnet).
 - Supports receiving and saving images and attachments sent from Sideband.
-- Supports sending images and file attachments.
+- Supports sending images, voice recordings and file attachments.
 - Supports saving inbound and outbound messages to a local database.
 - Supports sending an announce to the network.
 - Supports setting a custom display name to send in your announce.
@@ -44,6 +44,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
   - Audio is encoded with [codec2](https://github.com/drowe67/codec2) to support low bandwidth links.
   - Using a microphone requires using the web ui over localhost or https, due to [AudioWorklet](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet) secure context.
   - I have tested two-way audio calls over LoRa with a single hop. It works well when a [reasonable bitrate](https://unsigned.io/understanding-lora-parameters/) is configured on the RNode.
+  - Some browsers such as FireFox don't work as expected. Try using a Chromium based browser if running via the command line.
 - Support for browsing pages, and downloading files hosted on Nomad Network Nodes.
 
 > NOTE: micron format parsing is still in development, some pages may not render or work correctly at all.
