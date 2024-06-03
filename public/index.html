@@ -667,15 +667,30 @@
                                 <div v-if="newMessageAudio" class="mb-2">
                                     <div class="flex flex-wrap gap-1">
                                         <div class="flex border border-gray-300 rounded text-gray-700 divide-x divide-gray-300 overflow-hidden">
-                                            <div class="my-auto px-1">
-                                                <span class="mr-1">Audio Recording</span>
-                                                <span class="my-auto text-sm text-gray-500">{{ formatBytes(newMessageAudio.audio_blob.size) }}</span>
+
+                                            <div class="flex p-1">
+
+                                                <!-- audio preview -->
+                                                <div>
+                                                    <audio controls class="h-10">
+                                                        <source :src="newMessageAudio.audio_wav_url" type="audio/wav"/>
+                                                    </audio>
+                                                </div>
+
+                                                <!-- encoded file size -->
+                                                <div class="my-auto px-1 text-sm text-gray-500">
+                                                    {{ formatBytes(newMessageAudio.audio_blob.size) }}
+                                                </div>
+
                                             </div>
+
+                                            <!-- remove audio attachment -->
                                             <div @click="removeAudioAttachment" class="flex my-auto text-sm text-gray-500 h-full px-1 hover:bg-gray-200 cursor-pointer">
                                                 <svg class="w-5 h-5 my-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                                                 </svg>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -2418,7 +2433,7 @@
                 }
 
             },
-            stopRecordingAudioAttachment: function() {
+            async stopRecordingAudioAttachment() {
 
                 // clear audio recording timer
                 clearInterval(this.audioAttachmentRecordingTimer);
@@ -2437,10 +2452,20 @@
                     return;
                 }
 
+                // decode codec2 audio back to wav so we can show a preview audio player before user sends it
+                const decoded = await Codec2Lib.runDecode("1200", new Uint8Array(audio));
+
+                // convert decoded codec2 to wav audio and create a blob
+                const wavAudio = await Codec2Lib.rawToWav(decoded);
+                const wavBlob = new Blob([wavAudio], {
+                    type: "audio/wav",
+                });
+
                 // update message audio attachment
                 this.newMessageAudio = {
                     audio_mode: 0x04, // hardcoded to LXMF.AM_CODEC2_1200 for now
                     audio_blob: new Blob([audio]),
+                    audio_wav_url: URL.createObjectURL(wavBlob),
                 };
 
             },
