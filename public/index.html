@@ -1094,25 +1094,37 @@
                         <!-- interface bandwidth -->
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Bandwidth</label>
-                            <input type="text" v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidth" :value="bandwidth">{{ bandwidth }} Hz</option>
+                            </select>
                         </div>
 
                         <!-- interface txpower -->
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                            <label class="block mb-2 text-sm font-medium text-gray-900">Transmit Power</label>
-                            <input type="text" v-model="newInterfaceTxpower" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <span class="block mb-2 text-sm font-medium text-gray-900">Transmit Power: {{ newInterfaceTxpower }} dBm</span>
+                        
+                        <input v-model="newInterfaceTxpower" class="w-full accent-blue-600" type="range"  min="1" :max="RNodeInterfaceDefaults.maxTXPower" oninput="this.previousElementSibling.innerText=`Transmit Power: ${this.value} dBm`"/>
+                            <div class="-mt-2 flex w-full justify-between">
+                              <span class="text-sm text-gray-600">1 dBm</span>
+                              <span class="text-sm text-gray-600">{{RNodeInterfaceDefaults.maxTXPower}} dBm</span>
+                            </div>
                         </div>
+
 
                         <!-- interface spreading factor -->
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Spreading Factor</label>
-                            <input type="text" v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <select v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactor" :value="spreadingfactor">{{ spreadingfactor }}</option>
+                            </select>
                         </div>
 
                         <!-- interface coding rate -->
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Coding Rate</label>
-                            <input type="text" v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <select v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option v-for="codingrate in RNodeInterfaceDefaults.codingrate" :value="codingrate">4:{{ codingrate }}</option>
+                            </select>
                         </div>
 
                         <!-- add button -->
@@ -1248,6 +1260,17 @@
                 newInterfaceTargetPort: null,
 
                 newInterfacePort: null,
+                // RNode Interface Defaults
+                RNodeInterfaceDefaults: {
+                    // Bandwidth (in hertz) 7.8 kHz, 10.4 kHz, 15.6 kHz, 20.8 kHz, 31.25 kHz, 41.7 kHz, 62.5 kHz, 125 kHz, 250 kHz, 500 kHz
+                    "bandwidth": [7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000, 500000],
+                    // Coding rate: 4:5, 4:6, 4:7, 4:8
+                    "codingrate": [5, 6, 7, 8],
+                    // Spreading factor: 7 - 12
+                    "spreadingfactor": [7, 8, 9, 10, 11, 12],
+                    // TX power (in dBm)
+                    "maxTXPower": 14
+                },
                 newInterfaceFrequency: null,
                 newInterfaceBandwidth: null,
                 newInterfaceTxpower: null,
