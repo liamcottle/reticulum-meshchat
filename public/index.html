@@ -1255,22 +1255,41 @@
                 newInterfaceTargetPort: null,
 
                 newInterfacePort: null,
-                // RNode Interface Defaults
-                RNodeInterfaceDefaults: {
-                    // Bandwidth (in hertz) 7.8 kHz, 10.4 kHz, 15.6 kHz, 20.8 kHz, 31.25 kHz, 41.7 kHz, 62.5 kHz, 125 kHz, 250 kHz, 500 kHz
-                    "bandwidth": [7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000, 500000],
-                    // Coding rate: 4:5, 4:6, 4:7, 4:8
-                    "codingrate": [5, 6, 7, 8],
-                    // Spreading factor: 7 - 12
-                    "spreadingfactor": [7, 8, 9, 10, 11, 12],
-                    // TX power (in dBm)
-                    "maxTXPower": 14
-                },
                 newInterfaceFrequency: null,
                 newInterfaceBandwidth: null,
                 newInterfaceTxpower: null,
                 newInterfaceSpreadingFactor: null,
                 newInterfaceCodingRate: null,
+
+                RNodeInterfaceDefaults: {
+                    // bandwidth in hz
+                    "bandwidth": [
+                        7800, // 7.8 kHz
+                        10400, // 10.4 kHz
+                        15600, // 15.6 kHz
+                        20800, // 20.8 kHz
+                        31250, // 31.25 kHz
+                        41700, // 41.7 kHz
+                        62500, // 62.5 kHz
+                        125000, // 125 kHz
+                        250000, // 250 kHz
+                        500000, // 500 kHz
+                    ],
+                    "codingrate": [
+                        5, // 4:5
+                        6, // 4:6
+                        7, // 4:7
+                        8, // 4:8
+                    ],
+                    "spreadingfactor": [
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                    ],
+                },
 
                 comports: [],
 
