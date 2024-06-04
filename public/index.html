@@ -1102,13 +1102,8 @@
 
                         <!-- interface txpower -->
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <span class="block mb-2 text-sm font-medium text-gray-900">Transmit Power: {{ newInterfaceTxpower }} dBm</span>
-                        
-                        <input v-model="newInterfaceTxpower" class="w-full accent-blue-600" type="range"  min="1" :max="RNodeInterfaceDefaults.maxTXPower" oninput="this.previousElementSibling.innerText=`Transmit Power: ${this.value} dBm`"/>
-                            <div class="-mt-2 flex w-full justify-between">
-                              <span class="text-sm text-gray-600">1 dBm</span>
-                              <span class="text-sm text-gray-600">{{RNodeInterfaceDefaults.maxTXPower}} dBm</span>
-                            </div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Transmit Power (dBm)</label>
+                            <input v-model="newInterfaceTxpower" type="number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         </div>
 
                         <!-- interface spreading factor -->
