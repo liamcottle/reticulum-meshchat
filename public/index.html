@@ -1096,7 +1096,7 @@
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Bandwidth</label>
                             <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidth" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
+                                <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
                             </select>
                         </div>
 
@@ -1110,7 +1110,7 @@
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Spreading Factor</label>
                             <select v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactor" :value="spreadingfactor">{{ spreadingfactor }}</option>
+                                <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
                             </select>
                         </div>
 
@@ -1118,7 +1118,7 @@
                         <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Coding Rate</label>
                             <select v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option v-for="codingrate in RNodeInterfaceDefaults.codingrate" :value="codingrate">4:{{ codingrate }}</option>
+                                <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">4:{{ codingrate }}</option>
                             </select>
                         </div>
 
@@ -1263,7 +1263,7 @@
 
                 RNodeInterfaceDefaults: {
                     // bandwidth in hz
-                    "bandwidth": [
+                    bandwidths: [
                         7800, // 7.8 kHz
                         10400, // 10.4 kHz
                         15600, // 15.6 kHz
@@ -1275,13 +1275,13 @@
                         250000, // 250 kHz
                         500000, // 500 kHz
                     ],
-                    "codingrate": [
+                    codingrates: [
                         5, // 4:5
                         6, // 4:6
                         7, // 4:7
                         8, // 4:8
                     ],
-                    "spreadingfactor": [
+                    spreadingfactors: [
                         7,
                         8,
                         9,
