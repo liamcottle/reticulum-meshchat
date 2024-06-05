@@ -2868,6 +2868,11 @@
                     const audioMode = audioField.audio_mode;
                     const audioBytes = audioField.audio_bytes;
 
+                    // handle opus: AM_OPUS_OGG
+                    if(audioMode === 0x10){
+                        return this.decodeOpusAudioToBlobUrl(audioField.audio_bytes);
+                    }
+
                     // determine codec2 mode, or skip if unknown
                     const codecMode = this.lxmfAudioModeToCodec2ModeMap[audioMode];
                     if(!codecMode){
@@ -2894,6 +2899,26 @@
 
                 } catch(e) {
                     // failed to decode lxmf audio field
+                    console.log(e);
+                    return null;
+                }
+            },
+            async decodeOpusAudioToBlobUrl(audioBytes) {
+                try {
+
+                    // convert base64 to uint8 array
+                    const opusAudioBytes = this.base64ToArrayBuffer(audioBytes);
+
+                    // create blob from opus audio
+                    const blob = new Blob([opusAudioBytes], {
+                        type: "audio/opus",
+                    });
+
+                    // create object url for blob
+                    return URL.createObjectURL(blob);
+
+                } catch(e) {
+                    // failed to decode opus audio
                     console.log(e);
                     return null;
                 }
