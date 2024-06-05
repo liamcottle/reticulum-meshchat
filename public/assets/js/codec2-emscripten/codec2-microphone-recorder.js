@@ -26,17 +26,7 @@ class Codec2MicrophoneRecorder {
 
             // handle audio received from audio worklet
             this.audioWorkletNode.port.onmessage = async (event) => {
-
-                // convert audio received from worklet processor to wav
-                const buffer = WavEncoder.encodeWAV(event.data, this.sampleRate);
-
-                // convert wav audio to codec2
-                const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
-                const encoded = await Codec2Lib.runEncode(this.codec2Mode, rawBuffer);
-
-                // pass encoded audio to callback
-                this.audioChunks.push(new Uint8Array(encoded.buffer));
-
+                this.audioChunks.push(event.data);
             };
 
             // request access to the microphone
@@ -57,7 +47,7 @@ class Codec2MicrophoneRecorder {
         }
     }
 
-    stop() {
+    async stop() {
 
         // disconnect media stream source
         if(this.mediaStreamSource){
@@ -79,23 +69,23 @@ class Codec2MicrophoneRecorder {
             this.audioContext.close();
         }
 
-        // calculate total length
-        let totalLength = 0;
+        // concatenate all audio chunks into a single array
+        var fullAudio = [];
         for(const chunk of this.audioChunks){
-            totalLength += chunk.length;
+            fullAudio = [
+                ...fullAudio,
+                ...chunk,
+            ]
         }
 
-        // create a new Uint8Array with the total length
-        const concatenatedArray = new Uint8Array(totalLength);
+        // convert audio to wav
+        const buffer = WavEncoder.encodeWAV(fullAudio, this.sampleRate);
 
-        // copy each chunk into the new array
-        let offset = 0;
-        for(const chunk of this.audioChunks){
-            concatenatedArray.set(chunk, offset);
-            offset += chunk.length;
-        }
+        // convert wav audio to codec2
+        const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
+        const encoded = await Codec2Lib.runEncode(this.codec2Mode, rawBuffer);
 
-        return concatenatedArray;
+        return encoded;
 
     }
 

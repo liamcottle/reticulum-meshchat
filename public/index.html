@@ -2482,7 +2482,7 @@
 
                 // stop recording microphone and get audio
                 this.isRecordingAudioAttachment = false;
-                const audio = this.audioAttachmentMicrophoneRecorder.stop();
+                const audio = await this.audioAttachmentMicrophoneRecorder.stop();
 
                 // do nothing if no audio was provided
                 if(audio.length === 0){
