@@ -1404,14 +1404,17 @@
 
                             }
 
-                            // show notification for new messages when using electron
-                            Notification.requestPermission().then((result) => {
-                                if(result === "granted"){
-                                    new window.Notification("New Message", {
-                                        body: "Someone sent you a message.",
-                                    });
-                                }
-                            });
+                            // show notification for new messages if window is not focussed
+                            if(!document.hasFocus()){
+                                Notification.requestPermission().then((result) => {
+                                    if(result === "granted"){
+                                        new window.Notification("New Message", {
+                                            body: "Someone sent you a message.",
+                                            tag: "new_message", // only ever show one notification at a time
+                                        });
+                                    }
+                                });
+                            }
 
                             // auto scroll to bottom if we want to
                             if(this.autoScrollOnNewMessage){
