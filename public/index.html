@@ -1527,7 +1527,9 @@
             scrollMessagesToBottom: function() {
                 Vue.nextTick(() => {
                     const container = document.getElementById("messages");
-                    container.scrollTop = container.scrollHeight;
+                    if(container){
+                        container.scrollTop = container.scrollHeight;
+                    }
                 });
             },
             async getAppInfo() {
