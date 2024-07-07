@@ -1404,6 +1404,15 @@
 
                             }
 
+                            // show notification for new messages when using electron
+                            Notification.requestPermission().then((result) => {
+                                if(result === "granted"){
+                                    new window.Notification("New Message", {
+                                        body: "Someone sent you a message.",
+                                    });
+                                }
+                            });
+
                             // auto scroll to bottom if we want to
                             if(this.autoScrollOnNewMessage){
                                 this.scrollMessagesToBottom();
