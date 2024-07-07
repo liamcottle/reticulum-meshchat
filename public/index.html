@@ -1393,7 +1393,6 @@
 
                             // if inbound message is for a conversation we are currently looking at, mark it as read
                             if(this.tab === "messages"
-                                && this.messagesTab === "conversations"
                                 && json.lxmf_message.source_hash === this.selectedPeer?.destination_hash){
 
                                 // find conversation
