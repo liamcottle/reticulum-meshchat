@@ -797,20 +797,20 @@ class ReticulumMeshChat:
             })
 
         # delete lxmf message
-        @routes.delete("/api/v1/lxmf-messages/{id}")
+        @routes.delete("/api/v1/lxmf-messages/{hash}")
         async def index(request):
 
             # get path params
-            id = request.match_info.get("id", None)
+            hash = request.match_info.get("hash", None)
 
-            # source_hash is required
-            if id is None:
+            # hash is required
+            if hash is None:
                 return web.json_response({
-                    "message": "id is required",
+                    "message": "hash is required",
                 }, status=422)
 
-            # delete lxmf messages from db where id matches
-            database.LxmfMessage.delete_by_id(id)
+            # delete lxmf messages from db where hash matches
+            database.LxmfMessage.delete().where((database.LxmfMessage.hash == hash)).execute()
 
             return web.json_response({
                 "message": "ok",

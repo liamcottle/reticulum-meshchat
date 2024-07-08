@@ -2291,7 +2291,7 @@
                     }
 
                     // delete lxmf message from server
-                    await window.axios.delete(`/api/v1/lxmf-messages/${chatItem.lxmf_message.id}`);
+                    await window.axios.delete(`/api/v1/lxmf-messages/${chatItem.lxmf_message.hash}`);
 
                     // remove lxmf message from chat items using hash, as other pending items might not have an id yet
                     this.chatItems = this.chatItems.filter((item) => {
