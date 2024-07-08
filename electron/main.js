@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, systemPreferences } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, systemPreferences } = require('electron');
 const electronPrompt = require('electron-prompt');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -13,6 +13,13 @@ var exeChildProcess = null;
 // allow fetching app version via ipc
 ipcMain.handle('app-version', async() => {
     return app.getVersion();
+});
+
+// add support for showing an alert window via ipc
+ipcMain.handle('alert', async(event, message) => {
+    return await dialog.showMessageBox(mainWindow, {
+        message: message,
+    });
 });
 
 // add support for showing a prompt window via ipc

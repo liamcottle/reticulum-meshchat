@@ -1566,7 +1566,7 @@
 
                 // do nothing if not connected to websocket
                 if(!this.isWebsocketConnected){
-                    alert("Not connected to WebSocket!");
+                    this.alert("Not connected to WebSocket!");
                     return;
                 }
 
@@ -1594,7 +1594,7 @@
 
                 // do nothing if not connected to websocket
                 if(!this.isWebsocketConnected){
-                    alert("Not connected to WebSocket!");
+                    this.alert("Not connected to WebSocket!");
                     return;
                 }
 
@@ -1722,7 +1722,7 @@
 
                 // simple attempt to prevent garbage input
                 if(destinationHash.length !== 32){
-                    alert("Invalid Address");
+                    this.alert("Invalid Address");
                     return;
                 }
 
@@ -1737,7 +1737,7 @@
 
                 // do nothing if not connected to websocket
                 if(!this.isWebsocketConnected){
-                    alert("Not connected to WebSocket!");
+                    this.alert("Not connected to WebSocket!");
                     return;
                 }
 
@@ -1768,7 +1768,7 @@
 
                 // do nothing if not connected to websocket
                 if(!this.isWebsocketConnected){
-                    alert("Not connected to WebSocket!");
+                    this.alert("Not connected to WebSocket!");
                     return;
                 }
 
@@ -2196,7 +2196,7 @@
 
                         // prevent simultaneous downloads
                         if(this.isDownloadingNodeFile){
-                            alert("An existing download is in progress. Please wait for it to finish beforing starting another download.");
+                            this.alert("An existing download is in progress. Please wait for it to finish beforing starting another download.");
                             return;
                         }
 
@@ -2220,7 +2220,7 @@
                             this.isDownloadingNodeFile = false;
 
                             // show error message
-                            alert(`Failed to download file: ${failureReason}`);
+                            this.alert(`Failed to download file: ${failureReason}`);
 
                         }, (progress) => {
                             this.nodeFileProgress = Math.round(progress * 100);
@@ -2243,7 +2243,7 @@
                 }
 
                 // unsupported url
-                alert("unsupported url: " + url);
+                this.alert("unsupported url: " + url);
 
             },
             async deleteChatItem(chatItem) {
@@ -2480,7 +2480,7 @@
 
                 // alert if failed to start recording
                 if(!this.isRecordingAudioAttachment){
-                    alert("failed to start recording");
+                    this.alert("failed to start recording");
                 }
 
             },
@@ -2599,7 +2599,7 @@
                 try {
                     await window.axios.delete(`/api/v1/lxmf-messages/conversation/${this.selectedPeer.destination_hash}`);
                 } catch(e) {
-                    alert("failed to delete conversation");
+                    this.alert("failed to delete conversation");
                     console.log(e);
                 }
 
@@ -2639,7 +2639,7 @@
                         name: interfaceName,
                     });
                 } catch(e) {
-                    alert("failed to enable interface");
+                    this.alert("failed to enable interface");
                     console.log(e);
                 }
 
@@ -2655,7 +2655,7 @@
                         name: interfaceName,
                     });
                 } catch(e) {
-                    alert("failed to disable interface");
+                    this.alert("failed to disable interface");
                     console.log(e);
                 }
 
@@ -2735,7 +2735,7 @@
                         name: interfaceName,
                     });
                 } catch(e) {
-                    alert("failed to delete interface");
+                    this.alert("failed to delete interface");
                     console.log(e);
                 }
 
@@ -2773,12 +2773,12 @@
 
                     // show success message
                     if(response.data.message){
-                        alert(response.data.message);
+                        this.alert(response.data.message);
                     }
 
                 } catch(e) {
                     const message = e.response?.data?.message ?? "failed to add interface";
-                    alert(message);
+                    this.alert(message);
                     console.log(e);
                 }
 
@@ -2794,7 +2794,7 @@
                 }
             },
             onDestinationPathClick: function(path) {
-                alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
+                this.alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
             },
             async updateCallsList() {
                 try {
@@ -2829,6 +2829,15 @@
                 }
 
             },
+            alert(message) {
+                if(window.electron){
+                    // running inside electron, use ipc alert
+                    window.electron.alert(message);
+                } else {
+                    // running inside normal browser, use browser alert
+                    window.alert(message);
+                }
+            },
             async prompt(message) {
                 if(window.electron){
                     // running inside electron, use ipc prompt
@@ -2844,7 +2853,7 @@
                 return value === "on" || value === "yes" || value === "true";
             },
             onIFACSignatureClick: function(ifacSignature) {
-                alert(ifacSignature);
+                this.alert(ifacSignature);
             },
             findConversation: function(destinationHash) {
                 return this.conversations.find((conversation) => {

@@ -10,6 +10,11 @@ contextBridge.exposeInMainWorld('electron', {
         return await ipcRenderer.invoke('app-version');
     },
 
+    // show an alert dialog in electron browser window, this fixes a bug where alert breaks input fields on windows
+    alert: async function(message) {
+        return await ipcRenderer.invoke('alert', message);
+    },
+
     // add support for using "prompt" in electron browser window
     prompt: async function(message) {
         return await ipcRenderer.invoke('prompt', message);
