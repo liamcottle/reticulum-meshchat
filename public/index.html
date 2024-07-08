@@ -601,6 +601,7 @@
                                             <span>{{ chatItem.lxmf_message.state }}</span>
                                             <span v-if="chatItem.lxmf_message.state === 'outbound' && chatItem.lxmf_message.delivery_attempts >= 1">(attempt {{ chatItem.lxmf_message.delivery_attempts + 1 }})</span>
                                             <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress.toFixed(0) }}%</span>
+                                            <a v-if="chatItem.lxmf_message.state === 'failed'" @click="retrySendingMessage(chatItem)" class="cursor-pointer underline text-blue-500">retry?</a>
                                         </div>
 
                                         <!-- delivered icon -->
@@ -1673,6 +1674,36 @@
                 this.scrollMessagesToBottom();
 
             },
+            async retrySendingMessage(chatItem) {
+
+                // do nothing if not connected to websocket
+                if(!this.isWebsocketConnected){
+                    this.alert("Not connected to WebSocket!");
+                    return;
+                }
+
+                // force delete existing message
+                await this.deleteChatItem(chatItem, false);
+
+                try {
+
+                    // send message to reticulum via websocket
+                    this.ws.send(JSON.stringify({
+                        "type": "lxmf.delivery",
+                        "lxmf_message": chatItem.lxmf_message,
+                    }));
+
+                } catch(e) {
+
+                    // todo handle error
+                    console.error(e);
+
+                }
+
+                // scroll to bottom
+                this.scrollMessagesToBottom();
+
+            },
             async updateConfig(config) {
 
                 // do nothing if not connected to websocket
@@ -2246,11 +2277,11 @@
                 this.alert("unsupported url: " + url);
 
             },
-            async deleteChatItem(chatItem) {
+            async deleteChatItem(chatItem, shouldConfirm = true) {
                 try {
 
                     // ask user to confirm deleting message
-                    if(!confirm("Are you sure you want to delete this message? This can not be undone!")){
+                    if(shouldConfirm && !confirm("Are you sure you want to delete this message? This can not be undone!")){
                         return;
                     }
 
