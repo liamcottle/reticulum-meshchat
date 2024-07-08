@@ -599,6 +599,7 @@
                                         <!-- state label -->
                                         <div class="my-auto space-x-1">
                                             <span>{{ chatItem.lxmf_message.state }}</span>
+                                            <span v-if="chatItem.lxmf_message.state === 'outbound' && chatItem.lxmf_message.delivery_attempts >= 1">(attempt {{ chatItem.lxmf_message.delivery_attempts + 1 }})</span>
                                             <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress.toFixed(0) }}%</span>
                                         </div>
 
