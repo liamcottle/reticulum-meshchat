@@ -1425,21 +1425,6 @@
                             break;
 
                         }
-                        case 'lxmf_outbound_message_created': {
-
-                            // add outbound message to ui
-                            this.chatItems.push({
-                                "type": "lxmf_message",
-                                "lxmf_message": json.lxmf_message,
-                                "is_outbound": true,
-                            });
-
-                            // always scroll to bottom since we just sent a message
-                            this.scrollMessagesToBottom();
-
-                            break;
-
-                        }
                         case 'lxmf_message_state_updated': {
 
                             // find existing chat item by lxmf message hash
@@ -1593,12 +1578,6 @@
                     return;
                 }
 
-                // do nothing if not connected to websocket
-                if(!this.isWebsocketConnected){
-                    this.alert("Not connected to WebSocket!");
-                    return;
-                }
-
                 // do nothing if no peer selected
                 if(!this.selectedPeer){
                     return;
@@ -1642,15 +1621,24 @@
                         };
                     }
 
-                    // send message to reticulum via websocket
-                    this.ws.send(JSON.stringify({
-                        "type": "lxmf.delivery",
+                    // send message to reticulum
+                    const response = await window.axios.post(`/api/v1/lxmf-messages/send`, {
                         "lxmf_message": {
                             "destination_hash": this.selectedPeer.destination_hash,
                             "content": this.newMessageText,
                             "fields": fields,
                         },
-                    }));
+                    });
+
+                    // add outbound message to ui
+                    this.chatItems.push({
+                        "type": "lxmf_message",
+                        "lxmf_message": response.data.lxmf_message,
+                        "is_outbound": true,
+                    });
+
+                    // always scroll to bottom since we just sent a message
+                    this.scrollMessagesToBottom();
 
                     // clear message inputs
                     this.newMessageText = "";
@@ -1663,15 +1651,14 @@
 
                 } catch(e) {
 
-                    // todo handle error
-                    console.error(e);
+                    // show error
+                    const message = e.response?.data?.message ?? "failed to send message";
+                    this.alert(message);
+                    console.log(e);
 
                 } finally {
                     this.isSendingMessage = false;
                 }
-
-                // scroll to bottom
-                this.scrollMessagesToBottom();
 
             },
             async retrySendingMessage(chatItem) {
@@ -1687,21 +1674,33 @@
 
                 try {
 
-                    // send message to reticulum via websocket
-                    this.ws.send(JSON.stringify({
-                        "type": "lxmf.delivery",
-                        "lxmf_message": chatItem.lxmf_message,
-                    }));
+                    // send message to reticulum
+                    const response = await window.axios.post(`/api/v1/lxmf-messages/send`, {
+                        "lxmf_message": {
+                            "destination_hash": chatItem.lxmf_message.destination_hash,
+                            "content": chatItem.lxmf_message.content,
+                            "fields": chatItem.lxmf_message.fields,
+                        },
+                    });
+
+                    // add outbound message to ui
+                    this.chatItems.push({
+                        "type": "lxmf_message",
+                        "lxmf_message": response.data.lxmf_message,
+                        "is_outbound": true,
+                    });
+
+                    // always scroll to bottom since we just sent a message
+                    this.scrollMessagesToBottom();
 
                 } catch(e) {
 
-                    // todo handle error
-                    console.error(e);
+                    // show error
+                    const message = e.response?.data?.message ?? "failed to send message";
+                    this.alert(message);
+                    console.log(e);
 
                 }
-
-                // scroll to bottom
-                this.scrollMessagesToBottom();
 
             },
             async updateConfig(config) {
