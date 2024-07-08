@@ -1,8 +1,24 @@
 from datetime import datetime, timezone
 
 from peewee import *
+from playhouse.migrate import migrate as migrate_database, SqliteMigrator
 
+latest_version = 2  # increment each time new database migrations are added
 database = DatabaseProxy()  # use a proxy object, as we will init real db client inside web.py
+migrator = SqliteMigrator(database)
+
+
+# migrates the database
+def migrate(current_version):
+
+    # migrate to version 2
+    if current_version < 2:
+        migrate_database(
+            migrator.add_column("lxmf_messages", 'delivery_attempts', LxmfMessage.delivery_attempts),
+            migrator.add_column("lxmf_messages", 'next_delivery_attempt_at', LxmfMessage.next_delivery_attempt_at),
+        )
+
+    return latest_version
 
 
 class BaseModel(Model):
@@ -49,6 +65,8 @@ class LxmfMessage(BaseModel):
     state = CharField()  # state is converted from internal int to a human friendly string
     progress = FloatField()  # progress is converted from internal float 0.00-1.00 to float between 0.00/100 (2 decimal places)
     is_incoming = BooleanField()  # if true, we should ignore state, it's set to draft by default on incoming messages
+    delivery_attempts = IntegerField(default=0)  # how many times delivery has been attempted for this message
+    next_delivery_attempt_at = FloatField(null=True)  # timestamp of when the message will attempt delivery again
     title = TextField()
     content = TextField()
     fields = TextField()  # json string

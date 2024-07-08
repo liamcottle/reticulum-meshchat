@@ -57,6 +57,9 @@ class ReticulumMeshChat:
         self.database_path = os.path.join(self.storage_path, "database.db")
         lxmf_router_path = os.path.join(self.storage_path, "lxmf_router")
 
+        # check if database already exists, before initialization
+        database_already_exists = os.path.exists(self.database_path)
+
         # init database
         sqlite_database = SqliteDatabase(self.database_path)
         database.database.initialize(sqlite_database)
@@ -69,6 +72,22 @@ class ReticulumMeshChat:
             database.LxmfConversationReadState,
         ])
 
+        # init config
+        self.config = Config()
+
+        # if database already existed before init, and we don't have a previous version set, we are on version 1
+        if database_already_exists and self.config.database_version.get() is None:
+            self.config.database_version.set(1)
+
+        # if database didn't already exist, it was just fully migrated when it was created, so set the current version
+        if not database_already_exists:
+            self.config.database_version.set(database.latest_version)
+
+        # migrate database
+        current_database_version = self.config.database_version.get()
+        migrated_database_version = database.migrate(current_version=current_database_version)
+        self.config.database_version.set(migrated_database_version)
+
         # vacuum database on start to shrink its file size
         sqlite_database.execute_sql("VACUUM")
 
@@ -76,9 +95,6 @@ class ReticulumMeshChat:
         (database.LxmfMessage.update(state="failed")
          .where(database.LxmfMessage.state == "outbound")
          .orwhere(database.LxmfMessage.state == "sending").execute())
-
-        # init config
-        self.config = Config()
 
         # init reticulum
         self.reticulum = RNS.Reticulum(reticulum_config_dir)
@@ -1298,6 +1314,8 @@ class ReticulumMeshChat:
             "is_incoming": lxmf_message.incoming,
             "state": self.convert_lxmf_state_to_string(lxmf_message),
             "progress": progress_percentage,
+            "delivery_attempts": lxmf_message.delivery_attempts,
+            "next_delivery_attempt_at": getattr(lxmf_message, "next_delivery_attempt", None),  # attribute may not exist yet
             "title": lxmf_message.title.decode('utf-8'),
             "content": lxmf_message.content.decode('utf-8'),
             "fields": fields,
@@ -1386,6 +1404,8 @@ class ReticulumMeshChat:
             "is_incoming": lxmf_message_dict["is_incoming"],
             "state": lxmf_message_dict["state"],
             "progress": lxmf_message_dict["progress"],
+            "delivery_attempts": lxmf_message_dict["delivery_attempts"],
+            "next_delivery_attempt_at": lxmf_message_dict["next_delivery_attempt_at"],
             "title": lxmf_message_dict["title"],
             "content": lxmf_message_dict["content"],
             "fields": json.dumps(lxmf_message_dict["fields"]),
@@ -1719,6 +1739,7 @@ class Config:
             Config.set(self.key, str(value))
 
     # all possible config items
+    database_version = IntConfig("database_version", None)
     display_name = StringConfig("display_name", "Anonymous Peer")
     auto_announce_enabled = BoolConfig("auto_announce_enabled", False)
     auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", 0)
