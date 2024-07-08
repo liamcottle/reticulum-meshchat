@@ -102,6 +102,7 @@ class ReticulumMeshChat:
 
         # init lxmf router
         self.message_router = LXMF.LXMRouter(identity=self.identity, storagepath=lxmf_router_path)
+        self.message_router.PROCESSING_INTERVAL = 1
 
         # register lxmf identity
         self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity)
