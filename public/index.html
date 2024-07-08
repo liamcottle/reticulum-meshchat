@@ -1550,21 +1550,11 @@
             },
             async sendAnnounce() {
 
-                // do nothing if not connected to websocket
-                if(!this.isWebsocketConnected){
-                    this.alert("Not connected to WebSocket!");
-                    return;
-                }
-
                 try {
-
-                    // ask reticulum to announce
-                    this.ws.send(JSON.stringify({
-                        "type": "announce",
-                    }));
-
+                    await window.axios.get(`/api/v1/announce`);
                 } catch(e) {
-                    console.error(e);
+                    this.alert("failed to announce");
+                    console.log(e);
                 }
 
                 // fetch config so it updates last announced timestamp

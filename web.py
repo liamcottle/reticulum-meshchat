@@ -675,7 +675,7 @@ class ReticulumMeshChat:
         @routes.get("/api/v1/announce")
         async def index(request):
 
-            self.announce()
+            await self.announce()
 
             return web.json_response({
                 "message": "announcing",
@@ -1067,10 +1067,6 @@ class ReticulumMeshChat:
 
             # send config to websocket clients
             await self.send_config_to_websocket_clients()
-
-        # handle sending an announce
-        elif _type == "announce":
-            await self.announce()
 
         # handle downloading a file from a nomadnet node
         elif _type == "nomadnet.file.download":
