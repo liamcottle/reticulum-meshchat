@@ -1663,12 +1663,6 @@
             },
             async retrySendingMessage(chatItem) {
 
-                // do nothing if not connected to websocket
-                if(!this.isWebsocketConnected){
-                    this.alert("Not connected to WebSocket!");
-                    return;
-                }
-
                 // force delete existing message
                 await this.deleteChatItem(chatItem, false);
 
