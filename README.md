@@ -25,9 +25,9 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
     - Over the internet by connecting through a server hosted by yourself or the community.
     - Over low-powered, license-free, ISM band LoRa Radio, with an [RNode](https://github.com/markqvist/RNode_Firmware).
     - ...and via any other interface supported by the Reticulum Network Stack.
-- It can communicate with any other existing [LXMF](https://github.com/markqvist/lxmf) client.
-- It can download files and browse micron pages (decentralised websites) hosted on [Nomad Network](https://github.com/markqvist/nomadnet) nodes.
 - It communicates securely. Messages can only be decrypted by the intended destination.
+- It can communicate with any other existing [LXMF](https://github.com/markqvist/lxmf) client, such as [Sideband](https://github.com/markqvist/Sideband/) and [Nomadnet](https://github.com/markqvist/nomadnet).
+- It can download files and browse micron pages (decentralised websites) hosted on [Nomad Network](https://github.com/markqvist/nomadnet) nodes.
 
 ## Features
 
