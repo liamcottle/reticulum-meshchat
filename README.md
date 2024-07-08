@@ -27,6 +27,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
     - ...and via any other interface supported by the Reticulum Network Stack.
 - It can communicate with any other existing [LXMF](https://github.com/markqvist/lxmf) client.
 - It can download files and browse micron pages (decentralised websites) hosted on [Nomad Network](https://github.com/markqvist/nomadnet) nodes.
+- It communicates securely. Messages can only be decrypted by the intended destination.
 
 ## Features
 
