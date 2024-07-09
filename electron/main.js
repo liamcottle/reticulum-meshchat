@@ -101,11 +101,24 @@ app.whenReady().then(async () => {
             fs.renameSync(oldStorageDir, storageDir);
         }
 
-        // spawn executable
-        exeChildProcess = await spawn(exe, [
+        // get arguments passed to application, and remove the provided application path
+        const userProvidedArguments = process.argv.slice(1);
+
+        // arguments we always want to pass in
+        const requiredArguments = [
             '--headless', // reticulum meshchat usually launches default web browser, we don't want this when using electron
             '--port', '9337', // FIXME: let system pick a random unused port?
-            '--storage-dir', storageDir,
+        ];
+
+        // if user didn't provide storage dir, we should provide it
+        if(!userProvidedArguments.includes("--storage-dir")){
+            requiredArguments.push("--storage-dir", storageDir);
+        }
+
+        // spawn executable
+        exeChildProcess = await spawn(exe, [
+            ...requiredArguments, // always provide required arguments
+            ...userProvidedArguments, // also include any user provided arguments
         ]);
 
         // log stdout
