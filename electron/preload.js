@@ -20,4 +20,9 @@ contextBridge.exposeInMainWorld('electron', {
         return await ipcRenderer.invoke('prompt', message);
     },
 
+    // allow relaunching app in electron browser window
+    relaunch: async function() {
+        return await ipcRenderer.invoke('relaunch');
+    },
+
 });

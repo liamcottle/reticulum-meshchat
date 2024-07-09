@@ -35,6 +35,12 @@ ipcMain.handle('prompt', async(event, message) => {
     });
 });
 
+// allow relaunching app via ipc
+ipcMain.handle('relaunch', async() => {
+    app.relaunch();
+    app.exit();
+});
+
 function log(message) {
 
     // make sure main window exists

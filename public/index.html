@@ -883,13 +883,16 @@
             <div v-if="tab === 'interfaces'" class="overflow-y-auto p-2 space-y-2">
 
                 <!-- warning -->
-                <div class="flex bg-blue-500 p-2 text-sm font-semibold leading-6 text-white rounded shadow">
-                    <div>
+                <div class="flex bg-orange-500 p-2 text-sm font-semibold leading-6 text-white rounded shadow">
+                    <div class="my-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                         </svg>
                     </div>
-                    <div class="ml-2">Reticulum MeshChat must be restarted for any interface changes to take effect.</div>
+                    <div class="ml-2 my-auto">Reticulum MeshChat must be restarted for any interface changes to take effect.</div>
+                    <button v-if="isElectron" @click="relaunch" type="button" class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md bg-white px-2 py-1 text-sm font-semibold text-black shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                        <span>Restart Now</span>
+                    </button>
                 </div>
 
                 <button @click="showAddInterfaceForm" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
@@ -2861,6 +2864,11 @@
                     return window.prompt(message);
                 }
             },
+            relaunch() {
+                if(window.electron){
+                    window.electron.relaunch();
+                }
+            },
             isInterfaceEnabled: function(iface) {
                 const rawValue = iface.enabled ?? iface.interface_enabled;
                 const value = rawValue?.toLowerCase();
@@ -2962,6 +2970,9 @@
             },
         },
         computed: {
+            isElectron() {
+                return window.electron != null;
+            },
             isMobile() {
                 return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             },
