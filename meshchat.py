@@ -25,7 +25,7 @@ from src.audio_call_manager import AudioCall, AudioCallManager
 
 
 # NOTE: this is required to be able to pack our app with cxfreeze as an exe, otherwise it can't access bundled assets
-# this returns a file path based on if we are running web.py directly, or if we have packed it as an exe with cxfreeze
+# this returns a file path based on if we are running meshchat.py directly, or if we have packed it as an exe with cxfreeze
 # https://cx-freeze.readthedocs.io/en/latest/faq.html#using-data-files
 def get_file_path(filename):
     if getattr(sys, "frozen", False):

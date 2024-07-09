@@ -6,7 +6,7 @@ setup(
     description='A simple mesh network communications app powered by the Reticulum Network Stack',
     executables=[
         Executable(
-            script='web.py', # this script to run
+            script='meshchat.py', # this script to run
             base=None, # we are running a console application, not a gui
             target_name='ReticulumMeshChat', # creates ReticulumMeshChat.exe
             shortcut_name='ReticulumMeshChat', # name shown in shortcut

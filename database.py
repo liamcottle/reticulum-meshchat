@@ -4,7 +4,7 @@ from peewee import *
 from playhouse.migrate import migrate as migrate_database, SqliteMigrator
 
 latest_version = 2  # increment each time new database migrations are added
-database = DatabaseProxy()  # use a proxy object, as we will init real db client inside web.py
+database = DatabaseProxy()  # use a proxy object, as we will init real db client inside meshchat.py
 migrator = SqliteMigrator(database)
 
 

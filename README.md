@@ -120,20 +120,20 @@ Remember, in order to connect with other peers or nodes, they must announce on t
 
 ## How does it work?
 
-- A python script ([web.py](./web.py)) runs a Reticulum instance and a WebSocket server.
+- A python script ([meshchat.py](./meshchat.py)) runs a Reticulum instance and a WebSocket server.
 - The web page sends and receives LXMF packets encoded in json via the WebSocket.
 - Web Browser -> WebSocket -> Python Reticulum -> (configured interfaces) -> (destination)
 - LXMF messages sent and received are saved to a local SQLite database.
 
 ## How to use it?
 
-If you don't want to, or can't [download](#download) a standalone application, you will need to install [Python 3](https://www.python.org/downloads/), clone the source code from this repo, install dependencies and then run `web.py`.
+If you don't want to, or can't [download](#download) a standalone application, you will need to install [Python 3](https://www.python.org/downloads/), clone the source code from this repo, install dependencies and then run `meshchat.py`.
 
 ```
 git clone https://github.com/liamcottle/reticulum-meshchat
 cd reticulum-meshchat
 pip install -r requirements.txt
-python web.py
+python meshchat.py
 ```
 
 > NOTE: You should now be able to access the web interface at http://localhost:8000
@@ -141,11 +141,11 @@ python web.py
 For a full list of command line options, you can run;
 
 ```
-python web.py --help
+python meshchat.py --help
 ```
 
 ```
-usage: web.py [-h] [--host [HOST]] [--port [PORT]] [--headless] [--identity-file IDENTITY_FILE] [--identity-base64 IDENTITY_BASE64] [--generate-identity-file GENERATE_IDENTITY_FILE] [--generate-identity-base64]
+usage: meshchat.py [-h] [--host [HOST]] [--port [PORT]] [--headless] [--identity-file IDENTITY_FILE] [--identity-base64 IDENTITY_BASE64] [--generate-identity-file GENERATE_IDENTITY_FILE] [--generate-identity-base64]
               [--reticulum-config-dir RETICULUM_CONFIG_DIR] [--storage-dir STORAGE_DIR]
 
 ReticulumMeshChat
@@ -181,7 +181,7 @@ If you want to use an existing identity;
 To use a custom identity file, provide the `--identity-file` argument followed by the path to your custom identity file.
 
 ```
-python web.py --identity-file ./custom_identity_file
+python meshchat.py --identity-file ./custom_identity_file
 ```
 
 If you would like to generate a new identity, you can use the [rnid](https://reticulum.network/manual/using.html#the-rnid-utility) utility provided by Reticulum.
@@ -193,13 +193,13 @@ rnid --generate ./new_identity_file
 If you don't have access to the `rnid` command, you can use the following:
 
 ```
-python web.py --generate-identity-file ./new_identity_file
+python meshchat.py --generate-identity-file ./new_identity_file
 ```
 
 Alternatively, you can provide a base64 encoded private key, like so;
 
 ```
-python web.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQIF8VOjXwNNem3CUOJZCQQpJuc/4U94VSsC39Phw=="
+python meshchat.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeGmoOwQIF8VOjXwNNem3CUOJZCQQpJuc/4U94VSsC39Phw=="
 ```
 
 > NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
