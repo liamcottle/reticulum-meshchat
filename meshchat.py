@@ -359,6 +359,27 @@ class ReticulumMeshChat:
                 interface_details["target_host"] = data.get('target_host')
                 interface_details["target_port"] = data.get('target_port')
 
+            # handle tcp server interface
+            if interface_type == "TCPServerInterface":
+
+                interface_listen_ip = data.get('listen_ip')
+                interface_listen_port = data.get('listen_port')
+
+                # ensure listen ip provided
+                if interface_listen_ip is None or interface_listen_ip == "":
+                    return web.json_response({
+                        "message": "Listen IP is required",
+                    }, status=422)
+
+                # ensure listen port provided
+                if interface_listen_port is None or interface_listen_port == "":
+                    return web.json_response({
+                        "message": "Listen Port is required",
+                    }, status=422)
+
+                interface_details["listen_ip"] = data.get('listen_ip')
+                interface_details["listen_port"] = data.get('listen_port')
+
             # handle rnode interface
             if interface_type == "RNodeInterface":
 

@@ -1069,6 +1069,7 @@
                                 <option value="AutoInterface">AutoInterface</option>
                                 <option value="RNodeInterface">RNodeInterface</option>
                                 <option value="TCPClientInterface">TCPClientInterface</option>
+                                <option value="TCPServerInterface">TCPServerInterface</option>
                             </select>
                             <div class="text-xs text-gray-600">
                                 Need help? <a class="text-blue-500 underline" href="https://markqvist.github.io/Reticulum/manual/interfaces.html" target="_blank">Reticulum Docs: Configuring Interfaces</a>
@@ -1085,6 +1086,18 @@
                         <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Target Port</label>
                             <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface listen ip -->
+                        <div v-if="newInterfaceType === 'TCPServerInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Listen IP</label>
+                            <input type="text" placeholder="0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface listen port -->
+                        <div v-if="newInterfaceType === 'TCPServerInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Listen Port</label>
+                            <input type="text" placeholder="1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         </div>
 
                         <!-- interface port -->
@@ -1261,8 +1274,12 @@
 
                 newInterfaceName: null,
                 newInterfaceType: null,
+
                 newInterfaceTargetHost: null,
                 newInterfaceTargetPort: null,
+
+                newInterfaceListenIp: null,
+                newInterfaceListenPort: null,
 
                 newInterfacePort: null,
                 newInterfaceFrequency: null,
@@ -2711,6 +2728,10 @@
                 this.newInterfaceTargetHost = null;
                 this.newInterfaceTargetPort = null;
 
+                // tcp server interface
+                this.newInterfaceListenIp = null;
+                this.newInterfaceListenPort = null;
+
                 // rnode interface
                 this.newInterfacePort = null;
                 this.newInterfaceFrequency = null;
@@ -2738,6 +2759,10 @@
                 // tcp client interface
                 this.newInterfaceTargetHost = iface.target_host;
                 this.newInterfaceTargetPort = iface.target_port;
+
+                // tcp server interface
+                this.newInterfaceListenIp = iface.listen_ip;
+                this.newInterfaceListenPort = iface.listen_port;
 
                 // rnode interface
                 this.newInterfacePort = iface.port;
@@ -2782,6 +2807,9 @@
                         // tcp client interface
                         target_host: this.newInterfaceTargetHost,
                         target_port: this.newInterfaceTargetPort,
+                        // tcp server interface
+                        listen_ip: this.newInterfaceListenIp,
+                        listen_port: this.newInterfaceListenPort,
                         // rnode interface
                         port: this.newInterfacePort,
                         frequency: this.newInterfaceFrequency,
