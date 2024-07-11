@@ -82,3 +82,41 @@ jobs:
           omitDraftDuringUpdate: true
           omitNameDuringUpdate: true
           artifacts: "dist/*-mac.dmg"
+
+  build_linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v1
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Deps
+        run: pip install -r requirements.txt
+
+      - name: Install NodeJS Deps
+        run: npm install
+
+      - name: Build Electron App
+        run: npm run dist
+
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          draft: true
+          allowUpdates: true
+          replacesArtifacts: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifacts: "dist/*-linux.AppImage"
