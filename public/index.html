@@ -512,7 +512,7 @@
                     </div>
 
                     <!-- chat items -->
-                    <div id="messages" class="h-full overflow-y-scroll px-3 sm:px-0">
+                    <div id="messages" class="h-full overflow-y-scroll">
                         <div v-if="selectedPeerChatItems.length > 0" class="flex flex-col space-y-3 p-3">
                             <div v-for="chatItem of selectedPeerChatItems" class="flex flex-col max-w-xl" :class="{ 'ml-auto pl-4 md:pl-16 items-end': chatItem.is_outbound, 'mr-auto pr-4 md:pr-16 items-start': !chatItem.is_outbound }">
 
