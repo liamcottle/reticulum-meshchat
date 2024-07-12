@@ -900,16 +900,29 @@ class ReticulumMeshChat:
 
             # get path params
             destination_hash = request.match_info.get("destination_hash", "")
+            order = request.query.get("order", "asc")
+            count = request.query.get("count")
+            after_id = request.query.get("after_id")
 
             # get source hash from local lxmf destination
             source_hash = self.local_lxmf_destination.hash.hex()
 
             # get lxmf messages from db where "source to destination" or "destination to source" and ordered by oldest to newest
             db_lxmf_messages = (database.LxmfMessage.select()
-                                .where((database.LxmfMessage.source_hash == source_hash) & (database.LxmfMessage.destination_hash == destination_hash))
-                                .orwhere((database.LxmfMessage.destination_hash == source_hash) & (database.LxmfMessage.source_hash == destination_hash))
-                                .order_by(database.LxmfMessage.id.asc())
-                                )
+                     .where((database.LxmfMessage.source_hash == source_hash) & (database.LxmfMessage.destination_hash == destination_hash))
+                     .orwhere((database.LxmfMessage.destination_hash == source_hash) & (database.LxmfMessage.source_hash == destination_hash))
+                     .order_by(database.LxmfMessage.id.asc() if order == "asc" else database.LxmfMessage.id.desc()))
+
+            # limit how many messages to return
+            if count is not None:
+                db_lxmf_messages = db_lxmf_messages.limit(count)
+
+            # only get records after provided id, based on query order
+            if after_id is not None:
+                if order == "asc":
+                    db_lxmf_messages = db_lxmf_messages.where((database.LxmfMessage.id > after_id))
+                else:
+                    db_lxmf_messages = db_lxmf_messages.where((database.LxmfMessage.id < after_id))
 
             # convert to response json
             lxmf_messages = []
