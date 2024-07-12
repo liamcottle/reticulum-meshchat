@@ -967,6 +967,11 @@
                                     {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }}
                                 </span>
 
+                                <!-- udp interface -->
+                                <span v-else-if="iface.type === 'UDPInterface'">
+                                    {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }} • {{ iface.forward_ip }}:{{ iface.forward_port }}
+                                </span>
+
                                 <!-- rnode interface details -->
                                 <span v-else-if="iface.type === 'RNodeInterface'">
                                    {{ iface.type }} • {{ iface.port }} • freq={{ iface.frequency }} • bw={{ iface.bandwidth }} • power={{ iface.txpower }}dBm • sf={{ iface.spreadingfactor }} • cr={{ iface.codingrate }}
@@ -1071,6 +1076,7 @@
                                 <option value="RNodeInterface">RNodeInterface</option>
                                 <option value="TCPClientInterface">TCPClientInterface</option>
                                 <option value="TCPServerInterface">TCPServerInterface</option>
+                                <option value="UDPInterface">UDPInterface</option>
                             </select>
                             <div class="text-xs text-gray-600">
                                 Need help? <a class="text-blue-500 underline" href="https://markqvist.github.io/Reticulum/manual/interfaces.html" target="_blank">Reticulum Docs: Configuring Interfaces</a>
@@ -1090,15 +1096,27 @@
                         </div>
 
                         <!-- interface listen ip -->
-                        <div v-if="newInterfaceType === 'TCPServerInterface'" class="mb-2">
+                        <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Listen IP</label>
                             <input type="text" placeholder="0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         </div>
 
                         <!-- interface listen port -->
-                        <div v-if="newInterfaceType === 'TCPServerInterface'" class="mb-2">
+                        <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900">Listen Port</label>
                             <input type="text" placeholder="1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface forward ip -->
+                        <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Forward IP</label>
+                            <input type="text" placeholder="255.255.255.255" v-model="newInterfaceForwardIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+
+                        <!-- interface listen port -->
+                        <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Forward Port</label>
+                            <input type="text" placeholder="1234" v-model="newInterfaceForwardPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         </div>
 
                         <!-- interface port -->
@@ -1281,6 +1299,9 @@
 
                 newInterfaceListenIp: null,
                 newInterfaceListenPort: null,
+
+                newInterfaceForwardIp: null,
+                newInterfaceForwardPort: null,
 
                 newInterfacePort: null,
                 newInterfaceFrequency: null,
@@ -2055,6 +2076,10 @@
                             // example: "TCPServerInterface[TCP Server Interface/0.0.0.0:4242]";
                             return `TCPServerInterface[${interfaceName}/${iface.listen_ip}:${iface.listen_port}]`;
                         }
+                        case "UDPInterface": {
+                            // example: "UDPInterface[UDP Interface/0.0.0.0:1234]";
+                            return `UDPInterface[${interfaceName}/${iface.listen_ip}:${iface.listen_port}]`;
+                        }
                         default: {
                             // example: "RNodeInterface[RNode LoRa Interface Fast]",
                             return `${iface.type}[${interfaceName}]`;
@@ -2729,9 +2754,13 @@
                 this.newInterfaceTargetHost = null;
                 this.newInterfaceTargetPort = null;
 
-                // tcp server interface
+                // tcp server interface & udp interface
                 this.newInterfaceListenIp = null;
                 this.newInterfaceListenPort = null;
+
+                // udp interface
+                this.newInterfaceForwardIp = null;
+                this.newInterfaceForwardPort = null;
 
                 // rnode interface
                 this.newInterfacePort = null;
@@ -2761,9 +2790,13 @@
                 this.newInterfaceTargetHost = iface.target_host;
                 this.newInterfaceTargetPort = iface.target_port;
 
-                // tcp server interface
+                // tcp server interface & udp interface
                 this.newInterfaceListenIp = iface.listen_ip;
                 this.newInterfaceListenPort = iface.listen_port;
+
+                // udp interface
+                this.newInterfaceForwardIp = iface.forward_ip;
+                this.newInterfaceForwardPort = iface.forward_port;
 
                 // rnode interface
                 this.newInterfacePort = iface.port;
@@ -2808,9 +2841,12 @@
                         // tcp client interface
                         target_host: this.newInterfaceTargetHost,
                         target_port: this.newInterfaceTargetPort,
-                        // tcp server interface
+                        // tcp server interface & udp interface
                         listen_ip: this.newInterfaceListenIp,
                         listen_port: this.newInterfaceListenPort,
+                        // udp interface
+                        forward_ip: this.newInterfaceForwardIp,
+                        forward_port: this.newInterfaceForwardPort,
                         // rnode interface
                         port: this.newInterfacePort,
                         frequency: this.newInterfaceFrequency,

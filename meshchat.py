@@ -380,6 +380,43 @@ class ReticulumMeshChat:
                 interface_details["listen_ip"] = data.get('listen_ip')
                 interface_details["listen_port"] = data.get('listen_port')
 
+            # handle udp interface
+            if interface_type == "UDPInterface":
+
+                interface_listen_ip = data.get('listen_ip')
+                interface_listen_port = data.get('listen_port')
+                interface_forward_ip = data.get('forward_ip')
+                interface_forward_port = data.get('forward_port')
+
+                # ensure listen ip provided
+                if interface_listen_ip is None or interface_listen_ip == "":
+                    return web.json_response({
+                        "message": "Listen IP is required",
+                    }, status=422)
+
+                # ensure listen port provided
+                if interface_listen_port is None or interface_listen_port == "":
+                    return web.json_response({
+                        "message": "Listen Port is required",
+                    }, status=422)
+
+                # ensure forward ip provided
+                if interface_forward_ip is None or interface_forward_ip == "":
+                    return web.json_response({
+                        "message": "Forward IP is required",
+                    }, status=422)
+
+                # ensure forward port provided
+                if interface_forward_port is None or interface_forward_port == "":
+                    return web.json_response({
+                        "message": "Forward Port is required",
+                    }, status=422)
+
+                interface_details["listen_ip"] = data.get('listen_ip')
+                interface_details["listen_port"] = data.get('listen_port')
+                interface_details["forward_ip"] = data.get('forward_ip')
+                interface_details["forward_port"] = data.get('forward_port')
+
             # handle rnode interface
             if interface_type == "RNodeInterface":
 
