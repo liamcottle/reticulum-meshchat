@@ -1508,15 +1508,24 @@ class ReticulumMeshChat:
         # convert destination hash to bytes
         destination_hash = bytes.fromhex(destination_hash)
 
-        # FIXME: can this be removed, and just rely on the router to check paths?
+        # determine when to timeout finding path
+        timeout_after_seconds = time.time() + 10
+
+        # check if we have a path to the destination
+        if not RNS.Transport.has_path(destination_hash):
+
+            # we don't have a path, so we need to request it
+            RNS.Transport.request_path(destination_hash)
+
+            # wait until we have a path, or give up after the configured timeout
+            while not RNS.Transport.has_path(destination_hash) and time.time() < timeout_after_seconds:
+                await asyncio.sleep(0.1)
+
         # find destination identity from hash
         destination_identity = RNS.Identity.recall(destination_hash)
         if destination_identity is None:
 
-            # we don't know the path/identity for this destination hash, we will request it
-            RNS.Transport.request_path(destination_hash)
-
-            # we have to bail out of sending, since we don't have the path yet
+            # we have to bail out of sending, since we don't have the identity/path yet
             raise Exception("Destination identity is not known. Try again later.")
 
         # create destination for recipients lxmf delivery address
