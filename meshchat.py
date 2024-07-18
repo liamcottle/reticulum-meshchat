@@ -1563,7 +1563,7 @@ class ReticulumMeshChat:
         if destination_identity is None:
 
             # we have to bail out of sending, since we don't have the identity/path yet
-            raise Exception("Destination identity is not known. Try again later.")
+            raise Exception("Could not find path to destination. Try again later.")
 
         # create destination for recipients lxmf delivery address
         lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery")
