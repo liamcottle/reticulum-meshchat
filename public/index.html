@@ -1063,7 +1063,7 @@
                         <!-- interface name -->
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900">Name</label>
-                            <input type="text" placeholder="New Interface Name" v-model="newInterfaceName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <input type="text" :disabled="isEditingInterface" placeholder="New Interface Name" v-model="newInterfaceName" class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" :class="[ isEditingInterface ? 'cursor-not-allowed bg-gray-200' : 'bg-gray-50' ]">
                             <div class="text-xs text-gray-600">Interface names must be unique.</div>
                         </div>
 
