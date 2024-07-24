@@ -266,9 +266,9 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
   - [x] AutoInterface
   - [x] RNodeInterface
   - [x] TCPClientInterface
+  - [x] TCPServerInterface
+  - [x] UDPInterface
   - [ ] I2PInterface
-  - [ ] TCPServerInterface
-  - [ ] UDPInterface
   - [ ] SerialInterface
   - [ ] PipeInterface
   - [ ] KISSInterface
