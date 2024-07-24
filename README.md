@@ -254,6 +254,7 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
 ## TODO
 
+- [ ] retry sending messages for a longer amount of time, to allow contacting those that disconnect for long periods
 - [ ] contact management to save identity, addresses, custom name and notes
 - [ ] move peer announces to a new "Discover" page?
 - [ ] button to add peer to contacts, and show a tab for contacts, separate from peers list
