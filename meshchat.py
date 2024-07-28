@@ -1537,7 +1537,7 @@ class ReticulumMeshChat:
         query.execute()
 
     # handle sending an lxmf message to reticulum
-    async def send_message(self, destination_hash, content: str,
+    async def send_message(self, destination_hash: str, content: str,
                            image_field: LxmfImageField = None,
                            audio_field: LxmfAudioField = None,
                            file_attachments_field: LxmfFileAttachmentsField = None) -> LXMF.LXMessage:
@@ -1609,6 +1609,12 @@ class ReticulumMeshChat:
         # upsert lxmf message to database
         self.db_upsert_lxmf_message(lxmf_message)
 
+        # tell all websocket clients that old failed message was deleted so it can remove from ui
+        await self.websocket_broadcast(json.dumps({
+            "type": "lxmf_message_created",
+            "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
+        }))
+
         # handle lxmf message progress loop without blocking or awaiting
         # otherwise other incoming websocket packets will not be processed until sending is complete
         # which results in the next message not showing up until the first message is finished
@@ -1656,6 +1662,67 @@ class ReticulumMeshChat:
             "type": "announce",
             "announce": self.convert_db_announce_to_dict(announce),
         })))
+
+        # resend all failed messages that were intended for this destination
+        if self.config.auto_resend_failed_messages_when_announce_received.get():
+            asyncio.run(self.resend_failed_messages_for_destination(destination_hash.hex()))
+
+    # resends all messages that previously failed to send to the provided destination hash
+    async def resend_failed_messages_for_destination(self, destination_hash: str):
+
+        # get messages that failed to send to this destination
+        failed_messages = (database.LxmfMessage.select()
+                           .where(database.LxmfMessage.state == "failed")
+                           .where(database.LxmfMessage.destination_hash == destination_hash)
+                           .order_by(database.LxmfMessage.id.asc()))
+
+        # resend failed messages
+        for failed_message in failed_messages:
+            try:
+
+                # parse fields as json
+                fields = json.loads(failed_message.fields)
+
+                # parse image field
+                image_field = None
+                if "image" in fields:
+                    image_field = LxmfImageField(fields["image"]["image_type"], base64.b64decode(fields["image"]["image_bytes"]))
+
+                # parse audio field
+                audio_field = None
+                if "audio" in fields:
+                    audio_field = LxmfAudioField(fields["audio"]["audio_mode"], base64.b64decode(fields["audio"]["audio_bytes"]))
+
+                # parse file attachments field
+                file_attachments_field = None
+                if "file_attachments" in fields:
+                    file_attachments = []
+                    for file_attachment in fields["file_attachments"]:
+                        file_attachments.append(LxmfFileAttachment(file_attachment["file_name"], base64.b64decode(file_attachment["file_bytes"])))
+                    file_attachments_field = LxmfFileAttachmentsField(file_attachments)
+
+                # send new message with failed message content
+                await self.send_message(
+                    failed_message.destination_hash,
+                    failed_message.content,
+                    image_field,
+                    audio_field,
+                    file_attachments_field,
+                )
+
+                # remove original failed message from database
+                database.LxmfMessage.delete().where((database.LxmfMessage.hash == failed_message.hash)).execute()
+
+                # tell all websocket clients that old failed message was deleted so it can remove from ui
+                await self.websocket_broadcast(json.dumps({
+                    "type": "lxmf_message_deleted",
+                    "hash": failed_message.hash,
+                }))
+
+            except Exception as e:
+                print("Error resending failed message: " + str(e))
+                pass
+
 
     # handle an announce received from reticulum, for a nomadnet node
     # NOTE: cant be async, as Reticulum doesn't await it
@@ -1822,6 +1889,7 @@ class Config:
     auto_announce_enabled = BoolConfig("auto_announce_enabled", False)
     auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", 0)
     last_announced_at = IntConfig("last_announced_at", None)
+    auto_resend_failed_messages_when_announce_received = BoolConfig("auto_resend_failed_messages_when_announce_received", True)
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback

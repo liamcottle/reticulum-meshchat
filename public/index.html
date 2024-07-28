@@ -1472,6 +1472,20 @@
                             break;
 
                         }
+                        case 'lxmf_message_created': {
+
+                            // add new outbound lxmf message from server
+                            if(!this.isLxmfMessageInUi(json.lxmf_message.hash)){
+                                this.chatItems.push({
+                                    "type": "lxmf_message",
+                                    "lxmf_message": json.lxmf_message,
+                                    "is_outbound": true,
+                                });
+                            }
+
+                            break;
+
+                        }
                         case 'lxmf_message_state_updated': {
 
                             // find existing chat item by lxmf message hash
@@ -1484,6 +1498,19 @@
 
                             // update lxmf message from server, while ensuring ui updates from nested object change
                             this.chatItems[chatItemIndex].lxmf_message = json.lxmf_message;
+
+                            break;
+
+                        }
+                        case 'lxmf_message_deleted': {
+
+                            // remove existing chat item by lxmf message hash
+                            const lxmfMessageHash = json.hash;
+                            if(lxmfMessageHash){
+                                this.chatItems = this.chatItems.filter((item) => {
+                                    return item.lxmf_message?.hash !== lxmfMessageHash;
+                                });
+                            }
 
                             break;
 
@@ -1577,6 +1604,9 @@
                     }
                 });
             },
+            isLxmfMessageInUi: function(hash) {
+                return this.chatItems.findIndex((chatItem) => chatItem.lxmf_message?.hash === hash) !== -1;
+            },
             async getAppInfo() {
                 try {
                     const response = await window.axios.get(`/api/v1/app/info`);
@@ -1668,11 +1698,13 @@
                     });
 
                     // add outbound message to ui
-                    this.chatItems.push({
-                        "type": "lxmf_message",
-                        "lxmf_message": response.data.lxmf_message,
-                        "is_outbound": true,
-                    });
+                    if(!this.isLxmfMessageInUi(response.data.lxmf_message.hash)){
+                        this.chatItems.push({
+                            "type": "lxmf_message",
+                            "lxmf_message": response.data.lxmf_message,
+                            "is_outbound": true,
+                        });
+                    }
 
                     // always scroll to bottom since we just sent a message
                     this.scrollMessagesToBottom();
@@ -1715,11 +1747,13 @@
                     });
 
                     // add outbound message to ui
-                    this.chatItems.push({
-                        "type": "lxmf_message",
-                        "lxmf_message": response.data.lxmf_message,
-                        "is_outbound": true,
-                    });
+                    if(!this.isLxmfMessageInUi(response.data.lxmf_message.hash)){
+                        this.chatItems.push({
+                            "type": "lxmf_message",
+                            "lxmf_message": response.data.lxmf_message,
+                            "is_outbound": true,
+                        });
+                    }
 
                     // always scroll to bottom since we just sent a message
                     this.scrollMessagesToBottom();
