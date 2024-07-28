@@ -1051,6 +1051,7 @@ class ReticulumMeshChat:
                     "name": self.get_lxmf_conversation_name(other_user_hash),
                     "destination_hash": other_user_hash,
                     "is_unread": self.is_lxmf_conversation_unread(other_user_hash),
+                    "failed_messages_count": self.lxmf_conversation_failed_messages_count(other_user_hash),
                     # we say the conversation was updated when the latest message was created
                     # otherwise this will go crazy when sending a message, as the updated_at on the latest message changes very frequently
                     "updated_at": created_at,
@@ -1808,6 +1809,14 @@ class ReticulumMeshChat:
         conversation_last_read_at = datetime.strptime(lxmf_conversation_read_state.last_read_at, "%Y-%m-%d %H:%M:%S.%f%z")
         conversation_latest_message_at = datetime.strptime(latest_incoming_lxmf_message.created_at, "%Y-%m-%d %H:%M:%S.%f%z")
         return conversation_last_read_at < conversation_latest_message_at
+
+    # returns number of messages that failed to send in a conversation
+    def lxmf_conversation_failed_messages_count(self, destination_hash: str):
+        return (database.LxmfMessage.select()
+                .where(database.LxmfMessage.state == "failed")
+                .where(database.LxmfMessage.destination_hash == destination_hash)
+                .count())
+
 
 # class to manage config stored in database
 class Config:
