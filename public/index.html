@@ -1070,6 +1070,50 @@
             <!-- add interface tab -->
             <div v-if="tab === 'interfaces.add'" class="overflow-y-auto p-2 space-y-2">
 
+                <!-- community interfaces -->
+                <div v-if="!isEditingInterface && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200">
+                    <div class="flex p-2">
+                        <div class="my-auto mr-auto">
+                            <div class="font-bold">Community Interfaces</div>
+                            <div class="text-sm">These TCP interfaces serve as a quick way to test Reticulum. We suggest running your own as these may not always be available.</div>
+                        </div>
+                        <div class="my-auto ml-2">
+                            <button @click="updateConfig({'show_suggested_community_interfaces': false})" type="button" class="text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="divide-y divide-gray-200">
+
+                        <div class="flex px-2 py-1">
+                            <div class="my-auto mr-auto">
+                                <div>RNS Testnet Amsterdam</div>
+                                <div class="text-xs">amsterdam.connect.reticulum.network:4965</div>
+                            </div>
+                            <div class="ml-2 my-auto">
+                                <button @click="newInterfaceName='RNS Testnet Amsterdam';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='amsterdam.connect.reticulum.network';newInterfaceTargetPort='4965'" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                    <span>Use Interface</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex px-2 py-1">
+                            <div class="my-auto mr-auto">
+                                <div>RNS Testnet BetweenTheBorders</div>
+                                <div class="text-xs">betweentheborders.com:4242</div>
+                            </div>
+                            <div class="ml-2 my-auto">
+                                <button @click="newInterfaceName='RNS Testnet BetweenTheBorders';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='betweentheborders.com';newInterfaceTargetPort='4242'" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                    <span>Use Interface</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
                 <!-- add interface form -->
                 <div class="bg-white rounded shadow divide-y divide-gray-200">
                     <div class="p-2 font-bold">
@@ -1097,7 +1141,7 @@
                                 <option value="UDPInterface">UDPInterface</option>
                             </select>
                             <div class="text-xs text-gray-600">
-                                Need help? <a class="text-blue-500 underline" href="https://markqvist.github.io/Reticulum/manual/interfaces.html" target="_blank">Reticulum Docs: Configuring Interfaces</a>
+                                Need help? <a class="text-blue-500 underline" href="https://reticulum.network/manual/interfaces.html" target="_blank">Reticulum Docs: Configuring Interfaces</a>
                             </div>
                         </div>
 
@@ -1196,7 +1240,7 @@
             <!-- settings tab -->
             <div v-if="tab === 'settings'" class="overflow-y-auto space-y-2 p-2">
 
-                <!-- messages -->
+                <!-- failed messages -->
                 <div class="bg-white rounded shadow">
                     <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Failed Messages</div>
                     <div class="divide-y text-gray-900">
@@ -1219,6 +1263,24 @@
                                 <label class="ml-2 text-sm font-medium text-gray-900">Allow resending with attachments</label>
                             </div>
                             <div class="text-sm text-gray-700">When enabled, failed messages that have attachments are allowed to auto resend.</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- interfaces -->
+                <div class="bg-white rounded shadow">
+                    <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Interfaces</div>
+                    <div class="divide-y text-gray-900">
+
+                        <div class="p-2">
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input v-model="config.show_suggested_community_interfaces" @change="onShowSuggestedCommunityInterfacesChange" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300">
+                                </div>
+                                <label class="ml-2 text-sm font-medium text-gray-900">Show Community Interfaces</label>
+                            </div>
+                            <div class="text-sm text-gray-700">When enabled, community interfaces will be shown on the Add Interface page.</div>
                         </div>
 
                     </div>
@@ -1854,6 +1916,11 @@
             async onAllowAutoResendingFailedMessagesWithAttachmentsChange() {
                 await this.updateConfig({
                     "allow_auto_resending_failed_messages_with_attachments": this.config.allow_auto_resending_failed_messages_with_attachments,
+                });
+            },
+            async onShowSuggestedCommunityInterfacesChange() {
+                await this.updateConfig({
+                    "show_suggested_community_interfaces": this.config.show_suggested_community_interfaces,
                 });
             },
             async startNewLXMFConversation() {

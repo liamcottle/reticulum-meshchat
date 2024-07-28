@@ -1145,6 +1145,10 @@ class ReticulumMeshChat:
                 value = bool(config["allow_auto_resending_failed_messages_with_attachments"])
                 self.config.allow_auto_resending_failed_messages_with_attachments.set(value)
 
+            if "show_suggested_community_interfaces" in config:
+                value = bool(config["show_suggested_community_interfaces"])
+                self.config.show_suggested_community_interfaces.set(value)
+
             # send config to websocket clients
             await self.send_config_to_websocket_clients()
 
@@ -1291,6 +1295,7 @@ class ReticulumMeshChat:
             "last_announced_at": self.config.last_announced_at.get(),
             "auto_resend_failed_messages_when_announce_received": self.config.auto_resend_failed_messages_when_announce_received.get(),
             "allow_auto_resending_failed_messages_with_attachments": self.config.allow_auto_resending_failed_messages_with_attachments.get(),
+            "show_suggested_community_interfaces": self.config.show_suggested_community_interfaces.get(),
         }
 
     # convert audio call to dict
@@ -1916,6 +1921,7 @@ class Config:
     last_announced_at = IntConfig("last_announced_at", None)
     auto_resend_failed_messages_when_announce_received = BoolConfig("auto_resend_failed_messages_when_announce_received", True)
     allow_auto_resending_failed_messages_with_attachments = BoolConfig("allow_auto_resending_failed_messages_with_attachments", False)
+    show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback
