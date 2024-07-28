@@ -532,9 +532,6 @@
                         <div v-if="selectedPeerChatItems.length > 0" class="flex flex-col space-y-3 p-3">
                             <div v-for="chatItem of selectedPeerChatItems" class="flex flex-col max-w-xl" :class="{ 'ml-auto pl-4 md:pl-16 items-end': chatItem.is_outbound, 'mr-auto pr-4 md:pr-16 items-start': !chatItem.is_outbound }">
 
-                                <!-- sender name -->
-                                <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 ml-2">{{ selectedPeer.name }}</div>
-
                                 <!-- message content -->
                                 <div @click="onChatItemClick(chatItem)" class="border border-gray-300 rounded-xl shadow overflow-hidden" :class="[ chatItem.lxmf_message.state === 'failed' ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
 
@@ -642,6 +639,11 @@
                                         </div>
 
                                     </div>
+                                </div>
+
+                                <!-- received timestamp -->
+                                <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 mt-0.5">
+                                    {{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}
                                 </div>
 
                             </div>
@@ -2543,18 +2545,34 @@
                 const parsedSeconds = this.parseSeconds(seconds);
 
                 if(parsedSeconds.days > 0){
-                    return parsedSeconds.days + " days ago";
+                    if(parsedSeconds.days === 1){
+                        return "1 day ago";
+                    } else {
+                        return parsedSeconds.days + " days ago";
+                    }
                 }
 
                 if(parsedSeconds.hours > 0){
-                    return parsedSeconds.hours + " hours ago";
+                    if(parsedSeconds.hours === 1){
+                        return "1 hour ago";
+                    } else {
+                        return parsedSeconds.hours + " hours ago";
+                    }
                 }
 
                 if(parsedSeconds.minutes > 0){
-                    return parsedSeconds.minutes + " minutes ago";
+                    if(parsedSeconds.minutes === 1){
+                        return "a minute ago";
+                    } else {
+                        return parsedSeconds.minutes + " minutes ago";
+                    }
                 }
 
-                return parsedSeconds.seconds + " seconds ago";
+                if(parsedSeconds.seconds <= 1){
+                    return "a second ago";
+                } else {
+                    return parsedSeconds.seconds + " seconds ago";
+                }
 
             },
             formatMinutesSeconds: function(seconds) {
