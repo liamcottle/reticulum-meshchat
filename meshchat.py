@@ -1136,6 +1136,14 @@ class ReticulumMeshChat:
                 else:
                     self.config.auto_announce_enabled.set(False)
 
+            if "auto_resend_failed_messages_when_announce_received" in config:
+                value = bool(config["auto_resend_failed_messages_when_announce_received"])
+                self.config.auto_resend_failed_messages_when_announce_received.set(value)
+
+            if "allow_auto_resending_failed_messages_with_attachments" in config:
+                value = bool(config["allow_auto_resending_failed_messages_with_attachments"])
+                self.config.allow_auto_resending_failed_messages_with_attachments.set(value)
+
             # send config to websocket clients
             await self.send_config_to_websocket_clients()
 
@@ -1280,6 +1288,8 @@ class ReticulumMeshChat:
             "auto_announce_enabled": self.config.auto_announce_enabled.get(),
             "auto_announce_interval_seconds": self.config.auto_announce_interval_seconds.get(),
             "last_announced_at": self.config.last_announced_at.get(),
+            "auto_resend_failed_messages_when_announce_received": self.config.auto_resend_failed_messages_when_announce_received.get(),
+            "allow_auto_resending_failed_messages_with_attachments": self.config.allow_auto_resending_failed_messages_with_attachments.get(),
         }
 
     # convert audio call to dict
