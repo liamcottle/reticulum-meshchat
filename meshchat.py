@@ -1701,6 +1701,12 @@ class ReticulumMeshChat:
                         file_attachments.append(LxmfFileAttachment(file_attachment["file_name"], base64.b64decode(file_attachment["file_bytes"])))
                     file_attachments_field = LxmfFileAttachmentsField(file_attachments)
 
+                # don't resend message with attachments if not allowed
+                if not self.config.allow_auto_resending_failed_messages_with_attachments.get():
+                    if image_field is not None or audio_field is not None or file_attachments_field is not None:
+                        print("Not resending failed message with attachments, as setting is disabled")
+                        continue
+
                 # send new message with failed message content
                 await self.send_message(
                     failed_message.destination_hash,
@@ -1890,6 +1896,7 @@ class Config:
     auto_announce_interval_seconds = IntConfig("auto_announce_interval_seconds", 0)
     last_announced_at = IntConfig("last_announced_at", None)
     auto_resend_failed_messages_when_announce_received = BoolConfig("auto_resend_failed_messages_when_announce_received", True)
+    allow_auto_resending_failed_messages_with_attachments = BoolConfig("allow_auto_resending_failed_messages_with_attachments", False)
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback
