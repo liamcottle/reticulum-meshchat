@@ -159,7 +159,7 @@
 
                     <!-- my identity -->
                     <div v-if="config" class="bg-white border-t">
-                        <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                        <div @click="isShowingMyIdentitySection = !isShowingMyIdentitySection" class="flex text-gray-700 p-2 cursor-pointer">
                             <div class="my-auto mr-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -167,12 +167,12 @@
                             </div>
                             <div class="my-auto">My Identity</div>
                             <div class="ml-auto">
-                                <button @click="saveIdentitySettings" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <button @click.stop="saveIdentitySettings" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                                     Save
                                 </button>
                             </div>
                         </div>
-                        <div class="divide-y text-gray-900">
+                        <div v-if="isShowingMyIdentitySection" class="divide-y text-gray-900 border-t border-gray-300">
                             <div class="p-1">
                                 <input v-model="displayName" type="text" placeholder="Display Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             </div>
@@ -189,7 +189,7 @@
 
                     <!-- auto announce -->
                     <div v-if="config" class="bg-white border-t">
-                        <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                        <div @click="isShowingAnnounceSection = !isShowingAnnounceSection" class="flex text-gray-700 p-2 cursor-pointer">
                             <div class="my-auto mr-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
@@ -197,12 +197,12 @@
                             </div>
                             <div class="my-auto">Announce</div>
                             <div class="ml-auto">
-                                <button @click="sendAnnounce" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <button @click.stop="sendAnnounce" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                                     Announce Now
                                 </button>
                             </div>
                         </div>
-                        <div class="divide-y text-gray-900">
+                        <div v-if="isShowingAnnounceSection" class="divide-y text-gray-900 border-t border-gray-300">
                             <div class="p-1">
                                 <select v-model="config.auto_announce_interval_seconds" @change="onAnnounceIntervalSecondsChange" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                     <option value="0">Disabled</option>
@@ -224,7 +224,7 @@
 
                     <!-- audio calls -->
                     <div v-if="config" class="bg-white border-t">
-                        <div class="flex border-b border-gray-300 text-gray-700 p-2">
+                        <div @click="isShowingCallsSection = !isShowingCallsSection" class="flex text-gray-700 p-2 cursor-pointer">
                             <div class="my-auto mr-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
@@ -232,7 +232,7 @@
                             </div>
                             <div class="my-auto">Calls</div>
                             <div class="ml-auto">
-                                <a href="call.html" target="_blank" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <a @click.stop href="call.html" target="_blank" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                                     <span>Open Phone</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                         <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
@@ -241,7 +241,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="divide-y text-gray-900">
+                        <div v-if="isShowingCallsSection" class="divide-y text-gray-900 border-t border-gray-300">
                             <div class="p-1 flex">
                                 <div>
                                     <div>Status</div>
@@ -261,7 +261,6 @@
                                             <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
                                             <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd" />
                                         </svg>
-
                                     </a>
 
                                     <!-- hangup all calls -->
@@ -1351,6 +1350,10 @@
 
                 isWebsocketConnected: false,
                 autoReconnectWebsocket: true,
+
+                isShowingMyIdentitySection: true,
+                isShowingAnnounceSection: true,
+                isShowingCallsSection: true,
 
                 newMessageText: "",
                 newMessageImage: null,
