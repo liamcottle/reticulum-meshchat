@@ -2276,6 +2276,9 @@
                 // update url bar
                 this.nodePagePathUrlInput = this.nodePagePath;
 
+                // update node path
+                this.getNodePath(destinationHash);
+
                 // add to previous page to history if we are not loading that previous page
                 if(addToHistory && previousNodePagePath != null && previousNodePagePath !== this.nodePagePath){
                     this.nodePagePathHistory.push(previousNodePagePath);
@@ -2319,6 +2322,9 @@
 
                     // update page content
                     this.isLoadingNodePage = false;
+
+                    // update node path
+                    this.getNodePath(destinationHash);
 
                 }, (failureReason) => {
 
@@ -2576,7 +2582,6 @@
             onNodeClick: function(node) {
                 this.selectedNode = node;
                 this.tab = "nomadnetwork";
-                this.getNodePath(node.destination_hash);
                 this.loadNodePage(node.destination_hash, "/page/index.mu");
             },
             onConversationClick: function(conversation) {
