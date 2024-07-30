@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, systemPreferences } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, shell, systemPreferences } = require('electron');
 const electronPrompt = require('electron-prompt');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -11,7 +11,7 @@ var mainWindow = null;
 var exeChildProcess = null;
 
 // allow fetching app version via ipc
-ipcMain.handle('app-version', async() => {
+ipcMain.handle('app-version', () => {
     return app.getVersion();
 });
 
@@ -36,9 +36,14 @@ ipcMain.handle('prompt', async(event, message) => {
 });
 
 // allow relaunching app via ipc
-ipcMain.handle('relaunch', async() => {
+ipcMain.handle('relaunch', () => {
     app.relaunch();
     app.exit();
+});
+
+// allow showing a file path in os file manager
+ipcMain.handle('showPathInFolder', (event, path) => {
+    shell.showItemInFolder(path);
 });
 
 function log(message) {
