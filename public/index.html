@@ -2338,6 +2338,9 @@
                     this.nodePageContent = `Failed loading page: ${failureReason}`;
                     this.isLoadingNodePage = false;
 
+                    // update node path
+                    this.getNodePath(destinationHash);
+
                 }, (progress) => {
 
                     // do nothing if callback is for a previous request
