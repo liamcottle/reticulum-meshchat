@@ -108,6 +108,7 @@ app.whenReady().then(async () => {
         const requiredArguments = [
             '--headless', // reticulum meshchat usually launches default web browser, we don't want this when using electron
             '--port', '9337', // FIXME: let system pick a random unused port?
+            // '--test-exception-message', 'Test Exception Message', // uncomment to test the crash dialog
         ];
 
         // if user didn't provide storage dir, we should provide it
@@ -122,15 +123,35 @@ app.whenReady().then(async () => {
         ]);
 
         // log stdout
+        var stdoutLines = [];
         exeChildProcess.stdout.setEncoding('utf8');
         exeChildProcess.stdout.on('data', function(data) {
+
+            // log
             log(data.toString());
+
+            // keep track of last 500 stdout lines
+            stdoutLines.push(data.toString());
+            if(stdoutLines.length > 500){
+                stdoutLines.shift();
+            }
+
         });
 
         // log stderr
+        var stderrLines = [];
         exeChildProcess.stderr.setEncoding('utf8');
         exeChildProcess.stderr.on('data', function(data) {
+
+            // log
             log(data.toString());
+
+            // keep track of last 500 stderr lines
+            stderrLines.push(data.toString());
+            if(stderrLines.length > 500){
+                stderrLines.shift();
+            }
+
         });
 
         // log errors
@@ -139,8 +160,29 @@ app.whenReady().then(async () => {
         });
 
         // quit electron app if exe dies
-        exeChildProcess.on('exit', function(code) {
+        exeChildProcess.on('exit', async function(code) {
+
+            // show crash log
+            const stdout = stdoutLines.join("");
+            const stderr = stderrLines.join("");
+            await dialog.showMessageBox(mainWindow, {
+                message: [
+                    "MeshChat Crashed!",
+                    "",
+                    `Exit Code: ${code}`,
+                    "",
+                    `----- stdout -----`,
+                    "",
+                    stdout,
+                    `----- stderr -----`,
+                    "",
+                    stderr,
+                ].join("\n"),
+            });
+
+            // quit after dismissing error dialog
             quit();
+
         });
 
     } catch(e) {

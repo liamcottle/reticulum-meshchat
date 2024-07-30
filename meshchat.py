@@ -2089,7 +2089,12 @@ def main():
     parser.add_argument("--generate-identity-base64", action='store_true', help="Outputs a randomly generated Reticulum Identity as base64 and then exits.")
     parser.add_argument("--reticulum-config-dir", type=str, help="Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)")
     parser.add_argument("--storage-dir", type=str, help="Path to a directory for storing databases and config files (default: ./storage)")
+    parser.add_argument("--test-exception-message", type=str, help="Throws an exception. Used for testing the electron error dialog")
     args = parser.parse_args()
+
+    # check if we want to test exception messages
+    if args.test_exception_message is not None:
+        raise Exception(args.test_exception_message)
 
     # util to generate reticulum identity and save to file without using rnid
     if args.generate_identity_file is not None:
