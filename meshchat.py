@@ -167,6 +167,9 @@ class ReticulumMeshChat:
     # handle receiving a new audio call
     def on_incoming_audio_call(self, audio_call: AudioCall):
         print("on_incoming_audio_call: {}".format(audio_call.link.hash.hex()))
+        asyncio.run(self.websocket_broadcast(json.dumps({
+            "type": "incoming_audio_call",
+        })))
 
     # web server has shutdown, likely ctrl+c, but if we don't do the following, the script never exits
     async def shutdown(self, app):
