@@ -38,6 +38,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 - Supports sending an announce to the network.
 - Supports setting a custom display name to send in your announce.
 - Supports viewing and searching peers discovered from announces.
+- Supports auto resending undelivered messages when an announce is received from the recipient.
 
 ## Beta Features
 
