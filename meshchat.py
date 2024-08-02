@@ -1929,7 +1929,7 @@ class Config:
     auto_resend_failed_messages_when_announce_received = BoolConfig("auto_resend_failed_messages_when_announce_received", True)
     allow_auto_resending_failed_messages_with_attachments = BoolConfig("allow_auto_resending_failed_messages_with_attachments", False)
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
-    lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 1)  # 1MB
+    lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback
