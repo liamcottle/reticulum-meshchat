@@ -119,7 +119,7 @@
 
                             <!-- info -->
                             <li>
-                                <button @click="showAboutTab" type="button" :class="[ tab === 'about' ? 'bg-blue-100 text-blue-800 group:text-blue-800 hover:bg-blue-100' : '']" class="w-full text-gray-800 hover:bg-gray-100 group flex gap-x-3 rounded-r-full p-2 mr-2 text-sm leading-6 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                                <button @click="tab = 'about'" type="button" :class="[ tab === 'about' ? 'bg-blue-100 text-blue-800 group:text-blue-800 hover:bg-blue-100' : '']" class="w-full text-gray-800 hover:bg-gray-100 group flex gap-x-3 rounded-r-full p-2 mr-2 text-sm leading-6 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                                 <span class="my-auto">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
@@ -1217,72 +1217,7 @@
                 <SettingsPage v-if="tab === 'settings'"/>
 
                 <!-- about tab -->
-                <div v-if="tab === 'about'" class="overflow-y-auto space-y-2 p-2">
-
-                    <!-- app info -->
-                    <div v-if="appInfo" class="bg-white rounded shadow">
-                        <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">App Info</div>
-                        <div class="divide-y text-gray-900">
-                            <div class="flex p-1">
-                                <div class="mr-auto">
-                                    <div>Version</div>
-                                    <div class="text-sm text-gray-700">v{{ appInfo.version }}</div>
-                                </div>
-                                <div class="mx-2 my-auto">
-                                    <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat/releases" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                                        Check for Updates
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="flex p-1">
-                                <div class="mr-auto">
-                                    <div>Reticulum Config Path</div>
-                                    <div class="text-sm text-gray-700">{{ appInfo.reticulum_config_path }}</div>
-                                </div>
-                                <div v-if="isElectron" class="mx-2 my-auto">
-                                    <button @click="showReticulumConfigFile" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                                        Show in Folder
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex p-1">
-                                <div class="mr-auto">
-                                    <div>Database Path</div>
-                                    <div class="text-sm text-gray-700">{{ appInfo.database_path }}</div>
-                                </div>
-                                <div v-if="isElectron" class="mx-2 my-auto">
-                                    <button @click="showDatabaseFile" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                                        Show in Folder
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="p-1">
-                                <div>Database File Size</div>
-                                <div class="text-sm text-gray-700">{{ formatBytes(appInfo.database_file_size) }}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- my addresses -->
-                    <div v-if="config" class="bg-white rounded shadow">
-                        <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">My Addresses</div>
-                        <div class="divide-y text-gray-900">
-                            <div class="p-1">
-                                <div>Identity Hash</div>
-                                <div class="text-sm text-gray-700">{{ config.identity_hash }}</div>
-                            </div>
-                            <div class="p-1">
-                                <div>LXMF Address</div>
-                                <div class="text-sm text-gray-700">{{ config.lxmf_address_hash }}</div>
-                            </div>
-                            <div class="p-1">
-                                <div>Audio Call Address</div>
-                                <div class="text-sm text-gray-700">{{ config.audio_call_address_hash }}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+                <AboutPage v-if="tab === 'about'"/>
 
             </div>
 
@@ -1297,10 +1232,12 @@
 
 <script>
 import SettingsPage from "./settings/SettingsPage.vue";
+import AboutPage from "./about/AboutPage.vue";
 
 export default {
     name: 'App',
     components: {
+        AboutPage,
         SettingsPage,
     },
     data() {
@@ -2839,10 +2776,6 @@ export default {
             await this.getConversations();
 
         },
-        showAboutTab() {
-            this.tab = "about";
-            this.getAppInfo();
-        },
         async enableInterface(interfaceName) {
 
             // enable interface
@@ -3084,16 +3017,6 @@ export default {
         relaunch() {
             if(window.electron){
                 window.electron.relaunch();
-            }
-        },
-        showReticulumConfigFile() {
-            if(window.electron && this.appInfo.reticulum_config_path){
-                window.electron.showPathInFolder(this.appInfo.reticulum_config_path);
-            }
-        },
-        showDatabaseFile() {
-            if(window.electron && this.appInfo.database_path){
-                window.electron.showPathInFolder(this.appInfo.database_path);
             }
         },
         isInterfaceEnabled: function(iface) {
