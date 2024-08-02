@@ -551,6 +551,20 @@ class ReticulumMeshChat:
                 "config": self.get_config_dict(),
             })
 
+        # update config
+        @routes.patch("/api/v1/config")
+        async def index(request):
+
+            # get request body as json
+            data = await request.json()
+
+            # update config
+            await self.update_config(data)
+
+            return web.json_response({
+                "config": self.get_config_dict(),
+            })
+
         # get calls
         @routes.get("/api/v1/calls")
         async def index(request):
@@ -1115,6 +1129,40 @@ class ReticulumMeshChat:
         # tell websocket clients we just announced
         await self.send_announced_to_websocket_clients()
 
+    async def update_config(self, data):
+
+        # update display name in config
+        if "display_name" in data and data["display_name"] != "":
+            self.config.display_name.set(data["display_name"])
+
+        # update auto announce interval
+        if "auto_announce_interval_seconds" in data:
+
+            # auto auto announce interval
+            auto_announce_interval_seconds = int(data["auto_announce_interval_seconds"])
+            self.config.auto_announce_interval_seconds.set(data["auto_announce_interval_seconds"])
+
+            # enable or disable auto announce based on interval
+            if auto_announce_interval_seconds > 0:
+                self.config.auto_announce_enabled.set(True)
+            else:
+                self.config.auto_announce_enabled.set(False)
+
+        if "auto_resend_failed_messages_when_announce_received" in data:
+            value = bool(data["auto_resend_failed_messages_when_announce_received"])
+            self.config.auto_resend_failed_messages_when_announce_received.set(value)
+
+        if "allow_auto_resending_failed_messages_with_attachments" in data:
+            value = bool(data["allow_auto_resending_failed_messages_with_attachments"])
+            self.config.allow_auto_resending_failed_messages_with_attachments.set(value)
+
+        if "show_suggested_community_interfaces" in data:
+            value = bool(data["show_suggested_community_interfaces"])
+            self.config.show_suggested_community_interfaces.set(value)
+
+        # send config to websocket clients
+        await self.send_config_to_websocket_clients()
+
     # handle data received from websocket client
     async def on_websocket_data_received(self, client, data):
 
@@ -1124,40 +1172,11 @@ class ReticulumMeshChat:
         # handle updating config
         if _type == "config.set":
 
-            # send lxmf message to destination
+            # get config from websocket
             config = data["config"]
 
-            # update display name in config
-            if "display_name" in config and config["display_name"] != "":
-                self.config.display_name.set(config["display_name"])
-
-            # update auto announce interval
-            if "auto_announce_interval_seconds" in config:
-
-                # auto auto announce interval
-                auto_announce_interval_seconds = int(config["auto_announce_interval_seconds"])
-                self.config.auto_announce_interval_seconds.set(config["auto_announce_interval_seconds"])
-
-                # enable or disable auto announce based on interval
-                if auto_announce_interval_seconds > 0:
-                    self.config.auto_announce_enabled.set(True)
-                else:
-                    self.config.auto_announce_enabled.set(False)
-
-            if "auto_resend_failed_messages_when_announce_received" in config:
-                value = bool(config["auto_resend_failed_messages_when_announce_received"])
-                self.config.auto_resend_failed_messages_when_announce_received.set(value)
-
-            if "allow_auto_resending_failed_messages_with_attachments" in config:
-                value = bool(config["allow_auto_resending_failed_messages_with_attachments"])
-                self.config.allow_auto_resending_failed_messages_with_attachments.set(value)
-
-            if "show_suggested_community_interfaces" in config:
-                value = bool(config["show_suggested_community_interfaces"])
-                self.config.show_suggested_community_interfaces.set(value)
-
-            # send config to websocket clients
-            await self.send_config_to_websocket_clients()
+            # update config
+            await self.update_config(config)
 
         # handle downloading a file from a nomadnet node
         elif _type == "nomadnet.file.download":
@@ -1442,7 +1461,7 @@ class ReticulumMeshChat:
             lxmf_message_state = "delivered"
         elif lxmf_message.state == LXMF.LXMessage.FAILED:
             lxmf_message_state = "failed"
-        
+
         return lxmf_message_state
 
     # convert database announce to a dictionary
@@ -2159,7 +2178,7 @@ def main():
     # init app
     reticulum_meshchat = ReticulumMeshChat(identity, args.storage_dir, args.reticulum_config_dir)
     reticulum_meshchat.run(args.host, args.port, launch_browser=args.headless is False)
-    
-    
+
+
 if __name__ == "__main__":
     main()
