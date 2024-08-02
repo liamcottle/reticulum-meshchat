@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "dist": "vite build && python setup.py build && electron-builder --publish=never"
+    "build": "vite build",
+    "dist": "npm run build && python setup.py build && electron-builder --publish=never"
   },
   "license": "MIT",
   "devDependencies": {
