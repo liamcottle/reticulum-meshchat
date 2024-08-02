@@ -278,6 +278,14 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
     - [ ] network_name
     - [ ] passphrase
 
+# Notes
+
+**LXMF Router**
+
+- By default, the LXMF router rejects inbound messages larger than 1mb.
+- LXMF clients are likely to have this default limit, and your messages will fail to send.
+- MeshChat has increased the receive limit to 10mb to allow for larger attachments.
+
 ## License
 
 MIT
