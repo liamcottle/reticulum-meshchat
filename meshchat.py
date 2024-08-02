@@ -104,6 +104,10 @@ class ReticulumMeshChat:
         self.message_router = LXMF.LXMRouter(identity=self.identity, storagepath=lxmf_router_path)
         self.message_router.PROCESSING_INTERVAL = 1
 
+        # increase limit for incoming lxmf messages (received over a resource), to allow receiving larger attachments
+        # the lxmf router expects delivery_per_transfer_limit to be provided in kilobytes, so we will do that...
+        self.message_router.delivery_per_transfer_limit = self.config.lxmf_delivery_transfer_limit_in_bytes.get() / 1000
+
         # register lxmf identity
         self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity)
 
@@ -1925,6 +1929,7 @@ class Config:
     auto_resend_failed_messages_when_announce_received = BoolConfig("auto_resend_failed_messages_when_announce_received", True)
     allow_auto_resending_failed_messages_with_attachments = BoolConfig("allow_auto_resending_failed_messages_with_attachments", False)
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
+    lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 1)  # 1MB
 
 
 # an announce handler for lxmf.delivery aspect that just forwards to a provided callback
