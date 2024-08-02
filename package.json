@@ -7,12 +7,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "dist": "python setup.py build && electron-builder --publish=never"
+    "dist": "vite build && python setup.py build && electron-builder --publish=never"
   },
   "license": "MIT",
   "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.2",
     "electron": "^30.0.8",
-    "electron-builder": "^24.6.3"
+    "electron-builder": "^24.6.3",
+    "vite": "^5.3.5"
   },
   "build": {
     "appId": "com.liamcottle.reticulummeshchat",
