@@ -1215,14 +1215,6 @@
 
                 </div>
 
-                <NetworkVisualiserPage v-if="tab === 'network-visualiser'"/>
-
-                <!-- settings tab -->
-                <SettingsPage v-if="tab === 'settings'"/>
-
-                <!-- about tab -->
-                <AboutPage v-if="tab === 'about'"/>
-
             </div>
 
         </div>
@@ -1235,18 +1227,12 @@
 </template>
 
 <script>
-import SettingsPage from "./settings/SettingsPage.vue";
-import AboutPage from "./about/AboutPage.vue";
-import NetworkVisualiserPage from "./network/NetworkVisualiserPage.vue";
 import SidebarLink from "./SidebarLink.vue";
 
 export default {
     name: 'App',
     components: {
         SidebarLink,
-        NetworkVisualiserPage,
-        AboutPage,
-        SettingsPage,
     },
     data() {
         return {
