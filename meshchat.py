@@ -1089,7 +1089,7 @@ class ReticulumMeshChat:
                     print("failed to launch web browser")
 
         # create and run web app
-        app = web.Application()
+        app = web.Application(client_max_size=1024 * 1024 * 10)  # allow uploading files up to 10mb
         app.add_routes(routes)
         app.add_routes([web.static('/', get_file_path("public/"))])  # serve anything in public folder
         app.on_shutdown.append(self.shutdown)  # need to force close websockets and stop reticulum now
