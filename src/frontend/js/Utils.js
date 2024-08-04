@@ -72,6 +72,28 @@ class Utils {
         return this.formatSeconds(secondsAgo);
     }
 
+    static formatSecondsAgo(seconds) {
+        const secondsAgo = Math.round((Date.now() / 1000) - seconds);
+        return this.formatSeconds(secondsAgo);
+    }
+
+    static formatMinutesSeconds(seconds) {
+        const parsedSeconds = this.parseSeconds(seconds);
+        const paddedMinutes = parsedSeconds.minutes.toString().padStart(2, "0");
+        const paddedSeconds = parsedSeconds.seconds.toString().padStart(2, "0");
+        return `${paddedMinutes}:${paddedSeconds}`;
+    }
+
+    static arrayBufferToBase64(arrayBuffer) {
+        var binary = '';
+        var bytes = new Uint8Array(arrayBuffer);
+        var len = bytes.byteLength;
+        for(var i = 0; i < len; i++){
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+
 }
 
 export default Utils;
