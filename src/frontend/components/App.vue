@@ -14,22 +14,6 @@
                     <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500">Liam Cottle</a></div>
                 </div>
                 <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
-                    <div class="rounded-full  hidden sm:block">
-                        <div class="flex text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
-                            <div>
-                                <svg v-if="isWebsocketConnected" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                </svg>
-                                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                </svg>
-                            </div>
-                            <div class="my-auto mx-1 text-sm">
-                                <span v-if="isWebsocketConnected">Connected</span>
-                                <span v-else>Disconnected</span>
-                            </div>
-                        </div>
-                    </div>
                     <button @click="startNewLXMFConversation" type="button" class="rounded-full">
                     <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
                         <span>
