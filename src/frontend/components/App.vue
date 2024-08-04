@@ -1194,6 +1194,7 @@ export default {
 
         this.loadComports();
 
+        // fixme: this is called by the micron-parser.js
         window.onNodePageUrlClick = (url) => {
             this.onNodePageUrlClick(url);
         };
