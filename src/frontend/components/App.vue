@@ -1674,9 +1674,9 @@ export default {
                 const fields = {};
 
                 // add file attachments
+                var fileAttachmentsTotalSize = 0;
                 if(this.newMessageFiles.length > 0){
                     const fileAttachments = [];
-                    var fileAttachmentsTotalSize = 0;
                     for(const file of this.newMessageFiles){
                         fileAttachmentsTotalSize += file.size;
                         fileAttachments.push({
@@ -1688,7 +1688,9 @@ export default {
                 }
 
                 // add image attachment
+                var imageTotalSize = 0;
                 if(this.newMessageImage){
+                    imageTotalSize = this.newMessageImage.size;
                     fields["image"] = {
                         // Reticulum sends image type as "jpg" or "png" and not "image/jpg" or "image/png"
                         "image_type": this.newMessageImage.type.replace("image/", ""),
@@ -1697,11 +1699,24 @@ export default {
                 }
 
                 // add audio attachment
+                var audioTotalSize = 0;
                 if(this.newMessageAudio){
+                    audioTotalSize = this.newMessageImage.size;
                     fields["audio"] = {
                         "audio_mode": this.newMessageAudio.audio_mode,
                         "audio_bytes": this.arrayBufferToBase64(await this.newMessageAudio.audio_blob.arrayBuffer()),
                     };
+                }
+
+                // calculate estimated message size in bytes
+                const contentSize = this.newMessageText.length;
+                const totalMessageSize = contentSize + fileAttachmentsTotalSize + imageTotalSize + audioTotalSize;
+
+                // ask user if they still want to send message if it may be rejected by sender
+                if(totalMessageSize > 1000 * 900){ // actual limit in LXMF Router is 1mb
+                    if(!confirm(`Your message exceeds 900KB (It's ${this.formatBytes(totalMessageSize)}). It may be rejected by the recipient unless they have increased their delivery limit. Do you want to try sending anyway?`)){
+                        return;
+                    }
                 }
 
                 // send message to reticulum
