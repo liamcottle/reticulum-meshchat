@@ -172,7 +172,7 @@
     <div v-if="tab === 'interfaces.add'" class="overflow-y-auto p-2 space-y-2">
 
         <!-- community interfaces -->
-        <div v-if="!isEditingInterface && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200">
+        <div v-if="!isEditingInterface && config != null && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200">
             <div class="flex p-2">
                 <div class="my-auto mr-auto">
                     <div class="font-bold">Community Interfaces</div>
@@ -346,15 +346,13 @@ import Utils from "../../js/Utils";
 
 export default {
     name: 'InterfacesPage',
-    props: {
-        config: Object,
-    },
     data() {
         return {
 
             tab: "interfaces",
             isEditingInterface: false,
 
+            config: null,
             interfaces: {},
             interfaceStats: {},
 
@@ -413,6 +411,7 @@ export default {
     },
     mounted() {
 
+        this.getConfig();
         this.loadInterfaces();
         this.updateInterfaceStats();
         this.loadComports();
@@ -431,6 +430,15 @@ export default {
         },
         onIFACSignatureClick: function(ifacSignature) {
             DialogUtils.alert(ifacSignature);
+        },
+        async getConfig() {
+            try {
+                const response = await window.axios.get(`/api/v1/config`);
+                this.config = response.data.config;
+            } catch(e) {
+                // do nothing if failed to load config
+                console.log(e);
+            }
         },
         async loadInterfaces() {
             try {

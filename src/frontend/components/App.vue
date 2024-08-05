@@ -66,14 +66,14 @@
 
                             <!-- interfaces -->
                             <li>
-                                <button @click="tab = 'interfaces'" type="button" :class="[ tab === 'interfaces' ? 'bg-blue-100 text-blue-800 group:text-blue-800 hover:bg-blue-100' : '']" class="w-full text-gray-800 hover:bg-gray-100 group flex gap-x-3 rounded-r-full p-2 mr-2 text-sm leading-6 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                                    <span class="my-auto">
+                                <SidebarLink :to="{ name: 'interfaces' }">
+                                    <template v-slot:icon>
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256">
                                             <path d="M232,112H136V88h8a16,16,0,0,0,16-16V40a16,16,0,0,0-16-16H112A16,16,0,0,0,96,40V72a16,16,0,0,0,16,16h8v24H24a8,8,0,0,0,0,16H56v32H48a16,16,0,0,0-16,16v32a16,16,0,0,0,16,16H80a16,16,0,0,0,16-16V176a16,16,0,0,0-16-16H72V128H184v32h-8a16,16,0,0,0-16,16v32a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V176a16,16,0,0,0-16-16h-8V128h32a8,8,0,0,0,0-16ZM112,40h32V72H112ZM80,208H48V176H80Zm128,0H176V176h32Z"></path>
                                         </svg>
-                                    </span>
-                                    <span class="my-auto">Interfaces</span>
-                                </button>
+                                    </template>
+                                    <template v-slot:text>Interfaces</template>
+                                </SidebarLink>
                             </li>
 
                             <!-- network -->
@@ -369,11 +369,6 @@
 
                 </template>
 
-                <!-- interfaces tab -->
-                <InterfacesPage
-                    v-if="tab === 'interfaces'"
-                    :config="config"/>
-
             </div>
 
         </div>
@@ -387,12 +382,10 @@ import MessagesSidebar from "./messages/MessagesSidebar.vue";
 import NomadNetworkSidebar from "./nomadnetwork/NomadNetworkSidebar.vue";
 import ConversationViewer from "./messages/ConversationViewer.vue";
 import DialogUtils from "../js/DialogUtils";
-import InterfacesPage from "./interfaces/InterfacesPage.vue";
 
 export default {
     name: 'App',
     components: {
-        InterfacesPage,
         ConversationViewer,
         NomadNetworkSidebar,
         MessagesSidebar,
