@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "electron-prompt": "^1.7.0",
+    "mitt": "^3.0.1",
     "vue-router": "^4.4.2"
   }
 }

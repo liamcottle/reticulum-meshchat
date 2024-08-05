@@ -124,6 +124,13 @@ class Utils {
 
     }
 
+    static decodeBase64ToUtf8String(base64) {
+        // support for decoding base64 as a utf8 string to support emojis and cyrillic characters etc
+        return decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    }
+
 }
 
 export default Utils;
