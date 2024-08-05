@@ -292,6 +292,7 @@ export default {
         // update calls list
         this.updateCallsList();
 
+        // fixme: clear interval on unmount
         // update info every few seconds
         setInterval(() => {
             this.updateCallsList();

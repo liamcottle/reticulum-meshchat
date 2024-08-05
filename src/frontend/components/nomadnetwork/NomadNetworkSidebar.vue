@@ -71,9 +71,6 @@ export default {
             nodesSearchTerm: "",
         };
     },
-    mounted() {
-
-    },
     methods: {
         onNodeClick(node) {
             this.$emit("node-click", node);

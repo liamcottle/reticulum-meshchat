@@ -8,6 +8,7 @@ import NetworkVisualiserPage from "./components/network/NetworkVisualiserPage.vu
 import InterfacesPage from "./components/interfaces/InterfacesPage.vue";
 import NomadNetworkPage from "./components/nomadnetwork/NomadNetworkPage.vue";
 import MessagesPage from "./components/messages/MessagesPage.vue";
+import AddInterfacePage from "./components/interfaces/AddInterfacePage.vue";
 
 const router = createRouter({
     history: createWebHashHistory(),
@@ -18,6 +19,8 @@ const router = createRouter({
         { path: '/nomadnetwork', name: "nomadnetwork", component: NomadNetworkPage },
         { path: '/settings', name: "settings", component: SettingsPage },
         { path: '/interfaces', name: "interfaces", component: InterfacesPage },
+        { path: '/interfaces/add', name: "interfaces.add", component: AddInterfacePage },
+        { path: '/interfaces/edit', name: "interfaces.edit", component: AddInterfacePage, props: { interface_name: String } },
         { path: '/network-visualiser', name: "network-visualiser", component: NetworkVisualiserPage },
     ],
 })

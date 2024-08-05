@@ -145,9 +145,6 @@ export default {
             peersSearchTerm: "",
         };
     },
-    mounted() {
-
-    },
     methods: {
         onConversationClick(conversation) {
             this.$emit("conversation-click", conversation);

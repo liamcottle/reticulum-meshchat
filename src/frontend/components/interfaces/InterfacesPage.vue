@@ -1,8 +1,6 @@
 <template>
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
-
-        <!-- interfaces tab -->
-        <div v-if="tab === 'interfaces'" class="overflow-y-auto p-2 space-y-2">
+        <div class="overflow-y-auto p-2 space-y-2">
 
             <!-- warning -->
             <div class="flex bg-orange-500 p-2 text-sm font-semibold leading-6 text-white rounded shadow">
@@ -17,12 +15,16 @@
                 </button>
             </div>
 
-            <button @click="showAddInterfaceForm" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                <span>Add Interface</span>
-            </button>
+            <div>
+                <RouterLink :to="{ name: 'interfaces.add' }">
+                    <button type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        <span>Add Interface</span>
+                    </button>
+                </RouterLink>
+            </div>
 
             <!-- interface list -->
             <div v-for="iface of interfacesWithStats" class="border rounded bg-white shadow overflow-hidden">
@@ -75,33 +77,33 @@
 
                             <!-- auto interface -->
                             <span v-if="iface.type === 'AutoInterface'">
-                            {{ iface.type }} • Ethernet and WiFi
-                        </span>
+                                {{ iface.type }} • Ethernet and WiFi
+                            </span>
 
                             <!-- tcp client interface -->
                             <span v-else-if="iface.type === 'TCPClientInterface'">
-                            {{ iface.type }} • {{ iface.target_host }}:{{ iface.target_port }}
-                        </span>
+                                {{ iface.type }} • {{ iface.target_host }}:{{ iface.target_port }}
+                            </span>
 
                             <!-- tcp server interface -->
                             <span v-else-if="iface.type === 'TCPServerInterface'">
-                            {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }}
-                        </span>
+                                {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }}
+                            </span>
 
                             <!-- udp interface -->
                             <span v-else-if="iface.type === 'UDPInterface'">
-                            {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }} • {{ iface.forward_ip }}:{{ iface.forward_port }}
-                        </span>
+                                {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }} • {{ iface.forward_ip }}:{{ iface.forward_port }}
+                            </span>
 
                             <!-- rnode interface details -->
                             <span v-else-if="iface.type === 'RNodeInterface'">
-                           {{ iface.type }} • {{ iface.port }} • freq={{ iface.frequency }} • bw={{ iface.bandwidth }} • power={{ iface.txpower }}dBm • sf={{ iface.spreadingfactor }} • cr={{ iface.codingrate }}
-                        </span>
+                               {{ iface.type }} • {{ iface.port }} • freq={{ iface.frequency }} • bw={{ iface.bandwidth }} • power={{ iface.txpower }}dBm • sf={{ iface.spreadingfactor }} • cr={{ iface.codingrate }}
+                            </span>
 
                             <!-- unknown interface types -->
                             <span v-else>
-                           {{ iface.type ?? 'Unknown Interface Type' }}
-                        </span>
+                               {{ iface.type ?? 'Unknown Interface Type' }}
+                            </span>
 
                         </div>
                     </div>
@@ -168,178 +170,8 @@
                 </div>
 
             </div>
-        </div>
-
-        <!-- add interface tab -->
-        <div v-if="tab === 'interfaces.add'" class="overflow-y-auto p-2 space-y-2">
-
-            <!-- community interfaces -->
-            <div v-if="!isEditingInterface && config != null && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200">
-                <div class="flex p-2">
-                    <div class="my-auto mr-auto">
-                        <div class="font-bold">Community Interfaces</div>
-                        <div class="text-sm">These TCP interfaces serve as a quick way to test Reticulum. We suggest running your own as these may not always be available.</div>
-                    </div>
-                    <div class="my-auto ml-2">
-                        <button @click="updateConfig({'show_suggested_community_interfaces': false})" type="button" class="text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="divide-y divide-gray-200">
-
-                    <div class="flex px-2 py-1">
-                        <div class="my-auto mr-auto">
-                            <div>RNS Testnet Amsterdam</div>
-                            <div class="text-xs">amsterdam.connect.reticulum.network:4965</div>
-                        </div>
-                        <div class="ml-2 my-auto">
-                            <button @click="newInterfaceName='RNS Testnet Amsterdam';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='amsterdam.connect.reticulum.network';newInterfaceTargetPort='4965'" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                                <span>Use Interface</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex px-2 py-1">
-                        <div class="my-auto mr-auto">
-                            <div>RNS Testnet BetweenTheBorders</div>
-                            <div class="text-xs">betweentheborders.com:4242</div>
-                        </div>
-                        <div class="ml-2 my-auto">
-                            <button @click="newInterfaceName='RNS Testnet BetweenTheBorders';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='betweentheborders.com';newInterfaceTargetPort='4242'" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                                <span>Use Interface</span>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- add interface form -->
-            <div class="bg-white rounded shadow divide-y divide-gray-200">
-                <div class="p-2 font-bold">
-                    <span v-if="isEditingInterface">Edit Interface</span>
-                    <span v-else>Add Interface</span>
-                </div>
-                <div class="p-2 space-y-3">
-
-                    <!-- interface name -->
-                    <div>
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Name</label>
-                        <input type="text" :disabled="isEditingInterface" placeholder="New Interface Name" v-model="newInterfaceName" class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" :class="[ isEditingInterface ? 'cursor-not-allowed bg-gray-200' : 'bg-gray-50' ]">
-                        <div class="text-xs text-gray-600">Interface names must be unique.</div>
-                    </div>
-
-                    <!-- interface type -->
-                    <div class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Type</label>
-                        <select v-model="newInterfaceType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option disabled selected>--</option>
-                            <option value="AutoInterface">AutoInterface</option>
-                            <option value="RNodeInterface">RNodeInterface</option>
-                            <option value="TCPClientInterface">TCPClientInterface</option>
-                            <option value="TCPServerInterface">TCPServerInterface</option>
-                            <option value="UDPInterface">UDPInterface</option>
-                        </select>
-                        <div class="text-xs text-gray-600">
-                            Need help? <a class="text-blue-500 underline" href="https://reticulum.network/manual/interfaces.html" target="_blank">Reticulum Docs: Configuring Interfaces</a>
-                        </div>
-                    </div>
-
-                    <!-- interface target host -->
-                    <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Target Host</label>
-                        <input type="text" placeholder="example.com" v-model="newInterfaceTargetHost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-
-                    <!-- interface target port -->
-                    <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Target Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-
-                    <!-- interface listen ip -->
-                    <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Listen IP</label>
-                        <input type="text" placeholder="0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-
-                    <!-- interface listen port -->
-                    <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Listen Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-
-                    <!-- interface forward ip -->
-                    <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Forward IP</label>
-                        <input type="text" placeholder="255.255.255.255" v-model="newInterfaceForwardIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-
-                    <!-- interface listen port -->
-                    <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Forward Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceForwardPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-
-                    <!-- interface port -->
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Port</label>
-                        <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
-                        </select>
-                    </div>
-
-                    <!-- interface frequency -->
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Frequency (Hz)</label>
-                        <input type="number" v-model="newInterfaceFrequency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                        <div class="text-xs text-gray-600">{{ formatFrequency(newInterfaceFrequency) }}</div>
-                    </div>
-
-                    <!-- interface bandwidth -->
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Bandwidth</label>
-                        <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
-                        </select>
-                    </div>
-
-                    <!-- interface txpower -->
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Transmit Power (dBm)</label>
-                        <input v-model="newInterfaceTxpower" type="number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    </div>
-
-                    <!-- interface spreading factor -->
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Spreading Factor</label>
-                        <select v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
-                        </select>
-                    </div>
-
-                    <!-- interface coding rate -->
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Coding Rate</label>
-                        <select v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">4:{{ codingrate }}</option>
-                        </select>
-                    </div>
-
-                    <!-- add button -->
-                    <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                        <span v-if="isEditingInterface">Save Interface</span>
-                        <span v-else>Add Interface</span>
-                    </button>
-
-                </div>
-            </div>
 
         </div>
-
     </div>
 </template>
 
@@ -351,74 +183,16 @@ export default {
     name: 'InterfacesPage',
     data() {
         return {
-
-            tab: "interfaces",
-            isEditingInterface: false,
-
-            config: null,
             interfaces: {},
             interfaceStats: {},
-
-            newInterfaceName: null,
-            newInterfaceType: null,
-
-            newInterfaceTargetHost: null,
-            newInterfaceTargetPort: null,
-
-            newInterfaceListenIp: null,
-            newInterfaceListenPort: null,
-
-            newInterfaceForwardIp: null,
-            newInterfaceForwardPort: null,
-
-            newInterfacePort: null,
-            newInterfaceFrequency: null,
-            newInterfaceBandwidth: null,
-            newInterfaceTxpower: null,
-            newInterfaceSpreadingFactor: null,
-            newInterfaceCodingRate: null,
-
-            RNodeInterfaceDefaults: {
-                // bandwidth in hz
-                bandwidths: [
-                    7800, // 7.8 kHz
-                    10400, // 10.4 kHz
-                    15600, // 15.6 kHz
-                    20800, // 20.8 kHz
-                    31250, // 31.25 kHz
-                    41700, // 41.7 kHz
-                    62500, // 62.5 kHz
-                    125000, // 125 kHz
-                    250000, // 250 kHz
-                    500000, // 500 kHz
-                ],
-                codingrates: [
-                    5, // 4:5
-                    6, // 4:6
-                    7, // 4:7
-                    8, // 4:8
-                ],
-                spreadingfactors: [
-                    7,
-                    8,
-                    9,
-                    10,
-                    11,
-                    12,
-                ],
-            },
-
-            comports: [],
-
         };
     },
     mounted() {
 
-        this.getConfig();
         this.loadInterfaces();
         this.updateInterfaceStats();
-        this.loadComports();
 
+        // fixme: clear interval on unmount
         // update info every few seconds
         setInterval(() => {
             this.updateInterfaceStats();
@@ -433,15 +207,6 @@ export default {
         },
         onIFACSignatureClick: function(ifacSignature) {
             DialogUtils.alert(ifacSignature);
-        },
-        async getConfig() {
-            try {
-                const response = await window.axios.get(`/api/v1/config`);
-                this.config = response.data.config;
-            } catch(e) {
-                // do nothing if failed to load config
-                console.log(e);
-            }
         },
         async loadInterfaces() {
             try {
@@ -471,45 +236,6 @@ export default {
             } catch(e) {
                 // do nothing if failed to load interfaces
             }
-        },
-        showAddInterfaceForm() {
-            this.resetAddInterfaceForm();
-            this.loadComports();
-            this.isEditingInterface = false;
-            this.tab = "interfaces.add";
-        },
-        showEditInterfaceForm() {
-            this.resetAddInterfaceForm();
-            this.loadComports();
-            this.isEditingInterface = true;
-            this.tab = "interfaces.add";
-        },
-        resetAddInterfaceForm() {
-
-            // clear add interface form
-            this.newInterfaceName = null;
-            this.newInterfaceType = null;
-
-            // tcp client interface
-            this.newInterfaceTargetHost = null;
-            this.newInterfaceTargetPort = null;
-
-            // tcp server interface & udp interface
-            this.newInterfaceListenIp = null;
-            this.newInterfaceListenPort = null;
-
-            // udp interface
-            this.newInterfaceForwardIp = null;
-            this.newInterfaceForwardPort = null;
-
-            // rnode interface
-            this.newInterfacePort = null;
-            this.newInterfaceFrequency = null;
-            this.newInterfaceBandwidth = null;
-            this.newInterfaceTxpower = null;
-            this.newInterfaceSpreadingFactor = null;
-            this.newInterfaceCodingRate = null;
-
         },
         findInterfaceStats(interfaceName) {
             const interfaceDescription = this.getInterfaceDescription(interfaceName);
@@ -593,40 +319,12 @@ export default {
 
         },
         async editInterface(interfaceName) {
-
-            // find interface
-            const iface = this.interfaces[interfaceName];
-            if(!iface){
-                return;
-            }
-
-            // go to edit interface tab
-            this.showEditInterfaceForm();
-
-            // set form values
-            this.newInterfaceName = interfaceName;
-            this.newInterfaceType = iface.type;
-
-            // tcp client interface
-            this.newInterfaceTargetHost = iface.target_host;
-            this.newInterfaceTargetPort = iface.target_port;
-
-            // tcp server interface & udp interface
-            this.newInterfaceListenIp = iface.listen_ip;
-            this.newInterfaceListenPort = iface.listen_port;
-
-            // udp interface
-            this.newInterfaceForwardIp = iface.forward_ip;
-            this.newInterfaceForwardPort = iface.forward_port;
-
-            // rnode interface
-            this.newInterfacePort = iface.port;
-            this.newInterfaceFrequency = iface.frequency;
-            this.newInterfaceBandwidth = iface.bandwidth;
-            this.newInterfaceTxpower = iface.txpower;
-            this.newInterfaceSpreadingFactor = iface.spreadingfactor;
-            this.newInterfaceCodingRate = iface.codingrate;
-
+            this.$router.push({
+                name: "interfaces.edit",
+                query: {
+                    interface_name: interfaceName,
+                },
+            });
         },
         async deleteInterface(interfaceName) {
 
@@ -654,75 +352,6 @@ export default {
         },
         formatBytes: function(bytes) {
             return Utils.formatBytes(bytes);
-        },
-        async updateConfig(config) {
-            try {
-                const response = await window.axios.patch("/api/v1/config", config);
-                this.config = response.data.config;
-            } catch(e) {
-                alert("Failed to save config!");
-                console.log(e);
-            }
-        },
-        formatFrequency: function(hz) {
-            return Utils.formatFrequency(hz);
-        },
-        async addInterface() {
-
-            try {
-
-                // add interface
-                const response = await window.axios.post(`/api/v1/reticulum/interfaces/add`, {
-                    allow_overwriting_interface: this.isEditingInterface,
-                    // required values
-                    name: this.newInterfaceName,
-                    type: this.newInterfaceType,
-                    // tcp client interface
-                    target_host: this.newInterfaceTargetHost,
-                    target_port: this.newInterfaceTargetPort,
-                    // tcp server interface & udp interface
-                    listen_ip: this.newInterfaceListenIp,
-                    listen_port: this.newInterfaceListenPort,
-                    // udp interface
-                    forward_ip: this.newInterfaceForwardIp,
-                    forward_port: this.newInterfaceForwardPort,
-                    // rnode interface
-                    port: this.newInterfacePort,
-                    frequency: this.newInterfaceFrequency,
-                    bandwidth: this.newInterfaceBandwidth,
-                    txpower: this.newInterfaceTxpower,
-                    spreadingfactor: this.newInterfaceSpreadingFactor,
-                    codingrate: this.newInterfaceCodingRate,
-                });
-
-                // reset add interface form
-                this.resetAddInterfaceForm();
-
-                // go to interfaces tab
-                this.tab = "interfaces";
-
-                // show success message
-                if(response.data.message){
-                    DialogUtils.alert(response.data.message);
-                }
-
-            } catch(e) {
-                const message = e.response?.data?.message ?? "failed to add interface";
-                DialogUtils.alert(message);
-                console.log(e);
-            }
-
-            // reload interfaces
-            await this.loadInterfaces();
-
-        },
-        async loadComports() {
-            try {
-                const response = await window.axios.get(`/api/v1/comports`);
-                this.comports = response.data.comports;
-            } catch(e) {
-                // do nothing if failed to load interfaces
-            }
         },
     },
     computed: {

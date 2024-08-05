@@ -65,6 +65,7 @@ export default {
         this.getConversations();
         this.getLxmfDeliveryAnnounces();
 
+        // fixme: clear interval on unmount
         // update info every few seconds
         setInterval(() => {
             this.getConversations();
