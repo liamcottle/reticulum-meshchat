@@ -124,50 +124,6 @@ export default {
                     }
                     break;
                 }
-                case 'lxmf.delivery': {
-
-                    // pass lxmf message to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageReceived(json.lxmf_message);
-                    }
-
-                    break;
-
-                }
-                case 'lxmf_message_created': {
-
-                    // pass lxmf message to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageCreated(json.lxmf_message);
-                    }
-
-                    break;
-
-                }
-                case 'lxmf_message_state_updated': {
-
-                    // pass lxmf message to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageUpdated(json.lxmf_message);
-                    }
-
-                    break;
-
-                }
-                case 'lxmf_message_deleted': {
-
-                    // pass lxmf message hash to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageDeleted(json.hash);
-                    }
-
-                    break;
-
-                }
             }
         },
         async getLxmfDeliveryAnnounces() {

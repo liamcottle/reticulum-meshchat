@@ -343,6 +343,7 @@
 import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
 import NotificationUtils from "../../js/NotificationUtils";
+import WebSocketConnection from "../../js/WebSocketConnection";
 
 export default {
     name: 'ConversationViewer',
@@ -388,8 +389,17 @@ export default {
 
         };
     },
+    beforeUnmount() {
+        // stop listening for websocket messages
+        WebSocketConnection.off("message", this.onWebsocketMessage);
+    },
     mounted() {
+
+        // listen for websocket messages
+        WebSocketConnection.on("message", this.onWebsocketMessage);
+
         this.reload();
+
     },
     methods: {
         close() {
@@ -400,6 +410,27 @@ export default {
             if(this.selectedPeer){
                 this.getPeerPath(this.selectedPeer.destination_hash);
                 this.loadLxmfMessages(this.selectedPeer.destination_hash);
+            }
+        },
+        async onWebsocketMessage(message) {
+            const json = JSON.parse(message.data);
+            switch(json.type){
+                case 'lxmf.delivery': {
+                    this.onLxmfMessageReceived(json.lxmf_message);
+                    break;
+                }
+                case 'lxmf_message_created': {
+                    this.onLxmfMessageCreated(json.lxmf_message);
+                    break;
+                }
+                case 'lxmf_message_state_updated': {
+                    this.onLxmfMessageUpdated(json.lxmf_message);
+                    break;
+                }
+                case 'lxmf_message_deleted': {
+                    this.onLxmfMessageDeleted(json.hash);
+                    break;
+                }
             }
         },
         onLxmfMessageReceived(lxmfMessage) {
