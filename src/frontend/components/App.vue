@@ -256,6 +256,7 @@ import DialogUtils from "../js/DialogUtils";
 import WebSocketConnection from "../js/WebSocketConnection";
 import GlobalState from "../js/GlobalState";
 import Utils from "../js/Utils";
+import GlobalEmitter from "../js/GlobalEmitter";
 
 export default {
     name: 'App',
@@ -277,15 +278,14 @@ export default {
 
         };
     },
-    created() {
-        // listen for websocket messages
-        WebSocketConnection.on("message", this.onWebsocketMessage);
-    },
-    beforeDestroy() {
+    beforeUnmount() {
         // stop listening for websocket messages
         WebSocketConnection.off("message", this.onWebsocketMessage);
     },
     mounted() {
+
+        // listen for websocket messages
+        WebSocketConnection.on("message", this.onWebsocketMessage);
 
         this.getAppInfo();
 
@@ -378,37 +378,11 @@ export default {
         },
         async startNewLXMFConversation() {
 
-            // ask for destination address
-            const destinationHash = await this.prompt("Enter LXMF Address");
-            if(!destinationHash){
-                return;
-            }
+            // go to messages route
+            await this.$router.push({ name: "messages" });
 
-            this.openLXMFConversation(destinationHash);
-
-        },
-        openLXMFConversation(destinationHash) {
-
-            // fixme: reimplement
-
-            // attempt to find existing peer so we can show their name
-            const existingPeer = this.peers[destinationHash];
-            if(existingPeer){
-                this.onPeerClick(existingPeer);
-                return;
-            }
-
-            // simple attempt to prevent garbage input
-            if(destinationHash.length !== 32){
-                DialogUtils.alert("Invalid Address");
-                return;
-            }
-
-            // we didn't find an existing peer, so just use an unknown name
-            this.onPeerClick({
-                name: "Unknown Peer",
-                destination_hash: destinationHash,
-            });
+            // emit global event handled by MessagesPage
+            GlobalEmitter.emit("compose-new-message");
 
         },
         parseSeconds: function(secondsToFormat) {
@@ -500,15 +474,6 @@ export default {
                 // ignore error hanging up call
             }
 
-        },
-        async prompt(message) {
-            if(window.electron){
-                // running inside electron, use ipc prompt
-                return await window.electron.prompt(message);
-            } else {
-                // running inside normal browser, use browser prompt
-                return window.prompt(message);
-            }
         },
     },
     computed: {

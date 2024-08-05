@@ -29,6 +29,8 @@ import MessagesSidebar from "./MessagesSidebar.vue";
 import ConversationViewer from "./ConversationViewer.vue";
 import Utils from "../../js/Utils";
 import GlobalState from "../../js/GlobalState";
+import DialogUtils from "../../js/DialogUtils";
+import GlobalEmitter from "../../js/GlobalEmitter";
 
 export default {
     name: 'MessagesPage',
@@ -48,15 +50,16 @@ export default {
 
         };
     },
-    created() {
-        // listen for websocket messages
-        WebSocketConnection.on("message", this.onWebsocketMessage);
-    },
-    beforeDestroy() {
+    beforeUnmount() {
         // stop listening for websocket messages
         WebSocketConnection.off("message", this.onWebsocketMessage);
+        GlobalEmitter.off("compose-new-message", this.onComposeNewMessage);
     },
     mounted() {
+
+        // listen for websocket messages
+        WebSocketConnection.on("message", this.onWebsocketMessage);
+        GlobalEmitter.on("compose-new-message", this.onComposeNewMessage);
 
         this.getConfig();
         this.getConversations();
@@ -69,6 +72,34 @@ export default {
 
     },
     methods: {
+        async onComposeNewMessage() {
+
+            // ask for destination address
+            const destinationHash = await DialogUtils.prompt("Enter LXMF Address");
+            if(!destinationHash){
+                return;
+            }
+
+            // attempt to find existing peer so we can show their name
+            const existingPeer = this.peers[destinationHash];
+            if(existingPeer){
+                this.onPeerClick(existingPeer);
+                return;
+            }
+
+            // simple attempt to prevent garbage input
+            if(destinationHash.length !== 32){
+                DialogUtils.alert("Invalid Address");
+                return;
+            }
+
+            // we didn't find an existing peer, so just use an unknown name
+            this.onPeerClick({
+                name: "Unknown Peer",
+                destination_hash: destinationHash,
+            });
+
+        },
         async getConfig() {
             try {
                 const response = await window.axios.get(`/api/v1/config`);

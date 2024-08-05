@@ -141,15 +141,14 @@ export default {
 
         };
     },
-    created() {
-        // listen for websocket messages
-        WebSocketConnection.on("message", this.onWebsocketMessage);
-    },
-    beforeDestroy() {
+    beforeUnmount() {
         // stop listening for websocket messages
         WebSocketConnection.off("message", this.onWebsocketMessage);
     },
     mounted() {
+
+        // listen for websocket messages
+        WebSocketConnection.on("message", this.onWebsocketMessage);
 
         // fixme: this is called by the micron-parser.js
         window.onNodePageUrlClick = (url) => {
