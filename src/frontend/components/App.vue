@@ -14,7 +14,7 @@
                     <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500">Liam Cottle</a></div>
                 </div>
                 <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
-                    <button @click="startNewLXMFConversation" type="button" class="rounded-full">
+                    <button @click="composeNewMessage" type="button" class="rounded-full">
                     <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
                         <span>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -377,7 +377,7 @@ export default {
                 "auto_announce_interval_seconds": this.config.auto_announce_interval_seconds,
             });
         },
-        async startNewLXMFConversation() {
+        async composeNewMessage() {
 
             // go to messages route
             await this.$router.push({ name: "messages" });
