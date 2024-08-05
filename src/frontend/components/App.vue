@@ -288,8 +288,6 @@ export default {
         WebSocketConnection.on("message", this.onWebsocketMessage);
 
         this.getAppInfo();
-
-        // update calls list
         this.updateCallsList();
 
         // fixme: clear interval on unmount
@@ -386,62 +384,8 @@ export default {
             GlobalEmitter.emit("compose-new-message");
 
         },
-        parseSeconds: function(secondsToFormat) {
-            secondsToFormat = Number(secondsToFormat);
-            var days = Math.floor(secondsToFormat / (3600 * 24));
-            var hours = Math.floor((secondsToFormat % (3600 * 24)) / 3600);
-            var minutes = Math.floor((secondsToFormat % 3600) / 60);
-            var seconds = Math.floor(secondsToFormat % 60);
-            return {
-                days: days,
-                hours: hours,
-                minutes: minutes,
-                seconds: seconds,
-            };
-        },
-        formatTimeAgo: function(datetimeString) {
-            const millisecondsAgo = Date.now() - new Date(datetimeString).getTime();
-            const secondsAgo = Math.round(millisecondsAgo / 1000);
-            return this.formatSeconds(secondsAgo);
-        },
         formatSecondsAgo: function(seconds) {
-            const secondsAgo = Math.round((Date.now() / 1000) - seconds);
-            return this.formatSeconds(secondsAgo);
-        },
-        formatSeconds: function(seconds) {
-
-            const parsedSeconds = this.parseSeconds(seconds);
-
-            if(parsedSeconds.days > 0){
-                if(parsedSeconds.days === 1){
-                    return "1 day ago";
-                } else {
-                    return parsedSeconds.days + " days ago";
-                }
-            }
-
-            if(parsedSeconds.hours > 0){
-                if(parsedSeconds.hours === 1){
-                    return "1 hour ago";
-                } else {
-                    return parsedSeconds.hours + " hours ago";
-                }
-            }
-
-            if(parsedSeconds.minutes > 0){
-                if(parsedSeconds.minutes === 1){
-                    return "a minute ago";
-                } else {
-                    return parsedSeconds.minutes + " minutes ago";
-                }
-            }
-
-            if(parsedSeconds.seconds <= 1){
-                return "a second ago";
-            } else {
-                return parsedSeconds.seconds + " seconds ago";
-            }
-
+            return Utils.formatSecondsAgo(seconds);
         },
         async updateCallsList() {
             try {
@@ -478,9 +422,6 @@ export default {
         },
     },
     computed: {
-        isElectron() {
-            return Utils.isElectron();
-        },
         unreadConversationsCount() {
             return GlobalState.unreadConversationsCount;
         },
