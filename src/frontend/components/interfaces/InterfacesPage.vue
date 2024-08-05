@@ -186,18 +186,21 @@ export default {
         return {
             interfaces: {},
             interfaceStats: {},
+            reloadInterval: null,
         };
+    },
+    beforeUnmount() {
+        clearInterval(this.reloadInterval);
     },
     mounted() {
 
         this.loadInterfaces();
         this.updateInterfaceStats();
 
-        // fixme: clear interval on unmount
         // update info every few seconds
-        setInterval(() => {
+        this.reloadInterval = setInterval(() => {
             this.updateInterfaceStats();
-        }, 3000);
+        }, 1000);
 
     },
     methods: {
@@ -209,13 +212,8 @@ export default {
         },
         async loadInterfaces() {
             try {
-
-                // fetch interfaces
                 const response = await window.axios.get(`/api/v1/reticulum/interfaces`);
-
-                // update ui
                 this.interfaces = response.data.interfaces;
-
             } catch(e) {
                 // do nothing if failed to load interfaces
             }
@@ -352,11 +350,11 @@ export default {
         formatBytes: function(bytes) {
             return Utils.formatBytes(bytes);
         },
-    },
-    computed: {
         isElectron() {
             return ElectronUtils.isElectron();
         },
+    },
+    computed: {
         interfacesWithStats() {
             const results = [];
             for(const [interfaceName, iface] of Object.entries(this.interfaces)){

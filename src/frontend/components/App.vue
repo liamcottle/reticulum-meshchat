@@ -267,6 +267,8 @@ export default {
     data() {
         return {
 
+            reloadInterval: null,
+
             isShowingMyIdentitySection: true,
             isShowingAnnounceSection: true,
             isShowingCallsSection: true,
@@ -280,8 +282,12 @@ export default {
         };
     },
     beforeUnmount() {
+
+        clearInterval(this.reloadInterval);
+
         // stop listening for websocket messages
         WebSocketConnection.off("message", this.onWebsocketMessage);
+
     },
     mounted() {
 
@@ -293,7 +299,7 @@ export default {
 
         // fixme: clear interval on unmount
         // update info every few seconds
-        setInterval(() => {
+        this.reloadInterval = setInterval(() => {
             this.updateCallsList();
         }, 3000);
 
