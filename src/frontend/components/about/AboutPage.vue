@@ -6,6 +6,8 @@
             <div v-if="appInfo" class="bg-white rounded shadow">
                 <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">App Info</div>
                 <div class="divide-y text-gray-900">
+
+                    <!-- version -->
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Version</div>
@@ -17,6 +19,8 @@
                             </a>
                         </div>
                     </div>
+
+                    <!-- reticulum config path -->
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Reticulum Config Path</div>
@@ -28,6 +32,8 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- database path -->
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Database Path</div>
@@ -39,10 +45,13 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- database file size -->
                     <div class="p-1">
                         <div>Database File Size</div>
                         <div class="text-sm text-gray-700">{{ formatBytes(appInfo.database_file_size) }}</div>
                     </div>
+
                 </div>
             </div>
 
@@ -71,6 +80,7 @@
 
 <script>
 import Utils from "../../js/Utils";
+import ElectronUtils from "../../js/ElectronUtils";
 export default {
     name: 'AboutPage',
     data() {
@@ -103,13 +113,15 @@ export default {
             }
         },
         showReticulumConfigFile() {
-            if(window.electron && this.appInfo.reticulum_config_path){
-                window.electron.showPathInFolder(this.appInfo.reticulum_config_path);
+            const reticulumConfigPath = this.appInfo.reticulum_config_path;
+            if(reticulumConfigPath){
+                ElectronUtils.showPathInFolder(reticulumConfigPath);
             }
         },
         showDatabaseFile() {
-            if(window.electron && this.appInfo.database_path){
-                window.electron.showPathInFolder(this.appInfo.database_path);
+            const databasePath = this.appInfo.database_path;
+            if(databasePath){
+                ElectronUtils.showPathInFolder(databasePath);
             }
         },
         formatBytes: function(bytes) {
@@ -118,7 +130,7 @@ export default {
     },
     computed: {
         isElectron() {
-            return Utils.isElectron();
+            return ElectronUtils.isElectron();
         },
     },
 }

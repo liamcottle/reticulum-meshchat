@@ -1,9 +1,5 @@
 class Utils {
 
-    static isElectron() {
-        return window.electron != null;
-    }
-
     static formatBytes(bytes) {
 
         if(bytes === 0){

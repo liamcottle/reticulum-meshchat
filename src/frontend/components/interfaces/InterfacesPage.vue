@@ -178,6 +178,7 @@
 <script>
 import DialogUtils from "../../js/DialogUtils";
 import Utils from "../../js/Utils";
+import ElectronUtils from "../../js/ElectronUtils";
 
 export default {
     name: 'InterfacesPage',
@@ -201,9 +202,7 @@ export default {
     },
     methods: {
         relaunch() {
-            if(window.electron){
-                window.electron.relaunch();
-            }
+            ElectronUtils.relaunch();
         },
         onIFACSignatureClick: function(ifacSignature) {
             DialogUtils.alert(ifacSignature);
@@ -356,7 +355,7 @@ export default {
     },
     computed: {
         isElectron() {
-            return Utils.isElectron();
+            return ElectronUtils.isElectron();
         },
         interfacesWithStats() {
             const results = [];
