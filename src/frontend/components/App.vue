@@ -257,6 +257,7 @@ import WebSocketConnection from "../js/WebSocketConnection";
 import GlobalState from "../js/GlobalState";
 import Utils from "../js/Utils";
 import GlobalEmitter from "../js/GlobalEmitter";
+import NotificationUtils from "../js/NotificationUtils";
 
 export default {
     name: 'App',
@@ -312,14 +313,7 @@ export default {
                     break;
                 }
                 case 'incoming_audio_call': {
-                    Notification.requestPermission().then((result) => {
-                        if(result === "granted"){
-                            new window.Notification("Incoming Call", {
-                                body: "Someone is calling you.",
-                                tag: "new_audio_call", // only ever show one notification at a time
-                            });
-                        }
-                    });
+                    NotificationUtils.showIncomingCallNotification();
                     break;
                 }
             }

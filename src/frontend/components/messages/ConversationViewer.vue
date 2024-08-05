@@ -342,6 +342,7 @@
 <script>
 import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
+import NotificationUtils from "../../js/NotificationUtils";
 
 export default {
     name: 'ConversationViewer',
@@ -422,14 +423,7 @@ export default {
 
             // show notification for new messages if window is not focussed
             if(!document.hasFocus()){
-                Notification.requestPermission().then((result) => {
-                    if(result === "granted"){
-                        new window.Notification("New Message", {
-                            body: "Someone sent you a message.",
-                            tag: "new_message", // only ever show one notification at a time
-                        });
-                    }
-                });
+                NotificationUtils.showNewMessageNotification();
             }
 
             // auto scroll to bottom if we want to
