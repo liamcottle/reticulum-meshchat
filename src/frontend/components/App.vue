@@ -481,9 +481,6 @@ export default {
         isElectron() {
             return Utils.isElectron();
         },
-        isMobile() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        },
         unreadConversationsCount() {
             return GlobalState.unreadConversationsCount;
         },
