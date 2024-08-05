@@ -41,15 +41,17 @@
 
                             <!-- messages -->
                             <li>
-                                <button @click="tab = 'messages'" type="button" :class="[ tab === 'messages' ? 'bg-blue-100 text-blue-800 group:text-blue-800 hover:bg-blue-100' : '']" class="w-full text-gray-800 hover:bg-gray-100 group flex gap-x-3 rounded-r-full p-2 mr-2 text-sm leading-6 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                                    <span class="my-auto">
+                                <SidebarLink :to="{ name: 'messages' }">
+                                    <template v-slot:icon>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
                                         </svg>
-                                    </span>
-                                    <span class="my-auto">Messages</span>
-                                    <span v-if="unreadConversationsCount > 0" class="my-auto ml-auto mr-2">{{ unreadConversationsCount }}</span>
-                                </button>
+                                    </template>
+                                    <template v-slot:text>
+                                        <span>Messages</span>
+                                        <span v-if="unreadConversationsCount > 0" class="ml-auto mr-2">{{ unreadConversationsCount }}</span>
+                                    </template>
+                                </SidebarLink>
                             </li>
 
                             <!-- nomad network -->
@@ -243,30 +245,6 @@
 
             <RouterView/>
 
-<!--            &lt;!&ndash; messages sidebar &ndash;&gt;-->
-<!--            <MessagesSidebar-->
-<!--                v-if="tab === 'messages'"-->
-<!--                :conversations="conversations"-->
-<!--                :peers="peers"-->
-<!--                :selected-destination-hash="selectedPeer?.destination_hash"-->
-<!--                @conversation-click="onConversationClick"-->
-<!--                @peer-click="onPeerClick"/>-->
-
-<!--            &lt;!&ndash; main view &ndash;&gt;-->
-<!--            <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">-->
-
-<!--                &lt;!&ndash; messages tab &ndash;&gt;-->
-<!--                <ConversationViewer-->
-<!--                    v-if="tab === 'messages'"-->
-<!--                    ref="conversation-viewer"-->
-<!--                    :my-lxmf-address-hash="config?.lxmf_address_hash"-->
-<!--                    :selected-peer="selectedPeer"-->
-<!--                    :conversations="conversations"-->
-<!--                    @close="selectedPeer = null"-->
-<!--                    @reload-conversations="getConversations"/>-->
-
-<!--            </div>-->
-
         </div>
 
     </div>
@@ -274,17 +252,13 @@
 
 <script>
 import SidebarLink from "./SidebarLink.vue";
-import MessagesSidebar from "./messages/MessagesSidebar.vue";
-import ConversationViewer from "./messages/ConversationViewer.vue";
 import DialogUtils from "../js/DialogUtils";
-import Utils from "../js/Utils";
 import WebSocketConnection from "../js/WebSocketConnection";
+import GlobalState from "../js/GlobalState";
 
 export default {
     name: 'App',
     components: {
-        ConversationViewer,
-        MessagesSidebar,
         SidebarLink,
     },
     data() {
@@ -299,14 +273,6 @@ export default {
             appInfo: null,
 
             audioCalls: [],
-            lxmfDeliveryAnnounces: [],
-
-            tab: "messages",
-
-            peers: {},
-            selectedPeer: null,
-
-            conversations: [],
 
         };
     },
@@ -321,13 +287,6 @@ export default {
     mounted() {
 
         this.getAppInfo();
-        this.getLxmfDeliveryAnnounces();
-        this.getConversations();
-
-        // fixme: this is called by the micron-parser.js
-        window.onNodePageUrlClick = (url) => {
-            this.onNodePageUrlClick(url);
-        };
 
         // update calls list
         this.updateCallsList();
@@ -335,7 +294,6 @@ export default {
         // update info every few seconds
         setInterval(() => {
             this.updateCallsList();
-            this.getConversations();
         }, 3000);
 
     },
@@ -346,13 +304,6 @@ export default {
                 case 'config': {
                     this.config = json.config;
                     this.displayName = json.config.display_name;
-                    break;
-                }
-                case 'announce': {
-                    const aspect = json.announce.aspect;
-                    if(aspect === "lxmf.delivery"){
-                        this.updatePeerFromAnnounce(json.announce);
-                    }
                     break;
                 }
                 case 'announced': {
@@ -370,50 +321,6 @@ export default {
                         }
                     });
                     break;
-                }
-                case 'lxmf.delivery': {
-
-                    // pass lxmf message to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageReceived(json.lxmf_message);
-                    }
-
-                    break;
-
-                }
-                case 'lxmf_message_created': {
-
-                    // pass lxmf message to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageCreated(json.lxmf_message);
-                    }
-
-                    break;
-
-                }
-                case 'lxmf_message_state_updated': {
-
-                    // pass lxmf message to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageUpdated(json.lxmf_message);
-                    }
-
-                    break;
-
-                }
-                case 'lxmf_message_deleted': {
-
-                    // pass lxmf message hash to conversation viewer
-                    const conversationViewer = this.$refs["conversation-viewer"];
-                    if(conversationViewer){
-                        conversationViewer.onLxmfMessageDeleted(json.hash);
-                    }
-
-                    break;
-
                 }
             }
         },
@@ -481,6 +388,8 @@ export default {
         },
         openLXMFConversation(destinationHash) {
 
+            // fixme: reimplement
+
             // attempt to find existing peer so we can show their name
             const existingPeer = this.peers[destinationHash];
             if(existingPeer){
@@ -499,95 +408,6 @@ export default {
                 name: "Unknown Peer",
                 destination_hash: destinationHash,
             });
-
-        },
-        async getLxmfDeliveryAnnounces() {
-            try {
-
-                // fetch announces for "lxmf.delivery" aspect
-                const response = await window.axios.get(`/api/v1/announces`, {
-                    params: {
-                        aspect: "lxmf.delivery",
-                    },
-                });
-
-                // update ui
-                const lxmfDeliveryAnnounces = response.data.announces;
-                for(const lxmfDeliveryAnnounce of lxmfDeliveryAnnounces){
-                    this.updatePeerFromAnnounce(lxmfDeliveryAnnounce);
-                }
-
-            } catch(e) {
-                // do nothing if failed to load announces
-                console.log(e);
-            }
-        },
-        async getConversations() {
-            try {
-                const response = await window.axios.get(`/api/v1/lxmf/conversations`);
-                this.conversations = response.data.conversations;
-            } catch(e) {
-                // do nothing if failed to load conversations
-                console.log(e);
-            }
-        },
-        getPeerNameFromAppData: function(appData) {
-            try {
-                // app data should be peer name, and our server provides it base64 encoded
-                return Utils.decodeBase64ToUtf8String(appData);
-            } catch(e){
-                return "Anonymous Peer";
-            }
-        },
-        updatePeerFromAnnounce: function(announce) {
-            this.peers[announce.destination_hash] = {
-                ...announce,
-                // helper property for easily grabbing peer name from app data
-                name: this.getPeerNameFromAppData(announce.app_data),
-            };
-        },
-        downloadFileFromBase64: async function(fileName, fileBytesBase64) {
-
-            // create blob from base64 encoded file bytes
-            const byteCharacters = atob(fileBytesBase64);
-            const byteNumbers = new Array(byteCharacters.length);
-            for(let i = 0; i < byteCharacters.length; i++){
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray]);
-
-            // create object url for blob
-            const objectUrl = URL.createObjectURL(blob);
-
-            // create link element to download blob
-            const link = document.createElement('a');
-            link.href = objectUrl;
-            link.download = fileName;
-            link.style.display = "none";
-            document.body.append(link);
-
-            // click link to download file in browser
-            link.click();
-
-            // link element is no longer needed
-            link.remove();
-
-            // revoke object url to clear memory
-            setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
-
-        },
-        onPeerClick: function(peer) {
-            this.selectedPeer = peer;
-            this.tab = "messages";
-        },
-        onConversationClick: function(conversation) {
-
-            // object must stay compatible with format of peers
-            this.onPeerClick(conversation);
-
-            // mark conversation as read
-            this.$refs["conversation-viewer"].markConversationAsRead(conversation);
 
         },
         parseSeconds: function(secondsToFormat) {
@@ -647,25 +467,6 @@ export default {
             }
 
         },
-
-        formatBytes: function(bytes) {
-
-            if(bytes === 0){
-                return '0 Bytes';
-            }
-
-            const k = 1024;
-            const decimals = 0;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
-
-        },
-        onDestinationPathClick: function(path) {
-            DialogUtils.alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
-        },
         async updateCallsList() {
             try {
 
@@ -717,9 +518,7 @@ export default {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         },
         unreadConversationsCount() {
-            return this.conversations.filter((conversation) => {
-                return conversation.is_unread;
-            }).length;
+            return GlobalState.unreadConversationsCount;
         },
         activeAudioCalls() {
             return this.audioCalls.filter(function(audioCall) {

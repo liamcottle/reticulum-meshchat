@@ -4,7 +4,7 @@
             <span class="my-auto">
                 <slot name="icon"></slot>
             </span>
-            <span class="my-auto">
+            <span class="my-auto flex w-full">
                 <slot name="text"></slot>
             </span>
         </a>

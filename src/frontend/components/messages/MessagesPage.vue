@@ -1,0 +1,210 @@
+<template>
+
+    <MessagesSidebar
+        :conversations="conversations"
+        :peers="peers"
+        :selected-destination-hash="selectedPeer?.destination_hash"
+        @conversation-click="onConversationClick"
+        @peer-click="onPeerClick"/>
+
+    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
+
+        <!-- messages tab -->
+        <ConversationViewer
+            ref="conversation-viewer"
+            :my-lxmf-address-hash="config?.lxmf_address_hash"
+            :selected-peer="selectedPeer"
+            :conversations="conversations"
+            @close="selectedPeer = null"
+            @reload-conversations="getConversations"/>
+
+    </div>
+
+</template>
+
+<script>
+
+import WebSocketConnection from "../../js/WebSocketConnection";
+import MessagesSidebar from "./MessagesSidebar.vue";
+import ConversationViewer from "./ConversationViewer.vue";
+import Utils from "../../js/Utils";
+import GlobalState from "../../js/GlobalState";
+
+export default {
+    name: 'MessagesPage',
+    components: {
+        ConversationViewer,
+        MessagesSidebar,
+    },
+    data() {
+        return {
+
+            config: null,
+            peers: {},
+            selectedPeer: null,
+
+            conversations: [],
+            lxmfDeliveryAnnounces: [],
+
+        };
+    },
+    created() {
+        // listen for websocket messages
+        WebSocketConnection.on("message", this.onWebsocketMessage);
+    },
+    beforeDestroy() {
+        // stop listening for websocket messages
+        WebSocketConnection.off("message", this.onWebsocketMessage);
+    },
+    mounted() {
+
+        this.getConfig();
+        this.getConversations();
+        this.getLxmfDeliveryAnnounces();
+
+        // update info every few seconds
+        setInterval(() => {
+            this.getConversations();
+        }, 3000);
+
+    },
+    methods: {
+        async getConfig() {
+            try {
+                const response = await window.axios.get(`/api/v1/config`);
+                this.config = response.data.config;
+            } catch(e) {
+                // do nothing if failed to load config
+                console.log(e);
+            }
+        },
+        async onWebsocketMessage(message) {
+            const json = JSON.parse(message.data);
+            switch(json.type){
+                case 'config': {
+                    this.config = json.config;
+                    break;
+                }
+                case 'announce': {
+                    const aspect = json.announce.aspect;
+                    if(aspect === "lxmf.delivery"){
+                        this.updatePeerFromAnnounce(json.announce);
+                    }
+                    break;
+                }
+                case 'lxmf.delivery': {
+
+                    // pass lxmf message to conversation viewer
+                    const conversationViewer = this.$refs["conversation-viewer"];
+                    if(conversationViewer){
+                        conversationViewer.onLxmfMessageReceived(json.lxmf_message);
+                    }
+
+                    break;
+
+                }
+                case 'lxmf_message_created': {
+
+                    // pass lxmf message to conversation viewer
+                    const conversationViewer = this.$refs["conversation-viewer"];
+                    if(conversationViewer){
+                        conversationViewer.onLxmfMessageCreated(json.lxmf_message);
+                    }
+
+                    break;
+
+                }
+                case 'lxmf_message_state_updated': {
+
+                    // pass lxmf message to conversation viewer
+                    const conversationViewer = this.$refs["conversation-viewer"];
+                    if(conversationViewer){
+                        conversationViewer.onLxmfMessageUpdated(json.lxmf_message);
+                    }
+
+                    break;
+
+                }
+                case 'lxmf_message_deleted': {
+
+                    // pass lxmf message hash to conversation viewer
+                    const conversationViewer = this.$refs["conversation-viewer"];
+                    if(conversationViewer){
+                        conversationViewer.onLxmfMessageDeleted(json.hash);
+                    }
+
+                    break;
+
+                }
+            }
+        },
+        async getLxmfDeliveryAnnounces() {
+            try {
+
+                // fetch announces for "lxmf.delivery" aspect
+                const response = await window.axios.get(`/api/v1/announces`, {
+                    params: {
+                        aspect: "lxmf.delivery",
+                    },
+                });
+
+                // update ui
+                const lxmfDeliveryAnnounces = response.data.announces;
+                for(const lxmfDeliveryAnnounce of lxmfDeliveryAnnounces){
+                    this.updatePeerFromAnnounce(lxmfDeliveryAnnounce);
+                }
+
+            } catch(e) {
+                // do nothing if failed to load announces
+                console.log(e);
+            }
+        },
+        async getConversations() {
+            try {
+                const response = await window.axios.get(`/api/v1/lxmf/conversations`);
+                this.conversations = response.data.conversations;
+            } catch(e) {
+                // do nothing if failed to load conversations
+                console.log(e);
+            }
+        },
+        getPeerNameFromAppData: function(appData) {
+            try {
+                // app data should be peer name, and our server provides it base64 encoded
+                return Utils.decodeBase64ToUtf8String(appData);
+            } catch(e){
+                return "Anonymous Peer";
+            }
+        },
+        updatePeerFromAnnounce: function(announce) {
+            this.peers[announce.destination_hash] = {
+                ...announce,
+                // helper property for easily grabbing peer name from app data
+                name: this.getPeerNameFromAppData(announce.app_data),
+            };
+        },
+        onPeerClick: function(peer) {
+            this.selectedPeer = peer;
+        },
+        onConversationClick: function(conversation) {
+
+            // object must stay compatible with format of peers
+            this.onPeerClick(conversation);
+
+            // mark conversation as read
+            this.$refs["conversation-viewer"].markConversationAsRead(conversation);
+
+        },
+    },
+    watch: {
+        conversations() {
+
+            // update global state
+            GlobalState.unreadConversationsCount = this.conversations.filter((conversation) => {
+                return conversation.is_unread;
+            }).length;
+
+        },
+    },
+}
+</script>

@@ -150,7 +150,14 @@ export default {
         WebSocketConnection.off("message", this.onWebsocketMessage);
     },
     mounted() {
+
+        // fixme: this is called by the micron-parser.js
+        window.onNodePageUrlClick = (url) => {
+            this.onNodePageUrlClick(url);
+        };
+
         this.getNomadnetworkNodeAnnounces();
+
     },
     methods: {
         async onWebsocketMessage(message) {

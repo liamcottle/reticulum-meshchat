@@ -7,12 +7,14 @@ import SettingsPage from "./components/settings/SettingsPage.vue";
 import NetworkVisualiserPage from "./components/network/NetworkVisualiserPage.vue";
 import InterfacesPage from "./components/interfaces/InterfacesPage.vue";
 import NomadNetworkPage from "./components/nomadnetwork/NomadNetworkPage.vue";
+import MessagesPage from "./components/messages/MessagesPage.vue";
 
 const router = createRouter({
     history: createWebHashHistory(),
     routes: [
         { path: '/' },
         { path: '/about', name: "about", component: AboutPage },
+        { path: '/messages', name: "messages", component: MessagesPage },
         { path: '/nomadnetwork', name: "nomadnetwork", component: NomadNetworkPage },
         { path: '/settings', name: "settings", component: SettingsPage },
         { path: '/interfaces', name: "interfaces", component: InterfacesPage },
