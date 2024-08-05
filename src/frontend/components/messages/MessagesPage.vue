@@ -41,6 +41,8 @@ export default {
     data() {
         return {
 
+            reloadInterval: null,
+
             config: null,
             peers: {},
             selectedPeer: null,
@@ -51,9 +53,13 @@ export default {
         };
     },
     beforeUnmount() {
+
+        clearInterval(this.reloadInterval);
+
         // stop listening for websocket messages
         WebSocketConnection.off("message", this.onWebsocketMessage);
         GlobalEmitter.off("compose-new-message", this.onComposeNewMessage);
+
     },
     mounted() {
 
@@ -65,9 +71,8 @@ export default {
         this.getConversations();
         this.getLxmfDeliveryAnnounces();
 
-        // fixme: clear interval on unmount
         // update info every few seconds
-        setInterval(() => {
+        this.reloadInterval = setInterval(() => {
             this.getConversations();
         }, 3000);
 
