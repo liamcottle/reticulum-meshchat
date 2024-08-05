@@ -118,7 +118,7 @@ export default {
     },
     computed: {
         isElectron() {
-            return window.electron != null;
+            return Utils.isElectron();
         },
     },
 }

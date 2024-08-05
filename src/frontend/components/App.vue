@@ -255,6 +255,7 @@ import SidebarLink from "./SidebarLink.vue";
 import DialogUtils from "../js/DialogUtils";
 import WebSocketConnection from "../js/WebSocketConnection";
 import GlobalState from "../js/GlobalState";
+import Utils from "../js/Utils";
 
 export default {
     name: 'App',
@@ -512,7 +513,7 @@ export default {
     },
     computed: {
         isElectron() {
-            return window.electron != null;
+            return Utils.isElectron();
         },
         isMobile() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
