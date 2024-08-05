@@ -94,6 +94,36 @@ class Utils {
         return window.btoa(binary);
     }
 
+    static formatBitsPerSecond(bits) {
+
+        if(bits === 0){
+            return '0 bps';
+        }
+
+        const k = 1000; // Use 1000 instead of 1024 for network speeds
+        const decimals = 0;
+        const sizes = ['bps', 'kbps', 'Mbps', 'Gbps', 'Tbps', 'Pbps', 'Ebps', 'Zbps', 'Ybps'];
+
+        const i = Math.floor(Math.log(bits) / Math.log(k));
+
+        return parseFloat((bits / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+
+    }
+
+    static formatFrequency(hz) {
+
+        if(hz === 0 || hz == null){
+            return '0 Hz';
+        }
+
+        const k = 1000;
+        const sizes = ['Hz', 'kHz', 'MHz', 'GHz', 'THz', 'PHz', 'EHz', 'ZHz', 'YHz'];
+        const i = Math.floor(Math.log(hz) / Math.log(k));
+
+        return parseFloat((hz / Math.pow(k, i))) + ' ' + sizes[i];
+
+    }
+
 }
 
 export default Utils;
