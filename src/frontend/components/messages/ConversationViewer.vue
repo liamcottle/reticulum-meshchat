@@ -54,9 +54,11 @@
         </div>
 
         <!-- chat items -->
-        <div id="messages" class="h-full overflow-y-scroll">
-            <div v-if="selectedPeerChatItems.length > 0" class="flex flex-col space-y-3 p-3">
-                <div v-for="chatItem of selectedPeerChatItems" class="flex flex-col max-w-xl" :class="{ 'ml-auto pl-4 md:pl-16 items-end': chatItem.is_outbound, 'mr-auto pr-4 md:pr-16 items-start': !chatItem.is_outbound }">
+        <div @scroll="onMessagesScroll" id="messages" class="h-full overflow-y-scroll">
+
+            <div v-if="selectedPeerChatItems.length > 0" class="flex flex-col flex-col-reverse p-3">
+
+                <div v-for="chatItem of selectedPeerChatItemsReversed" class="flex flex-col max-w-xl mt-3" :class="{ 'ml-auto pl-4 md:pl-16 items-end': chatItem.is_outbound, 'mr-auto pr-4 md:pr-16 items-start': !chatItem.is_outbound }">
 
                     <!-- message content -->
                     <div @click="onChatItemClick(chatItem)" class="border border-gray-300 rounded-xl shadow overflow-hidden" :class="[ chatItem.lxmf_message.state === 'failed' ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
@@ -173,7 +175,17 @@
                     </div>
 
                 </div>
+
+                <!-- load previous -->
+                <button v-show="!isLoadingPrevious && hasMorePrevious" id="load-previous" @click="loadPrevious" type="button" class="flex space-x-2 mx-auto bg-gray-200 px-3 py-1 hover:bg-gray-300 rounded-full shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m15 11.25-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <span>Load Previous</span>
+                </button>
+
             </div>
+
         </div>
 
         <!-- send message -->
@@ -360,6 +372,10 @@ export default {
             lxmfMessagesRequestSequence: 0,
             chatItems: [],
 
+            isLoadingPrevious: false,
+            loadPreviousObserver: null,
+            hasMorePrevious: true,
+
             newMessageText: "",
             newMessageImage: null,
             newMessageImageUrl: null,
@@ -398,19 +414,112 @@ export default {
         // listen for websocket messages
         WebSocketConnection.on("message", this.onWebsocketMessage);
 
-        this.reload();
+        // setup intersection observer
+        this.loadPreviousObserver = new IntersectionObserver((entries) => {
+            const loadMoreElement = entries[0];
+            if(loadMoreElement && loadMoreElement.isIntersecting){
+                this.loadPrevious();
+            }
+        });
 
     },
     methods: {
         close() {
             this.$emit("close");
         },
-        reload() {
+        onMessagesScroll(event) {
+
+            // check if messages is scrolled to bottom
+            const element = event.target;
+            const isAtBottom = element.scrollTop === (element.scrollHeight - element.offsetHeight);
+
+            // we want to auto scroll if user is at bottom of messages list
+            this.autoScrollOnNewMessage = isAtBottom;
+
+        },
+        async initialLoad() {
+
+            // reset
             this.chatItems = [];
-            if(this.selectedPeer){
-                this.getPeerPath(this.selectedPeer.destination_hash);
-                this.loadLxmfMessages(this.selectedPeer.destination_hash);
+            this.hasMorePrevious = true;
+            if(!this.selectedPeer){
+                return;
             }
+
+            this.getPeerPath(this.selectedPeer.destination_hash);
+
+            // load 1 page of previous messages
+            await this.loadPrevious();
+
+            // scroll to bottom
+            this.scrollMessagesToBottom();
+
+            // setup auto loading previous
+            this.loadPreviousObserver.disconnect();
+            this.loadPreviousObserver.observe(document.querySelector("#load-previous"));
+
+        },
+        async loadPrevious() {
+
+            // do nothing if already loading
+            if(this.isLoadingPrevious){
+                return;
+            }
+
+            this.isLoadingPrevious = true;
+
+            // when scrolled to top, scroll down a bit to prevent the browser infinitely loading all history...
+            const container = document.getElementById("messages");
+            if(container && container.scrollTop === 0){
+                container.scrollTop = 50;
+            }
+
+            try {
+
+                const seq = ++this.lxmfMessagesRequestSequence;
+
+                // fetch lxmf messages from "us to destination" and from "destination to us"
+                const response = await window.axios.get(`/api/v1/lxmf-messages/conversation/${this.selectedPeer.destination_hash}`, {
+                    params: {
+                        count: 30,
+                        order: "desc",
+                        after_id: this.oldestMessageId,
+                    },
+                });
+
+                // do nothing if response is for a previous request
+                if(seq !== this.lxmfMessagesRequestSequence){
+                    console.log("ignoring response for previous lxmf messages request")
+                    return;
+                }
+
+                // convert lxmf messages to chat items
+                const chatItems = [];
+                const lxmfMessages = response.data.lxmf_messages;
+                for(const lxmfMessage of lxmfMessages){
+                    chatItems.push({
+                        "type": "lxmf_message",
+                        "is_outbound": this.myLxmfAddressHash === lxmfMessage.source_hash,
+                        "lxmf_message": lxmfMessage,
+                    });
+                }
+
+                // add messages to start of existing messages
+                for(const chatItem of chatItems){
+                    this.chatItems.unshift(chatItem);
+                }
+
+                // no more previous to load if previous list is empty
+                if(chatItems.length === 0){
+                    this.hasMorePrevious = false;
+                }
+
+            } catch(e) {
+                // do nothing
+            } finally {
+                this.isLoadingPrevious = false;
+            }
+
         },
         async onWebsocketMessage(message) {
             const json = JSON.parse(message.data);
@@ -519,46 +628,16 @@ export default {
         onDestinationPathClick(path) {
             DialogUtils.alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
         },
-        async loadLxmfMessages(destinationHash) {
-            const seq = ++this.lxmfMessagesRequestSequence;
-            try {
-
-                // fetch lxmf messages from "us to destination" and from "destination to us"
-                const response = await window.axios.get(`/api/v1/lxmf-messages/conversation/${destinationHash}`);
-
-                // do nothing if response is for a previous request
-                if(seq !== this.lxmfMessagesRequestSequence){
-                    console.log("ignoring response for previous lxmf messages request")
-                    return;
-                }
-
-                // convert lxmf messages to chat items
-                const chatItems = [];
-                const lxmfMessages = response.data.lxmf_messages;
-                for(const lxmfMessage of lxmfMessages){
-                    chatItems.push({
-                        "type": "lxmf_message",
-                        "is_outbound": this.myLxmfAddressHash === lxmfMessage.source_hash,
-                        "lxmf_message": lxmfMessage,
-                    });
-                }
-
-                // update ui
-                this.chatItems = chatItems;
-
-                // scroll to bottom
-                this.scrollMessagesToBottom();
-
-            } catch(e) {
-                // do nothing if failed to load messages
-            }
-        },
         scrollMessagesToBottom: function() {
-            Vue.nextTick(() => {
-                const container = document.getElementById("messages");
-                if(container){
-                    container.scrollTop = container.scrollHeight;
-                }
+            // next tick waits for the ui to have the new elements added
+            this.$nextTick(() => {
+                // set timeout with zero millis seems to fix issue where it doesn't scroll all the way to the bottom...
+                setTimeout(() => {
+                    const container = document.getElementById("messages");
+                    if(container){
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }, 0);
             });
         },
         isLxmfMessageInUi: function(hash) {
@@ -585,7 +664,7 @@ export default {
             }
 
             // reload conversation
-            await this.loadLxmfMessages(this.selectedPeer.destination_hash);
+            await this.initialLoad();
 
             // reload conversations
             this.$emit("reload-conversations");
@@ -1114,10 +1193,23 @@ export default {
             return [];
 
         },
+        selectedPeerChatItemsReversed() {
+            // ensure a copy of the array is returned in reverse order
+            return this.selectedPeerChatItems.map((message) => message).reverse();
+        },
+        oldestMessageId() {
+
+            if(this.selectedPeerChatItems.length > 0){
+                return this.selectedPeerChatItems[0].lxmf_message.id;
+            }
+
+            return null;
+
+        },
     },
     watch: {
         selectedPeer() {
-            this.reload();
+            this.initialLoad();
         },
         async selectedPeerChatItems() {
 
