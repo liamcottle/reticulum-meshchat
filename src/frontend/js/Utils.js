@@ -131,6 +131,12 @@ class Utils {
         }).join(''));
     }
 
+    static isInterfaceEnabled(iface) {
+        const rawValue = iface.enabled ?? iface.interface_enabled;
+        const value = rawValue?.toLowerCase();
+        return value === "on" || value === "yes" || value === "true";
+    }
+
 }
 
 export default Utils;
