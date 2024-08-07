@@ -254,6 +254,31 @@ npm run dist
 
 Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
+## Local Development
+
+I normally run the following commands to work on the project locally.
+
+**Install dependencies**
+
+```
+pip install -r requirements.txt
+npm install
+```
+
+**Build Vite App**
+
+```
+npm run build
+```
+
+**Run MeshChat Server**
+
+```
+python3 meshchat.py --headless
+```
+
+I build the vite app everytime without hot reload, since MeshChat expects everything over its own port, not the vite server port. I will attempt to fix this in the future.
+
 ## TODO
 
 - [ ] contact management to save identity, addresses, custom name and notes
