@@ -74,7 +74,7 @@ export default {
         // update info every few seconds
         this.reloadInterval = setInterval(() => {
             this.getConversations();
-        }, 3000);
+        }, 5000);
 
     },
     methods: {
