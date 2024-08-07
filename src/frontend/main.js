@@ -15,13 +15,13 @@ const router = createRouter({
     routes: [
         { path: '/', redirect: '/messages' },
         { path: '/about', name: "about", component: AboutPage },
-        { path: '/messages', name: "messages", component: MessagesPage },
-        { path: '/nomadnetwork', name: "nomadnetwork", component: NomadNetworkPage },
-        { path: '/settings', name: "settings", component: SettingsPage },
         { path: '/interfaces', name: "interfaces", component: InterfacesPage },
         { path: '/interfaces/add', name: "interfaces.add", component: AddInterfacePage },
         { path: '/interfaces/edit', name: "interfaces.edit", component: AddInterfacePage, props: { interface_name: String } },
+        { path: '/messages', name: "messages", component: MessagesPage },
         { path: '/network-visualiser', name: "network-visualiser", component: NetworkVisualiserPage },
+        { path: '/nomadnetwork', name: "nomadnetwork", component: NomadNetworkPage },
+        { path: '/settings', name: "settings", component: SettingsPage },
     ],
 })
 
