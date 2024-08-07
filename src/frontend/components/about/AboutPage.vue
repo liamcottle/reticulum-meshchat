@@ -127,6 +127,8 @@ export default {
         formatBytes: function(bytes) {
             return Utils.formatBytes(bytes);
         },
+    },
+    computed: {
         isElectron() {
             return ElectronUtils.isElectron();
         },

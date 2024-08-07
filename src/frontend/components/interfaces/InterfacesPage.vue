@@ -350,11 +350,11 @@ export default {
         formatBytes: function(bytes) {
             return Utils.formatBytes(bytes);
         },
+    },
+    computed: {
         isElectron() {
             return ElectronUtils.isElectron();
         },
-    },
-    computed: {
         interfacesWithStats() {
             const results = [];
             for(const [interfaceName, iface] of Object.entries(this.interfaces)){
