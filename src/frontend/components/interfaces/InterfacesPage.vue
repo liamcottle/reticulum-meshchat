@@ -27,7 +27,6 @@
             </div>
 
             <!-- enabled interfaces -->
-            <div v-if="enabledInterfaces.length > 0 && disabledInterfaces.length > 0" class="font-semibold">Enabled Interfaces</div>
             <Interface
                 v-for="iface of enabledInterfaces"
                 :iface="iface"
@@ -37,7 +36,7 @@
                 @delete="deleteInterface(iface._name)"/>
 
             <!-- disabled interfaces -->
-            <div v-if="enabledInterfaces.length > 0 && disabledInterfaces.length > 0"class="font-semibold">Disabled Interfaces</div>
+            <div v-if="disabledInterfaces.length > 0" class="font-semibold">Disabled Interfaces</div>
             <Interface
                 v-for="iface of disabledInterfaces"
                 :iface="iface"
