@@ -129,6 +129,11 @@ export default {
                     }
                     break;
                 }
+                case 'lxmf.delivery': {
+                    // reload conversations when a new message is received
+                    await this.getConversations();
+                    break;
+                }
             }
         },
         async getLxmfDeliveryAnnounces() {
