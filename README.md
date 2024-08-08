@@ -128,7 +128,7 @@ Remember, in order to connect with other peers or nodes, they must announce on t
 
 ## How to use it?
 
-If you don't want to, or can't [download](#download) a standalone application, you will need to install [Python 3](https://www.python.org/downloads/), clone the source code from this repo, install dependencies and then run `meshchat.py`.
+If you don't want to, or can't [download](#download) a standalone application, you will need to install [Python 3](https://www.python.org/downloads/), [NodeJS v18+](https://nodejs.org/en), clone the source code from this repo, install dependencies and then run `meshchat.py`.
 
 ```
 git clone https://github.com/liamcottle/reticulum-meshchat
