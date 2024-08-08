@@ -373,7 +373,6 @@ export default {
             chatItems: [],
 
             isLoadingPrevious: false,
-            loadPreviousObserver: null,
             hasMorePrevious: true,
 
             newMessageText: "",
@@ -414,14 +413,6 @@ export default {
         // listen for websocket messages
         WebSocketConnection.on("message", this.onWebsocketMessage);
 
-        // setup intersection observer
-        this.loadPreviousObserver = new IntersectionObserver((entries) => {
-            const loadMoreElement = entries[0];
-            if(loadMoreElement && loadMoreElement.isIntersecting){
-                this.loadPrevious();
-            }
-        });
-
     },
     methods: {
         close() {
@@ -435,6 +426,11 @@ export default {
 
             // we want to auto scroll if user is at bottom of messages list
             this.autoScrollOnNewMessage = isAtBottom;
+
+            // load previous when scrolling near top of page
+            if(element.scrollTop <= 100){
+                this.loadPrevious();
+            }
 
         },
         async initialLoad() {
@@ -454,10 +450,6 @@ export default {
             // scroll to bottom
             this.scrollMessagesToBottom();
 
-            // setup auto loading previous
-            this.loadPreviousObserver.disconnect();
-            this.loadPreviousObserver.observe(document.querySelector("#load-previous"));
-
         },
         async loadPrevious() {
 
@@ -468,20 +460,15 @@ export default {
 
             this.isLoadingPrevious = true;
 
-            // when scrolled to top, scroll down a bit to prevent the browser infinitely loading all history...
-            const container = document.getElementById("messages");
-            if(container && container.scrollTop === 0){
-                container.scrollTop = 50;
-            }
-
             try {
 
                 const seq = ++this.lxmfMessagesRequestSequence;
 
                 // fetch lxmf messages from "us to destination" and from "destination to us"
+                const pageSize = 30;
                 const response = await window.axios.get(`/api/v1/lxmf-messages/conversation/${this.selectedPeer.destination_hash}`, {
                     params: {
-                        count: 30,
+                        count: pageSize,
                         order: "desc",
                         after_id: this.oldestMessageId,
                     },
@@ -509,8 +496,8 @@ export default {
                     this.chatItems.unshift(chatItem);
                 }
 
-                // no more previous to load if previous list is empty
-                if(chatItems.length === 0){
+                // no more previous to load if received items is less than expected page size
+                if(chatItems.length < pageSize){
                     this.hasMorePrevious = false;
                 }
 
