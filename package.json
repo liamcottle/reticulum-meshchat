@@ -11,6 +11,9 @@
     "dist": "npm run build && python setup.py build && electron-builder --publish=never"
   },
   "license": "MIT",
+  "engines" : {
+    "node" : ">=18"
+  },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.2",
     "electron": "^30.0.8",
