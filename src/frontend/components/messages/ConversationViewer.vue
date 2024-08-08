@@ -428,7 +428,7 @@ export default {
             this.autoScrollOnNewMessage = isAtBottom;
 
             // load previous when scrolling near top of page
-            if(element.scrollTop <= 100){
+            if(element.scrollTop <= 500){
                 this.loadPrevious();
             }
 
