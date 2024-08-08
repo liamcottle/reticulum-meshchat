@@ -74,16 +74,17 @@
                             </div>
 
                             <!-- audio field -->
-                            <div v-if="chatItem.lxmf_message.fields?.audio">
+                            <div v-if="chatItem.lxmf_message.fields?.audio" class="pb-1">
 
                                 <!-- audio is loaded -->
-                                <audio v-if="lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash]" controls class="shadow rounded-full mb-1">
+                                <audio v-if="lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash]" controls class="shadow rounded-full" style="height:54px;">
                                     <source :src="lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash]" type="audio/wav"/>
                                 </audio>
 
                                 <!-- audio is not yet loaded -->
-                                <div v-else>
-                                    <button @click="downloadFileFromBase64('audio.bin', chatItem.lxmf_message.fields.audio.audio_bytes)" type="button" class="flex border border-gray-300 hover:bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 font-semibold cursor-pointer space-x-2 bg-[#efefef]">
+                                <!-- min height to make sure audio player doesn't cause height increase after loading -->
+                                <div v-else style="min-height:54px;" class="flex">
+                                    <button @click="downloadFileFromBase64('audio.bin', chatItem.lxmf_message.fields.audio.audio_bytes)" type="button" class="my-auto flex border border-gray-300 hover:bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 font-semibold cursor-pointer space-x-2 bg-[#efefef]">
                                         <span class="my-auto">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                               <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
@@ -728,7 +729,6 @@ export default {
 
                 // update audio cache
                 this.lxmfMessageAudioAttachmentCache[chatItem.lxmf_message.hash] = objectUrl;
-                this.scrollMessagesToBottom();
 
             }
         },
