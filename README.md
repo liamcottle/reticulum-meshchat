@@ -53,7 +53,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 
 ## Download
 
-You can download the latest version for Windows and Mac from the [releases](https://github.com/liamcottle/reticulum-meshchat/releases) page.
+You can download the latest version for Windows, Mac and Linux from the [releases](https://github.com/liamcottle/reticulum-meshchat/releases) page.
 
 Alternatively, you can download the source and run it manually from a command line.
 
