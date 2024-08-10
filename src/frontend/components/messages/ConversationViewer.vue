@@ -171,11 +171,13 @@
                     </div>
 
                     <!-- inbound message info -->
-                    <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 mt-0.5">
+                    <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 mt-0.5 flex flex-col">
+
+                        <!-- signal info -->
+                        <span v-if="chatItem.is_actions_expanded && chatItem.lxmf_message.quality && chatItem.lxmf_message.rssi && chatItem.lxmf_message.snr">Signal {{ chatItem.lxmf_message.quality }}% • RSSI {{ chatItem.lxmf_message.rssi }} • SNR {{ chatItem.lxmf_message.snr }}</span>
 
                         <!-- received timestamp -->
                         <span>{{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}</span>
-                        <span v-if="chatItem.lxmf_message.quality"> • <span @click="onSignalClick(chatItem.lxmf_message)" class="hover:underline cursor-pointer">Signal {{ chatItem.lxmf_message.quality }}%</span></span>
 
                     </div>
 
@@ -1139,21 +1141,6 @@ export default {
 
             // reload conversations
             this.$emit("reload-conversations");
-
-        },
-        onSignalClick(lxmfMessage) {
-
-            var signalInfo = `Signal Quality: ${lxmfMessage.quality}%`;
-
-            if(lxmfMessage.rssi){
-                signalInfo += `, RSSI: ${lxmfMessage.rssi}`;
-            }
-
-            if(lxmfMessage.snr){
-                signalInfo += `, SNR: ${lxmfMessage.snr}`;
-            }
-
-            DialogUtils.alert(signalInfo);
 
         },
     },
