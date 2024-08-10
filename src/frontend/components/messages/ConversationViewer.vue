@@ -170,9 +170,13 @@
                         </div>
                     </div>
 
-                    <!-- received timestamp -->
+                    <!-- inbound message info -->
                     <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 mt-0.5">
-                        {{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}
+
+                        <!-- received timestamp -->
+                        <span>{{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}</span>
+                        <span v-if="chatItem.lxmf_message.quality"> • <span @click="onSignalClick(chatItem.lxmf_message)" class="hover:underline cursor-pointer">Signal {{ chatItem.lxmf_message.quality }}%</span></span>
+
                     </div>
 
                 </div>
@@ -1135,6 +1139,21 @@ export default {
 
             // reload conversations
             this.$emit("reload-conversations");
+
+        },
+        onSignalClick(lxmfMessage) {
+
+            var signalInfo = `Signal Quality: ${lxmfMessage.quality}%`;
+
+            if(lxmfMessage.rssi){
+                signalInfo += `, RSSI: ${lxmfMessage.rssi}`;
+            }
+
+            if(lxmfMessage.snr){
+                signalInfo += `, SNR: ${lxmfMessage.snr}`;
+            }
+
+            DialogUtils.alert(signalInfo);
 
         },
     },
