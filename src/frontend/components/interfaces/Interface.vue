@@ -138,6 +138,7 @@
             <div>• Bitrate: {{ formatBitsPerSecond(iface._stats?.bitrate ?? 0) }}</div>
             <div>• TX: {{ formatBytes(iface._stats?.txb ?? 0) }}</div>
             <div>• RX: {{ formatBytes(iface._stats?.rxb ?? 0) }}</div>
+            <div v-if="iface._stats?.clients">• Clients: {{ iface._stats?.clients }}</div>
 
         </div>
 
