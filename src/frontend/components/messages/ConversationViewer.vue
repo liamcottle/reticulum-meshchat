@@ -449,7 +449,7 @@ export default {
                 return;
             }
 
-            this.getPeerPath(this.selectedPeer.destination_hash);
+            this.getPeerPath();
 
             // load 1 page of previous messages
             await this.loadPrevious();
@@ -520,10 +520,12 @@ export default {
             switch(json.type){
                 case 'lxmf.delivery': {
                     this.onLxmfMessageReceived(json.lxmf_message);
+                    await this.getPeerPath();
                     break;
                 }
                 case 'lxmf_message_created': {
                     this.onLxmfMessageCreated(json.lxmf_message);
+                    await this.getPeerPath();
                     break;
                 }
                 case 'lxmf_message_state_updated': {
@@ -601,21 +603,23 @@ export default {
                 });
             }
         },
-        async getPeerPath(destinationHash) {
+        async getPeerPath() {
 
             // clear previous known path
             this.selectedPeerPath = null;
 
-            try {
+            if(this.selectedPeer){
+                try {
 
-                // get path to destination
-                const response = await window.axios.get(`/api/v1/destination/${destinationHash}/path`);
+                    // get path to destination
+                    const response = await window.axios.get(`/api/v1/destination/${this.selectedPeer.destination_hash}/path`);
 
-                // update ui
-                this.selectedPeerPath = response.data.path;
+                    // update ui
+                    this.selectedPeerPath = response.data.path;
 
-            } catch(e) {
-                console.log(e);
+                } catch(e) {
+                    console.log(e);
+                }
             }
 
         },
