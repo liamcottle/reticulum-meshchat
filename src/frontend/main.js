@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { createRouter, createWebHashHistory } from 'vue-router';
+import vClickOutside from "click-outside-vue3";
 
 import App from './components/App.vue';
 import AboutPage from "./components/about/AboutPage.vue";
@@ -27,4 +28,5 @@ const router = createRouter({
 
 createApp(App)
     .use(router)
+    .use(vClickOutside)
     .mount('#app');

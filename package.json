@@ -11,8 +11,8 @@
     "dist": "npm run build && python setup.py build && electron-builder --publish=never"
   },
   "license": "MIT",
-  "engines" : {
-    "node" : ">=18"
+  "engines": {
+    "node": ">=18"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.2",
@@ -94,6 +94,7 @@
     }
   },
   "dependencies": {
+    "click-outside-vue3": "^4.0.1",
     "electron-prompt": "^1.7.0",
     "mitt": "^3.0.1",
     "vue-router": "^4.4.2"

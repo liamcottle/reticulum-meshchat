@@ -310,20 +310,12 @@
 
                         <!-- add audio -->
                         <div>
-                            <button v-if="isRecordingAudioAttachment" @click="stopRecordingAudioAttachment" type="button" class="my-auto mr-1 inline-flex items-center gap-x-1 rounded-md bg-red-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                                    <path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 1 1-6 0V4Z" />
-                                    <path d="M5.5 9.643a.75.75 0 0 0-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-1.5v-1.546A6.001 6.001 0 0 0 16 10v-.357a.75.75 0 0 0-1.5 0V10a4.5 4.5 0 0 1-9 0v-.357Z" />
-                                </svg>
-                                <span class="ml-1">Recording: {{ audioAttachmentRecordingDuration }}</span>
-                            </button>
-                            <button v-else @click="startRecordingAudioAttachment" type="button" class="my-auto mr-1 inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                                    <path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 1 1-6 0V4Z" />
-                                    <path d="M5.5 9.643a.75.75 0 0 0-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-1.5v-1.546A6.001 6.001 0 0 0 16 10v-.357a.75.75 0 0 0-1.5 0V10a4.5 4.5 0 0 1-9 0v-.357Z" />
-                                </svg>
-                                <span class="ml-1 hidden sm:inline-block">Add Voice</span>
-                            </button>
+                            <AddAudioButton
+                                :is-recording-audio-attachment="isRecordingAudioAttachment"
+                                @start-recording="startRecordingAudioAttachment($event)"
+                                @stop-recording="stopRecordingAudioAttachment">
+                                <span>Recording: {{ audioAttachmentRecordingDuration }}</span>
+                            </AddAudioButton>
                         </div>
 
                         <!-- send message -->
@@ -363,9 +355,13 @@ import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
 import NotificationUtils from "../../js/NotificationUtils";
 import WebSocketConnection from "../../js/WebSocketConnection";
+import AddAudioButton from "./AddAudioButton.vue";
 
 export default {
     name: 'ConversationViewer',
+    components: {
+        AddAudioButton,
+    },
     props: {
         myLxmfAddressHash: String,
         selectedPeer: Object,
@@ -1018,7 +1014,7 @@ export default {
         clearImageInput: function() {
             this.$refs["image-input"].value = null;
         },
-        async startRecordingAudioAttachment() {
+        async startRecordingAudioAttachment(args) {
 
             // do nothing if already recording
             if(this.isRecordingAudioAttachment){
@@ -1030,22 +1026,36 @@ export default {
                 return;
             }
 
-            // start recording microphone
-            this.audioAttachmentMicrophoneRecorder = new Codec2MicrophoneRecorder();
-            this.audioAttachmentRecordingStartedAt = Date.now();
-            this.isRecordingAudioAttachment = await this.audioAttachmentMicrophoneRecorder.start();
+            // handle selected codec
+            switch(args.codec){
+                case "codec2": {
 
-            // update recording time in ui every second
-            this.audioAttachmentRecordingDuration = Utils.formatMinutesSeconds(0);
-            this.audioAttachmentRecordingTimer = setInterval(() => {
-                const recordingDurationMillis = Date.now() - this.audioAttachmentRecordingStartedAt;
-                const recordingDurationSeconds = recordingDurationMillis / 1000;
-                this.audioAttachmentRecordingDuration = Utils.formatMinutesSeconds(recordingDurationSeconds);
-            }, 1000);
+                    // start recording microphone
+                    this.audioAttachmentMicrophoneRecorder = new Codec2MicrophoneRecorder();
+                    this.audioAttachmentMicrophoneRecorder.codec2Mode = args.mode;
+                    this.audioAttachmentRecordingStartedAt = Date.now();
+                    this.isRecordingAudioAttachment = await this.audioAttachmentMicrophoneRecorder.start();
 
-            // alert if failed to start recording
-            if(!this.isRecordingAudioAttachment){
-                DialogUtils.alert("failed to start recording");
+                    // update recording time in ui every second
+                    this.audioAttachmentRecordingDuration = Utils.formatMinutesSeconds(0);
+                    this.audioAttachmentRecordingTimer = setInterval(() => {
+                        const recordingDurationMillis = Date.now() - this.audioAttachmentRecordingStartedAt;
+                        const recordingDurationSeconds = recordingDurationMillis / 1000;
+                        this.audioAttachmentRecordingDuration = Utils.formatMinutesSeconds(recordingDurationSeconds);
+                    }, 1000);
+
+                    // alert if failed to start recording
+                    if(!this.isRecordingAudioAttachment){
+                        DialogUtils.alert("failed to start recording");
+                    }
+
+                    break;
+
+                }
+                default: {
+                    DialogUtils.alert(`Unhandled microphone recorder codec: ${args.codec}`);
+                    break;
+                }
             }
 
         },
@@ -1069,7 +1079,8 @@ export default {
             }
 
             // decode codec2 audio back to wav so we can show a preview audio player before user sends it
-            const decoded = await Codec2Lib.runDecode("1200", new Uint8Array(audio));
+            const codec2Mode = this.audioAttachmentMicrophoneRecorder.codec2Mode;
+            const decoded = await Codec2Lib.runDecode(codec2Mode, new Uint8Array(audio));
 
             // convert decoded codec2 to wav audio and create a blob
             const wavAudio = await Codec2Lib.rawToWav(decoded);
@@ -1077,9 +1088,26 @@ export default {
                 type: "audio/wav",
             });
 
+            // determine audio mode
+            var audioMode = null;
+            switch(codec2Mode){
+                case "1200": {
+                    audioMode = 0x04; // LXMF.AM_CODEC2_1200
+                    break;
+                }
+                case "3200": {
+                    audioMode = 0x09; // LXMF.AM_CODEC2_3200
+                    break;
+                }
+                default: {
+                    DialogUtils.alert(`Unhandled microphone recorder codec2Mode: ${codec2Mode}`);
+                    return;
+                }
+            }
+
             // update message audio attachment
             this.newMessageAudio = {
-                audio_mode: 0x04, // hardcoded to LXMF.AM_CODEC2_1200 for now
+                audio_mode: audioMode,
                 audio_blob: new Blob([audio]),
                 audio_wav_url: URL.createObjectURL(wavBlob),
             };
