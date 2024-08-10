@@ -999,6 +999,9 @@ class ReticulumMeshChat:
                     "content": db_lxmf_message.content,
                     "fields": json.loads(db_lxmf_message.fields),
                     "timestamp": db_lxmf_message.timestamp,
+                    "rssi": db_lxmf_message.rssi,
+                    "snr": db_lxmf_message.snr,
+                    "quality": db_lxmf_message.quality,
                     "created_at": db_lxmf_message.created_at,
                     "updated_at": db_lxmf_message.updated_at,
                 })
@@ -1429,6 +1432,21 @@ class ReticulumMeshChat:
         # convert 0.0-1.0 progress to 0.00-100 percentage
         progress_percentage = round(lxmf_message.progress * 100, 2)
 
+        # get rssi
+        rssi = lxmf_message.rssi
+        if rssi is None:
+            rssi = self.reticulum.get_packet_rssi(lxmf_message.hash)
+
+        # get snr
+        snr = lxmf_message.snr
+        if snr is None:
+            snr = self.reticulum.get_packet_snr(lxmf_message.hash)
+
+        # get quality
+        quality = lxmf_message.q
+        if quality is None:
+            quality = self.reticulum.get_packet_q(lxmf_message.hash)
+
         return {
             "hash": lxmf_message.hash.hex(),
             "source_hash": lxmf_message.source_hash.hex(),
@@ -1442,6 +1460,9 @@ class ReticulumMeshChat:
             "content": lxmf_message.content.decode('utf-8'),
             "fields": fields,
             "timestamp": lxmf_message.timestamp,
+            "rssi": rssi,
+            "snr": snr,
+            "quality": quality,
         }
 
     # convert lxmf state to a human friendly string
@@ -1479,7 +1500,7 @@ class ReticulumMeshChat:
 
     # handle an lxmf delivery from reticulum
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_lxmf_delivery(self, lxmf_message):
+    def on_lxmf_delivery(self, lxmf_message: LXMF.LXMessage):
         try:
 
             # upsert lxmf message to database
@@ -1532,6 +1553,9 @@ class ReticulumMeshChat:
             "content": lxmf_message_dict["content"],
             "fields": json.dumps(lxmf_message_dict["fields"]),
             "timestamp": lxmf_message_dict["timestamp"],
+            "rssi": lxmf_message_dict["rssi"],
+            "snr": lxmf_message_dict["snr"],
+            "quality": lxmf_message_dict["quality"],
             "updated_at": datetime.now(timezone.utc),
         }
 

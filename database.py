@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from peewee import *
 from playhouse.migrate import migrate as migrate_database, SqliteMigrator
 
-latest_version = 2  # increment each time new database migrations are added
+latest_version = 3  # increment each time new database migrations are added
 database = DatabaseProxy()  # use a proxy object, as we will init real db client inside meshchat.py
 migrator = SqliteMigrator(database)
 
@@ -16,6 +16,14 @@ def migrate(current_version):
         migrate_database(
             migrator.add_column("lxmf_messages", 'delivery_attempts', LxmfMessage.delivery_attempts),
             migrator.add_column("lxmf_messages", 'next_delivery_attempt_at', LxmfMessage.next_delivery_attempt_at),
+        )
+
+    # migrate to version 3
+    if current_version < 3:
+        migrate_database(
+            migrator.add_column("lxmf_messages", 'rssi', LxmfMessage.rssi),
+            migrator.add_column("lxmf_messages", 'snr', LxmfMessage.snr),
+            migrator.add_column("lxmf_messages", 'quality', LxmfMessage.quality),
         )
 
     return latest_version
@@ -71,6 +79,9 @@ class LxmfMessage(BaseModel):
     content = TextField()
     fields = TextField()  # json string
     timestamp = FloatField()  # timestamp of when the message was originally created (before ever being sent)
+    rssi = IntegerField(null=True)
+    snr = FloatField(null=True)
+    quality = FloatField(null=True)
     created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
     updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
 
