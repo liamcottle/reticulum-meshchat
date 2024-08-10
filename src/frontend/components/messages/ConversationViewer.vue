@@ -70,7 +70,7 @@
 
                             <!-- image field -->
                             <div v-if="chatItem.lxmf_message.fields?.image">
-                                <img @click="openImage(`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`)" :src="`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`" class="w-full rounded-md cursor-pointer"/>
+                                <img @click.stop="openImage(`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`)" :src="`data:image/${chatItem.lxmf_message.fields.image.image_type};base64,${chatItem.lxmf_message.fields.image.image_bytes}`" class="w-full rounded-md cursor-pointer"/>
                             </div>
 
                             <!-- audio field -->
