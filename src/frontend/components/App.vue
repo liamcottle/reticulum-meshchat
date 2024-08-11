@@ -10,7 +10,7 @@
                     </div>
                 </div>
                 <div class="my-auto">
-                    <div class="font-bold">Reticulum MeshChat</div>
+                    <div @click="onAppNameClick" class="font-bold cursor-pointer">Reticulum MeshChat</div>
                     <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500">Liam Cottle</a></div>
                 </div>
                 <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
@@ -29,7 +29,7 @@
         </div>
 
         <!-- middle -->
-        <div class="flex h-full w-full overflow-auto">
+        <div ref="middle" class="flex h-full w-full overflow-auto">
 
             <!-- sidebar -->
             <div class="bg-white flex w-72 min-w-72 flex-col">
@@ -419,6 +419,14 @@ export default {
                 // ignore error hanging up call
             }
 
+        },
+        onAppNameClick() {
+            // user may be on mobile, and is unable to scroll back to sidebar, so let them tap app name to do it
+            this.$refs["middle"].scrollTo({
+                top: 0,
+                left: 0,
+                behavior: "smooth",
+            });
         },
     },
     computed: {
