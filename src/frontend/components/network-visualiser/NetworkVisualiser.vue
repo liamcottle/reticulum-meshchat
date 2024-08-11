@@ -1,5 +1,7 @@
 <template>
-    <div id="network"></div>
+    <div class="flex-1 h-full min-w-full sm:min-w-[500px]">
+        <div id="network" class="w-full h-full"></div>
+    </div>
 </template>
 
 <style>

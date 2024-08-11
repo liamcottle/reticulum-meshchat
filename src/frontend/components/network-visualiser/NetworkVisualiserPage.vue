@@ -1,5 +1,5 @@
 <template>
-    <NetworkVisualiser class="w-full h-full"/>
+    <NetworkVisualiser/>
 </template>
 
 <script>
