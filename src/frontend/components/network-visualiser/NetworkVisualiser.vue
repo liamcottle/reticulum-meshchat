@@ -105,7 +105,7 @@ export default {
             nodes.push({
                 id: "me",
                 group: "me",
-                size: 50,
+                size: 60,
                 label: this.config?.display_name ?? "This Device",
                 title: [
                     `${this.config?.display_name ?? 'This Device'}`,
@@ -180,7 +180,7 @@ export default {
                 const node = {
                     id: entry.hash,
                     group: "announce",
-                    size: 15,
+                    size: 20,
                 };
 
                 if(announce.aspect === "lxmf.delivery"){
