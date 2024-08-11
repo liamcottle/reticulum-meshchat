@@ -123,13 +123,9 @@ export default {
                 // determine label
                 var label = entry.interface_name ?? entry.name;
 
-                // we want to show the full info instead of just "Client on Name" for TCPServerInterface clients
-                if(entry.parent_interface_name != null){
-                    label = entry.name;
-                }
-
-                // we also want to show the full info for LocalServerInterface
-                if(entry.type === "LocalServerInterface"){
+                // we want to show the full info for LocalServerInterface
+                // we also want to show the full info instead of just "Client on Name" for TCPServerInterface clients
+                if(entry.type === "LocalServerInterface" || entry.parent_interface_name != null){
                     label = entry.name;
                 }
 
