@@ -169,11 +169,7 @@ export default {
                     node.shape = "circularImage";
                     node.image = "/assets/images/network-visualiser/user.png";
 
-                    node.label = [
-                        name,
-                        `${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'}`,
-                    ].join("\n");
-
+                    node.label = name;
                     node.title = [
                         `Name: ${name}`,
                         `Aspect: ${announce.aspect}`,
@@ -192,11 +188,7 @@ export default {
                     node.shape = "circularImage";
                     node.image = "/assets/images/network-visualiser/server.png";
 
-                    node.label = [
-                        name,
-                        `${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'}`,
-                    ].join("\n");
-
+                    node.label = name;
                     node.title = [
                         `Name: ${name}`,
                         `Aspect: ${announce.aspect}`,
