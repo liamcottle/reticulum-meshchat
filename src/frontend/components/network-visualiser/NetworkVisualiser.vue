@@ -120,13 +120,17 @@ export default {
             // add interfaces
             for(const entry of this.interfaces){
 
+                // skip local server interface
+                if(entry.type === "LocalServerInterface"){
+                    continue;
+                }
+
                 const node = {
                     id: entry.name,
                     group: "interface",
-                    label: entry.name,
+                    label: entry.parent_interface_name != null ? entry.name : entry.interface_name,
                     title: [
-                        `Interface`,
-                        `Name: ${entry.name}`,
+                        entry.name,
                         `State: ${entry.status ? 'Online' : 'Offline'}`,
                         `Bitrate: ${this.formatBitsPerSecond(entry.bitrate)}`,
                         `TX: ${this.formatBytes(entry.txb)}`,
