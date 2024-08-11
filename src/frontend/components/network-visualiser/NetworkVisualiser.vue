@@ -2,8 +2,15 @@
     <div id="network"></div>
 </template>
 
+<style>
+.vis-tooltip {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+}
+</style>
+
 <script>
-import "vis-network/styles/vis-network.min.css";
+import "vis-network/styles/vis-network.css";
 import { Network } from "vis-network";
 import Utils from "../../js/Utils";
 export default {
@@ -219,6 +226,9 @@ export default {
                 nodes: nodes,
                 edges: edges,
             }, {
+                interaction: {
+                    tooltipDelay: 0, // show tooltip instantly on hover
+                },
                 layout: {
                     // always layout nodes the same way across reloads if nothing changed
                     randomSeed: 1,
