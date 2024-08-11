@@ -129,6 +129,7 @@ export default {
                     from: "me",
                     to: entry.name,
                     color: "transparent",
+                    length: 300,
                     background: {
                         enabled: true,
                         color: entry.status ? "#22c55e" : "#ef4444",
