@@ -97,6 +97,7 @@
     "click-outside-vue3": "^4.0.1",
     "electron-prompt": "^1.7.0",
     "mitt": "^3.0.1",
+    "vis-network": "^9.1.9",
     "vue-router": "^4.4.2"
   }
 }

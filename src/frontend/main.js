@@ -5,7 +5,7 @@ import vClickOutside from "click-outside-vue3";
 import App from './components/App.vue';
 import AboutPage from "./components/about/AboutPage.vue";
 import SettingsPage from "./components/settings/SettingsPage.vue";
-import NetworkVisualiserPage from "./components/network/NetworkVisualiserPage.vue";
+import NetworkVisualiserPage from "./components/network-visualiser/NetworkVisualiserPage.vue";
 import InterfacesPage from "./components/interfaces/InterfacesPage.vue";
 import NomadNetworkPage from "./components/nomadnetwork/NomadNetworkPage.vue";
 import MessagesPage from "./components/messages/MessagesPage.vue";
