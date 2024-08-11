@@ -133,6 +133,7 @@ If you don't want to, or can't [download](#download) a standalone application, y
 ```
 git clone https://github.com/liamcottle/reticulum-meshchat
 cd reticulum-meshchat
+npm install
 npm run build
 pip install -r requirements.txt
 python meshchat.py
