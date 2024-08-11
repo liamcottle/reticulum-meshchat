@@ -120,15 +120,23 @@ export default {
             // add interfaces
             for(const entry of this.interfaces){
 
-                // skip local server interface
+                // determine label
+                var label = entry.interface_name ?? entry.name;
+
+                // we want to show the full info instead of just "Client on Name" for TCPServerInterface clients
+                if(entry.parent_interface_name != null){
+                    label = entry.name;
+                }
+
+                // we also want to show the full info for LocalServerInterface
                 if(entry.type === "LocalServerInterface"){
-                    continue;
+                    label = entry.name;
                 }
 
                 const node = {
                     id: entry.name,
                     group: "interface",
-                    label: entry.parent_interface_name != null ? entry.name : entry.interface_name,
+                    label: label,
                     title: [
                         entry.name,
                         `State: ${entry.status ? 'Online' : 'Offline'}`,
