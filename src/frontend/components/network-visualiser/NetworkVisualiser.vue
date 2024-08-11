@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import "vis-network/styles/vis-network.min.css";
 import { Network } from "vis-network";
 import Utils from "../../js/Utils";
 export default {
@@ -77,8 +78,12 @@ export default {
             nodes.push({
                 id: "me",
                 group: "me",
-                label: this.config?.display_name ?? "This Device",
                 size: 50,
+                label: this.config?.display_name ?? "This Device",
+                title: [
+                    `${this.config?.display_name ?? 'This Device'}`,
+                    `Identity: ${this.config?.identity_hash ?? 'Unknown'}`,
+                ].join("\n"),
                 font: {
                     color: "#000000",
                     background: "#ffffff",
@@ -92,6 +97,14 @@ export default {
                     id: entry.name,
                     group: "interface",
                     label: entry.name,
+                    title: [
+                        `Interface`,
+                        `Name: ${entry.name}`,
+                        `State: ${entry.status ? 'Online' : 'Offline'}`,
+                        `Bitrate: ${this.formatBitsPerSecond(entry.bitrate)}`,
+                        `TX: ${this.formatBytes(entry.txb)}`,
+                        `RX: ${this.formatBytes(entry.rxb)}`,
+                    ].join("\n"),
                     size: 30,
                     font: {
                         color: "#000000",
@@ -143,21 +156,49 @@ export default {
                 };
 
                 if(announce.aspect === "lxmf.delivery"){
+
+                    const name = announce.app_data ? atob(announce.app_data) : "Anonymous Peer";
+
                     node.shape = "circularImage";
                     node.image = "/assets/images/network-visualiser/user.png";
+
                     node.label = [
-                        announce.app_data ? atob(announce.app_data) : "Anonymous Peer",
+                        name,
                         `${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'}`,
                     ].join("\n");
+
+                    node.title = [
+                        `Name: ${name}`,
+                        `Aspect: ${announce.aspect}`,
+                        `Identity: ${announce.identity_hash}`,
+                        `Destination: ${announce.destination_hash}`,
+                        `Path: ${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'} via ${entry.interface}`,
+                        `Announced At: ${announce.updated_at}`,
+                    ].join("\n");
+
                 }
 
                 if(announce.aspect === "nomadnetwork.node"){
+
+                    const name = announce.app_data ? atob(announce.app_data) : "Anonymous Node";
+
                     node.shape = "circularImage";
                     node.image = "/assets/images/network-visualiser/server.png";
+
                     node.label = [
-                        announce.app_data ? atob(announce.app_data) : "Anonymous Node",
+                        name,
                         `${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'}`,
                     ].join("\n");
+
+                    node.title = [
+                        `Name: ${name}`,
+                        `Aspect: ${announce.aspect}`,
+                        `Identity: ${announce.identity_hash}`,
+                        `Destination: ${announce.destination_hash}`,
+                        `Path: ${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'} via ${entry.interface}`,
+                        `Announced At: ${announce.updated_at}`,
+                    ].join("\n");
+
                 }
 
                 // add node
