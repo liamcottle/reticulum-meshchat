@@ -154,11 +154,6 @@ export default {
                         enabled: true,
                         color: entry.status ? "#22c55e" : "#ef4444",
                     },
-                    label:  [
-                        `Bitrate: ${this.formatBitsPerSecond(entry.bitrate)}`,
-                        `TX: ${this.formatBytes(entry.txb)}`,
-                        `RX: ${this.formatBytes(entry.rxb)}`,
-                    ].join("\n"),
                 });
 
             }
