@@ -144,17 +144,32 @@ export default {
                 // add interface node
                 nodes.push(node);
 
-                // add edge from me to interface
-                edges.push({
-                    from: "me",
-                    to: entry.name,
-                    color: "transparent",
-                    length: 300,
-                    background: {
-                        enabled: true,
-                        color: entry.status ? "#22c55e" : "#ef4444",
-                    },
-                });
+                // add edge to interface
+                if(entry.parent_interface_name){
+                    // add edge from parent interface to interface
+                    edges.push({
+                        from: entry.parent_interface_name,
+                        to: entry.name,
+                        color: "transparent",
+                        length: 300,
+                        background: {
+                            enabled: true,
+                            color: entry.status ? "#22c55e" : "#ef4444",
+                        },
+                    });
+                } else {
+                    // add edge from me to interface
+                    edges.push({
+                        from: "me",
+                        to: entry.name,
+                        color: "transparent",
+                        length: 300,
+                        background: {
+                            enabled: true,
+                            color: entry.status ? "#22c55e" : "#ef4444",
+                        },
+                    });
+                }
 
             }
 

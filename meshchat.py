@@ -853,6 +853,15 @@ class ReticulumMeshChat:
 
             # ensure ifac_signature is hex as json_response can't serialize bytes
             for interface in interface_stats["interfaces"]:
+
+                # add interface hashes
+                interface_instance = self.find_interface_by_name(interface["name"])
+                if interface_instance is not None:
+                    interface["hash"] = interface_instance.get_hash().hex()
+                    if hasattr(interface_instance, "parent_interface") and interface_instance.parent_interface is not None:
+                        interface["parent_interface_name"] = str(interface_instance.parent_interface)
+                        interface["parent_interface_hash"] = interface_instance.parent_interface.get_hash().hex()
+
                 if "ifac_signature" in interface and interface["ifac_signature"]:
                     interface["ifac_signature"] = interface["ifac_signature"].hex()
 
@@ -1872,6 +1881,14 @@ class ReticulumMeshChat:
                 .where(database.LxmfMessage.destination_hash == destination_hash)
                 .count())
 
+    # find an interface by name
+    def find_interface_by_name(self, name: str):
+        for interface in RNS.Transport.interfaces:
+            interface_name = str(interface)
+            if name == interface_name:
+                return interface
+
+        return None
 
 # class to manage config stored in database
 class Config:
