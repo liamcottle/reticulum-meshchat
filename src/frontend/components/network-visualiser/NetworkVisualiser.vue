@@ -276,6 +276,8 @@ export default {
                     barnesHut: {
                         gravitationalConstant: -5000,
                         centralGravity: 0,
+                        springConstant: 0.1,
+                        damping: 0.15,
                     },
                     minVelocity: 0.25,
                 },
