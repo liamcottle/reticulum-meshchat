@@ -279,6 +279,7 @@ export default {
                         springConstant: 0.1,
                         damping: 0.15,
                     },
+                    maxVelocity: 150,
                     minVelocity: 0.25,
                 },
                 groups: {
