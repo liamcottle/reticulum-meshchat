@@ -66,7 +66,7 @@
 
             <!-- reticulum status -->
             <div v-if="appInfo" class="bg-white rounded shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Reticulum</div>
+                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Reticulum Status</div>
                 <div class="divide-y text-gray-900">
 
                     <!-- instance mode -->
