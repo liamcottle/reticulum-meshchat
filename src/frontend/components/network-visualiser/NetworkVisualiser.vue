@@ -275,7 +275,9 @@ export default {
                 physics: {
                     barnesHut: {
                         gravitationalConstant: -5000,
+                        centralGravity: 0,
                     },
+                    minVelocity: 0.25,
                 },
                 groups: {
                     "me": {
