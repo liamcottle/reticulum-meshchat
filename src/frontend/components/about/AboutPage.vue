@@ -64,6 +64,32 @@
                 </div>
             </div>
 
+            <!-- reticulum status -->
+            <div v-if="appInfo" class="bg-white rounded shadow">
+                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Reticulum</div>
+                <div class="divide-y text-gray-900">
+
+                    <!-- instance mode -->
+                    <div class="p-1">
+                        <div>Instance Mode</div>
+                        <div class="text-sm text-gray-700">
+                            <span v-if="appInfo.is_connected_to_shared_instance" class="text-orange-600">Connected to Shared Instance</span>
+                            <span v-else class="text-green-600">Running as Standalone Instance</span>
+                        </div>
+                    </div>
+
+                    <!-- transport mode -->
+                    <div class="p-1">
+                        <div>Transport Mode</div>
+                        <div class="text-sm text-gray-700">
+                            <span v-if="appInfo.is_transport_enabled" class="text-green-600">Transport Enabled</span>
+                            <span v-else class="text-orange-600">Transport Disabled</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- my addresses -->
             <div v-if="config" class="bg-white rounded shadow">
                 <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">My Addresses</div>

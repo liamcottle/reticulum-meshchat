@@ -542,6 +542,7 @@ class ReticulumMeshChat:
                     "database_file_size": os.path.getsize(self.database_path),
                     "reticulum_config_path": self.reticulum.configpath,
                     "is_connected_to_shared_instance": self.reticulum.is_connected_to_shared_instance,
+                    "is_transport_enabled": self.reticulum.transport_enabled(),
                 },
             })
 
