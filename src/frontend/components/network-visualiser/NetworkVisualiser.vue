@@ -275,12 +275,12 @@ export default {
                 physics: {
                     barnesHut: {
                         gravitationalConstant: -5000,
-                        centralGravity: 0,
-                        springConstant: 0.1,
-                        damping: 0.15,
+                        // centralGravity: 0,
+                        // springConstant: 0.1,
+                        // damping: 0.15,
                     },
-                    maxVelocity: 150,
-                    minVelocity: 0.25,
+                    // maxVelocity: 150,
+                    // minVelocity: 0.25,
                 },
                 groups: {
                     "me": {
