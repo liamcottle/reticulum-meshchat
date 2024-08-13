@@ -128,14 +128,32 @@ Remember, in order to connect with other peers or nodes, they must announce on t
 
 ## How to use it?
 
-If you don't want to, or can't [download](#download) a standalone application, you will need to install [Python 3](https://www.python.org/downloads/), [NodeJS v18+](https://nodejs.org/en), clone the source code from this repo, install dependencies and then run `meshchat.py`.
+It is recommended that you [download](#download) a standalone application.
+
+If you don't want to, or a release is unavailable for your device, you will need to;
+
+- install [Python 3](https://www.python.org/downloads/)
+- install [NodeJS v18+](https://nodejs.org/en)
+- clone the source code from this repo
+- install all dependencies
+- then run `meshchat.py`.
 
 ```
+# clone repo
 git clone https://github.com/liamcottle/reticulum-meshchat
 cd reticulum-meshchat
-npm install
+
+# install nodejs deps
+# if you want to build electron binaries, remove "--omit=dev"
+npm install --omit=dev
+
+# build frontend vue components
 npm run build
+
+# install python deps
 pip install -r requirements.txt
+
+# run meshchat
 python meshchat.py
 ```
 
