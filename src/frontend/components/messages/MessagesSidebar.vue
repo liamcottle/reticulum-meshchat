@@ -75,7 +75,7 @@
 
             <!-- search -->
             <div v-if="peersCount > 0" class="p-1 border-b border-gray-300">
-                <input v-model="peersSearchTerm" type="text" :placeholder="`Search ${peersCount} Peers...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                <input v-model="peersSearchTerm" type="text" :placeholder="`Search ${peersCount} recent announces...`" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
             </div>
 
             <!-- peers -->
