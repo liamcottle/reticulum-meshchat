@@ -1585,20 +1585,19 @@ class ReticulumMeshChat:
     # upserts the provided announce to the database
     def db_upsert_announce(self, identity: RNS.Identity, destination_hash: bytes, aspect: str, app_data: bytes):
 
-        # parse app data
-        parsed_app_data = None
-        if app_data is not None:
-            parsed_app_data = base64.b64encode(app_data).decode("utf-8")
-
         # prepare data to insert or update
         data = {
             "destination_hash": destination_hash.hex(),
             "aspect": aspect,
             "identity_hash": identity.hash.hex(),
             "identity_public_key": base64.b64encode(identity.get_public_key()).decode("utf-8"),
-            "app_data": parsed_app_data,
             "updated_at": datetime.now(timezone.utc),
         }
+
+        # only set app data if provided, as we don't want to wipe existing data when we request keys from the network
+        if app_data is not None:
+            # parse app data as utf8 string
+            data["app_data"] = base64.b64encode(app_data).decode("utf-8")
 
         # upsert to database
         query = database.Announce.insert(data)
