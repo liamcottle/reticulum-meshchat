@@ -206,7 +206,7 @@ export default {
                     const name = announce.app_data ? atob(announce.app_data) : "Anonymous Peer";
 
                     node.shape = "circularImage";
-                    node.image = "/assets/images/network-visualiser/user.png";
+                    node.image = entry.hops === 1 ? "/assets/images/network-visualiser/user_1hop.png" : "/assets/images/network-visualiser/user.png";
 
                     node.label = name;
                     node.title = [
@@ -225,7 +225,7 @@ export default {
                     const name = announce.app_data ? atob(announce.app_data) : "Anonymous Node";
 
                     node.shape = "circularImage";
-                    node.image = "/assets/images/network-visualiser/server.png";
+                    node.image = entry.hops === 1 ? "/assets/images/network-visualiser/server_1hop.png" : "/assets/images/network-visualiser/server.png";
 
                     node.label = name;
                     node.title = [
@@ -239,30 +239,15 @@ export default {
 
                 }
 
-                const edge = {
-                    from: entry.interface,
-                    to: entry.hash,
-                    color: "gray",
-                };
-
-                // if announce is 1 hop away, they are directly running on the interface they announced from
-                // for example, they might be a nomadnetwork node, that is hosting a TCPServerInterface
-                // in this case, its lxmf.delivery and nomadnetwork.node addresses would be 1 hop away
-                if(entry.hops === 1){
-
-                    // make the line between the interface and the announce thicker
-                    edge.background = {
-                        enabled: true,
-                        color: "gray",
-                    };
-
-                }
-
                 // add node
                 nodes.push(node);
 
                 // add edge from interface to announced aspect
-                edges.push(edge);
+                edges.push({
+                    from: entry.interface,
+                    to: entry.hash,
+                    color: "gray",
+                });
 
             }
 
