@@ -1596,7 +1596,7 @@ class ReticulumMeshChat:
 
         # only set app data if provided, as we don't want to wipe existing data when we request keys from the network
         if app_data is not None:
-            # parse app data as utf8 string
+            # save app data as base64 string
             data["app_data"] = base64.b64encode(app_data).decode("utf-8")
 
         # upsert to database
