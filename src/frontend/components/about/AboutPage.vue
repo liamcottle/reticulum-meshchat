@@ -52,15 +52,6 @@
                         <div class="text-sm text-gray-700">{{ formatBytes(appInfo.database_file_size) }}</div>
                     </div>
 
-                    <!-- shared instance status -->
-                    <div class="p-1">
-                        <div>Reticulum Instance</div>
-                        <div class="text-sm text-gray-700">
-                            <span v-if="appInfo.is_connected_to_shared_instance">Connected to Shared Instance</span>
-                            <span v-else>Running as Standalone Instance</span>
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
