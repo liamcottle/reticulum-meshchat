@@ -66,7 +66,7 @@
                         <div class="w-full space-y-0.5 px-2.5 py-1">
 
                             <!-- content -->
-                            <div v-if="chatItem.lxmf_message.content" style="white-space:pre-wrap;word-break:break-all;font-family:inherit;">{{ chatItem.lxmf_message.content }}</div>
+                            <div v-if="chatItem.lxmf_message.content" style="white-space:pre-wrap;word-break:break-word;font-family:inherit;">{{ chatItem.lxmf_message.content }}</div>
 
                             <!-- image field -->
                             <div v-if="chatItem.lxmf_message.fields?.image">
