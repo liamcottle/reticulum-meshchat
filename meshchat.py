@@ -768,6 +768,7 @@ class ReticulumMeshChat:
 
             # get query params
             aspect = request.query.get("aspect", None)
+            limit = request.query.get("limit", None)
 
             # build announces database query
             query = database.Announce.select()
@@ -776,8 +777,12 @@ class ReticulumMeshChat:
             if aspect is not None:
                 query = query.where(database.Announce.aspect == aspect)
 
-            # get announces from database
-            query_results = query.order_by(database.Announce.id.asc())
+            # limit results
+            if limit is not None:
+                query = query.limit(limit)
+
+            # order announces latest to oldest
+            query_results = query.order_by(database.Announce.updated_at.desc())
 
             # process announces
             announces = []
