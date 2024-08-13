@@ -15,10 +15,8 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.1.2",
     "electron": "^30.0.8",
-    "electron-builder": "^24.6.3",
-    "vite": "^5.3.5"
+    "electron-builder": "^24.6.3"
   },
   "build": {
     "appId": "com.liamcottle.reticulummeshchat",
@@ -94,10 +92,12 @@
     }
   },
   "dependencies": {
+    "@vitejs/plugin-vue": "^5.1.2",
     "click-outside-vue3": "^4.0.1",
     "electron-prompt": "^1.7.0",
     "mitt": "^3.0.1",
     "vis-network": "^9.1.9",
+    "vite": "^5.4.0",
     "vue-router": "^4.4.2"
   }
 }
