@@ -18,6 +18,14 @@
                     </div>
                 </div>
                 <div v-if="isShowingControls" class="divide-y text-gray-900 border-t border-gray-300">
+                    <div class="px-1 py-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input v-model="autoReload" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300">
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900">Auto Update (5 sec)</label>
+                        </div>
+                    </div>
                     <div class="p-1">
                         <div>Interfaces</div>
                         <div class="text-sm text-gray-700">{{ onlineInterfaces.length }} Online, {{ offlineInterfaces.length }} Offline</div>
@@ -46,6 +54,7 @@ export default {
     data() {
         return {
             config: null,
+            autoReload: false,
             reloadInterval: null,
             isShowingControls: true,
             interfaces: [],
@@ -160,6 +169,30 @@ export default {
                     animation: true,
                 });
             }, 2000);
+
+            // auto reload
+            this.reloadInterval = setInterval(this.onAutoReload, 5000);
+
+        },
+        async onAutoReload() {
+
+            // do nothing if auto reload disabled
+            if(!this.autoReload){
+                return;
+            }
+
+            // do nothing if already updating
+            if(this.isUpdating){
+                return;
+            }
+
+            // auto reload
+            try {
+                this.isUpdating = true;
+                await this.update();
+            } finally {
+                this.isUpdating = false;
+            }
 
         },
         async update() {
