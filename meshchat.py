@@ -2166,6 +2166,7 @@ def main():
     parser.add_argument("--reticulum-config-dir", type=str, help="Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)")
     parser.add_argument("--storage-dir", type=str, help="Path to a directory for storing databases and config files (default: ./storage)")
     parser.add_argument("--test-exception-message", type=str, help="Throws an exception. Used for testing the electron error dialog")
+    parser.add_argument('args', nargs=argparse.REMAINDER)  # allow unknown command line args
     args = parser.parse_args()
 
     # check if we want to test exception messages
