@@ -177,7 +177,7 @@ app.whenReady().then(async () => {
                 await dialog.showMessageBox(mainWindow, {
                     message: "Microsoft Visual C++ redistributable must be installed to run this application.",
                 });
-                quit();
+                app.quit();
                 return;
             }
 
