@@ -172,6 +172,15 @@ app.whenReady().then(async () => {
                 return;
             }
 
+            // tell user that Visual C++ redistributable needs to be installed on Windows
+            if(code === 3221225781 && process.platform === "win32"){
+                await dialog.showMessageBox(mainWindow, {
+                    message: "Microsoft Visual C++ redistributable must be installed to run this application.",
+                });
+                quit();
+                return;
+            }
+
             // show crash log
             const stdout = stdoutLines.join("");
             const stderr = stderrLines.join("");
