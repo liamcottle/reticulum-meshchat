@@ -20,8 +20,8 @@ from peewee import SqliteDatabase
 from serial.tools import list_ports
 
 import database
-from src.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
-from src.audio_call_manager import AudioCall, AudioCallManager
+from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
+from src.backend.audio_call_manager import AudioCall, AudioCallManager
 
 
 # NOTE: this is required to be able to pack our app with cxfreeze as an exe, otherwise it can't access bundled assets
