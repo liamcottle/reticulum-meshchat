@@ -157,7 +157,7 @@ export default {
             await this.update();
 
             // stabilise the network a bit after first load
-            this.network.stabilize(100);
+            this.network.stabilize();
             this.isLoading = false;
 
             // auto update network
