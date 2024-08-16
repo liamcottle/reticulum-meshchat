@@ -4,22 +4,8 @@
         <!-- network -->
         <div id="network" class="w-full h-full"></div>
 
-        <!-- loading -->
-        <div v-if="isLoading" class="absolute flex top-0 bottom-0 left-0 right-0 bg-gray-100">
-            <div class="flex flex-col mx-auto my-auto">
-                <div class="mx-auto mb-1">
-                    <svg class="animate-spin h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-                <div class="mx-auto">Loading {{ loadingProgress }}%</div>
-                <div class="mx-auto text-sm text-gray-500">Large networks may take a while...</div>
-            </div>
-        </div>
-
         <!-- controls -->
-        <div v-if="!isLoading" class="absolute flex bottom-0 left-0 bg-gray-100 p-2">
+        <div class="absolute flex bottom-0 left-0 bg-gray-100 p-2">
             <div class="bg-white rounded shadow min-w-52">
                 <div @click="isShowingControls = !isShowingControls" class="flex text-gray-700 p-2 cursor-pointer">
                     <div class="my-auto">Reticulum Network</div>
@@ -60,8 +46,6 @@ export default {
     data() {
         return {
             config: null,
-            isLoading: false,
-            loadingProgress: 0,
             reloadInterval: null,
             isShowingControls: true,
             interfaces: [],
@@ -122,8 +106,6 @@ export default {
         },
         async init() {
 
-            this.isLoading = true;
-
             // create network ui
             const container = document.getElementById("network");
             this.network = new Network(container, {
@@ -169,29 +151,8 @@ export default {
                 },
             });
 
-            // update loading progress
-            this.network.on("stabilizationProgress", (event) => {
-
-                // calculate percentage stabilized
-                this.loadingProgress = Math.floor((event.iterations / event.total) * 100);
-
-                // hide loading once stabilized at least 50%
-                if(this.loadingProgress >= 50){
-                    this.isLoading = false;
-                }
-
-            });
-
-            // hide loading when stabilized
-            this.network.on("stabilized", () => {
-                this.isLoading = false;
-            });
-
             // update network
             await this.update();
-
-            // stabilise the network a bit after first load
-            this.network.stabilize();
 
         },
         async update() {
