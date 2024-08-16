@@ -149,16 +149,12 @@ export default {
 
             });
 
-            // hide loading once done
-            this.network.on("stabilized", () => {
-                this.isLoading = false;
-            });
-
             // update network
             await this.update();
 
             // stabilise the network a bit after first load
             this.network.stabilize(100);
+            this.isLoading = false;
 
             // auto update network
             setInterval(() => {
