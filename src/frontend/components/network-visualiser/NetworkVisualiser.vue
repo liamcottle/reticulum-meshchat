@@ -352,7 +352,7 @@ export default {
             for(const oldNodeId of oldNodeIds){
                 if(!newNodeIds.includes(oldNodeId)){
                     console.log("Removed Node: " + oldNodeId);
-                    this.edges.remove(oldNodeId);
+                    this.nodes.remove(oldNodeId);
                 }
             }
 
