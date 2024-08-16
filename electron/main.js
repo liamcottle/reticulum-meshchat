@@ -135,9 +135,9 @@ app.whenReady().then(async () => {
             // log
             log(data.toString());
 
-            // keep track of last 500 stdout lines
+            // keep track of last 10 stdout lines
             stdoutLines.push(data.toString());
-            if(stdoutLines.length > 500){
+            if(stdoutLines.length > 10){
                 stdoutLines.shift();
             }
 
@@ -151,9 +151,9 @@ app.whenReady().then(async () => {
             // log
             log(data.toString());
 
-            // keep track of last 500 stderr lines
+            // keep track of last 10 stderr lines
             stderrLines.push(data.toString());
-            if(stderrLines.length > 500){
+            if(stderrLines.length > 10){
                 stderrLines.shift();
             }
 
