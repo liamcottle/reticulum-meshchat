@@ -2,7 +2,7 @@ import sys
 
 # NOTE: this class is required to be able to use print/log commands and have them flush to stdout and stderr immediately
 # without wrapper stdout and stderr, when using `childProcess.stdout.on('data', ...)` in NodeJS script, we never get
-# any events fired until the process exists. However, force flushing the streams does first the callbacks in NodeJS.
+# any events fired until the process exits. However, force flushing the streams does fire the callbacks in NodeJS.
 
 
 # this class forces stream writes to be flushed immediately
