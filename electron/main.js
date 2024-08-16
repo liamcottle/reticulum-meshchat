@@ -167,6 +167,11 @@ app.whenReady().then(async () => {
         // quit electron app if exe dies
         exeChildProcess.on('exit', async function(code) {
 
+            // if no exit code provided, we wanted exit to happen, so do nothing
+            if(code == null){
+                return;
+            }
+
             // show crash log
             const stdout = stdoutLines.join("");
             const stderr = stderrLines.join("");
