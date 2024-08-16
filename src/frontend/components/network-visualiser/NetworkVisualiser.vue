@@ -154,6 +154,13 @@ export default {
             // update network
             await this.update();
 
+            // fit network after initial load
+            setTimeout(() => {
+                this.network.fit({
+                    animation: true,
+                });
+            }, 2000);
+
         },
         async update() {
 
