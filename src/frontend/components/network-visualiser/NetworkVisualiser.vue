@@ -336,10 +336,9 @@ export default {
         },
         processNewNodes(newNodes) {
 
-            // update nodes
+            // determine old and new nodes
             const oldNodeIds = this.nodes.map((node) => node.id);
             const newNodeIds = newNodes.map((node) => node.id);
-            this.nodes.update(newNodes);
 
             // log new nodes
             for(const newNodeId of newNodeIds){
@@ -356,13 +355,15 @@ export default {
                 }
             }
 
+            // update nodes
+            this.nodes.update(newNodes);
+
         },
         processNewEdges(newEdges) {
 
-            // update edges
+            // determine old and new edges
             const oldEdgeIds = this.edges.map((edge) => edge.id);
             const newEdgeIds = newEdges.map((edge) => edge.id);
-            this.edges.update(newEdges);
 
             // log new edges
             for(const newEdgeId of newEdgeIds){
@@ -378,6 +379,9 @@ export default {
                     this.edges.remove(oldEdgeId);
                 }
             }
+
+            // update edges
+            this.edges.update(newEdges);
 
         },
         formatBytes: function(bytes) {
