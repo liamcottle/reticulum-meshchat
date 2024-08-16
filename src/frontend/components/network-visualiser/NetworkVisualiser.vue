@@ -244,7 +244,7 @@ export default {
                 } else {
                     // add edge from me to interface
                     edges.push({
-                        id: `me-${entry.name}`,
+                        id: `me~${entry.name}`,
                         from: "me",
                         to: entry.name,
                         color: "transparent",
