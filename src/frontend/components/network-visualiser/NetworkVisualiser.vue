@@ -5,12 +5,15 @@
         <div id="network" class="w-full h-full"></div>
 
         <!-- loading -->
-        <div v-if="isLoading" class="absolute flex top-0 bottom-0 left-0 right-0">
-            <div class="mx-auto my-auto">
-                <svg class="animate-spin h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+        <div v-if="isLoading" class="absolute flex top-0 bottom-0 left-0 right-0 bg-gray-100">
+            <div class="flex flex-col mx-auto my-auto">
+                <div class="mx-auto">
+                    <svg class="animate-spin h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <div>Loading {{ loadingProgress }}%</div>
             </div>
         </div>
 
@@ -27,6 +30,7 @@
 <script>
 import "vis-network/styles/vis-network.css";
 import { Network } from "vis-network";
+import { DataSet } from "vis-data";
 import Utils from "../../js/Utils";
 export default {
     name: 'NetworkVisualiser',
@@ -34,9 +38,13 @@ export default {
         return {
             config: null,
             isLoading: false,
+            loadingProgress: 0,
             interfaces: [],
             pathTable: [],
             announces: {},
+            network: null,
+            nodes: new DataSet(),
+            edges: new DataSet(),
         };
     },
     mounted() {
@@ -48,7 +56,6 @@ export default {
                 const response = await axios.get(`/api/v1/interface-stats`);
                 this.interfaces = response.data.interface_stats?.interfaces ?? [];
             } catch(e) {
-                alert("failed to load interface stats");
                 console.log(e);
             }
         },
@@ -57,7 +64,6 @@ export default {
                 const response = await axios.get(`/api/v1/path-table`);
                 this.pathTable = response.data.path_table;
             } catch(e) {
-                alert("failed to load path table");
                 console.log(e);
             }
         },
@@ -66,7 +72,6 @@ export default {
                 const response = await axios.get("/api/v1/config");
                 this.config = response.data.config;
             } catch(e) {
-                alert("failed to load config");
                 console.error(e);
             }
         },
@@ -88,8 +93,73 @@ export default {
             }
         },
         async init() {
+
             this.isLoading = true;
+
+            // create network ui
+            const container = document.getElementById("network");
+            this.network = new Network(container, {
+                nodes: this.nodes,
+                edges: this.edges,
+            }, {
+                interaction: {
+                    tooltipDelay: 0, // show tooltip instantly on hover
+                },
+                layout: {
+                    // always layout nodes the same way across reloads if nothing changed
+                    randomSeed: 1,
+                },
+                nodes: {
+                    color: {
+                        border: "#000000",
+                        highlight: {
+                            border: "#000000",
+                        },
+                    },
+                },
+                physics: {
+                    barnesHut: {
+                        gravitationalConstant: -5000,
+                        // centralGravity: 0,
+                        // springConstant: 0.1,
+                        // damping: 0.15,
+                    },
+                    // maxVelocity: 150,
+                    // minVelocity: 0.25,
+                },
+                groups: {
+                    "me": {
+                        shape: "image",
+                        image: "/assets/images/reticulum_logo_512.png",
+                    },
+                    "interface": {
+
+                    },
+                    "announce": {
+
+                    },
+                },
+            });
+
+            // update loading progress
+            this.network.on("stabilizationProgress", (event) => {
+
+                // calculate percentage stabilized
+                this.loadingProgress = Math.floor((event.iterations / event.total) * 100);
+
+            });
+
+            // hide loading once done
+            this.network.on("stabilized", () => {
+                this.isLoading = false;
+            });
+
+            // update network
             await this.update();
+
+            // stabilise the network a bit after first load
+            this.network.stabilize(100);
+
         },
         async update() {
 
@@ -156,6 +226,7 @@ export default {
                 if(entry.parent_interface_name){
                     // add edge from parent interface to interface
                     edges.push({
+                        id: `${entry.parent_interface_name}~${entry.name}`,
                         from: entry.parent_interface_name,
                         to: entry.name,
                         color: "transparent",
@@ -168,6 +239,7 @@ export default {
                 } else {
                     // add edge from me to interface
                     edges.push({
+                        id: `me-${entry.name}`,
                         from: "me",
                         to: entry.name,
                         color: "transparent",
@@ -244,6 +316,7 @@ export default {
 
                 // add edge from interface to announced aspect
                 edges.push({
+                    id: `${entry.interface}~${entry.hash}`,
                     from: entry.interface,
                     to: entry.hash,
                     color: "gray",
@@ -251,55 +324,9 @@ export default {
 
             }
 
-            // create network ui
-            const container = document.getElementById("network");
-            const network = new Network(container, {
-                nodes: nodes,
-                edges: edges,
-            }, {
-                interaction: {
-                    tooltipDelay: 0, // show tooltip instantly on hover
-                },
-                layout: {
-                    // always layout nodes the same way across reloads if nothing changed
-                    randomSeed: 1,
-                },
-                nodes: {
-                    color: {
-                        border: "#000000",
-                        highlight: {
-                            border: "#000000",
-                        },
-                    },
-                },
-                physics: {
-                    barnesHut: {
-                        gravitationalConstant: -5000,
-                        // centralGravity: 0,
-                        // springConstant: 0.1,
-                        // damping: 0.15,
-                    },
-                    // maxVelocity: 150,
-                    // minVelocity: 0.25,
-                },
-                groups: {
-                    "me": {
-                        shape: "image",
-                        image: "/assets/images/reticulum_logo_512.png",
-                    },
-                    "interface": {
-
-                    },
-                    "announce": {
-
-                    },
-                },
-            });
-
-            // hide loading once done
-            network.on("stabilized", () => {
-                this.isLoading = false;
-            });
+            // update nodes and edges in network
+            this.nodes.update(nodes);
+            this.edges.update(edges);
 
         },
         formatBytes: function(bytes) {
