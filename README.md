@@ -148,7 +148,7 @@ cd reticulum-meshchat
 npm install --omit=dev
 
 # build frontend vue components
-npm run build
+npm run build-frontend
 
 # install python deps
 pip install -r requirements.txt
@@ -284,15 +284,18 @@ pip install -r requirements.txt
 npm install
 ```
 
-**Build Vite App**
+**Build and run Electron App**
 
 ```
-npm run build
+npm run electron
 ```
 
-**Run MeshChat Server**
+
+
+**or; Build and run MeshChat Server**
 
 ```
+npm run build-frontend
 python3 meshchat.py --headless
 ```
 
