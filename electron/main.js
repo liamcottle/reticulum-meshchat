@@ -200,7 +200,7 @@ app.whenReady().then(async () => {
             });
 
             // quit after dismissing error dialog
-            quit();
+            app.quit();
 
         });
 
