@@ -39,6 +39,7 @@ export default {
             config: null,
             isLoading: false,
             loadingProgress: 0,
+            reloadInterval: null,
             interfaces: [],
             pathTable: [],
             announces: {},
@@ -46,6 +47,9 @@ export default {
             nodes: new DataSet(),
             edges: new DataSet(),
         };
+    },
+    beforeUnmount() {
+        clearInterval(this.reloadInterval);
     },
     mounted() {
         this.init();
@@ -157,7 +161,7 @@ export default {
             this.isLoading = false;
 
             // auto update network
-            setInterval(() => {
+            this.reloadInterval = setInterval(() => {
                 this.update();
             }, 10000);
 
