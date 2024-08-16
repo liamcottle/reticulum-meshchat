@@ -151,6 +151,16 @@ export default {
                 // calculate percentage stabilized
                 this.loadingProgress = Math.floor((event.iterations / event.total) * 100);
 
+                // hide loading once stabilized at least 50%
+                if(this.loadingProgress >= 50){
+                    this.isLoading = false;
+                }
+
+            });
+
+            // hide loading when stabilized
+            this.network.on("stabilized", () => {
+                this.isLoading = false;
             });
 
             // update network
@@ -158,7 +168,6 @@ export default {
 
             // stabilise the network a bit after first load
             this.network.stabilize();
-            this.isLoading = false;
 
             // auto update network
             this.reloadInterval = setInterval(() => {
