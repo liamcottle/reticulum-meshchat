@@ -160,6 +160,11 @@ export default {
             // stabilise the network a bit after first load
             this.network.stabilize(100);
 
+            // auto update network
+            setInterval(() => {
+                this.update();
+            }, 10000);
+
         },
         async update() {
 
@@ -324,9 +329,55 @@ export default {
 
             }
 
-            // update nodes and edges in network
-            this.nodes.update(nodes);
-            this.edges.update(edges);
+            // process nodes and edges
+            this.processNewNodes(nodes);
+            this.processNewEdges(edges);
+
+        },
+        processNewNodes(newNodes) {
+
+            // update nodes
+            const oldNodeIds = this.nodes.map((node) => node.id);
+            const newNodeIds = newNodes.map((node) => node.id);
+            this.nodes.update(newNodes);
+
+            // log new nodes
+            for(const newNodeId of newNodeIds){
+                if(!oldNodeIds.includes(newNodeId)){
+                    console.log("Added Node: " + newNodeId);
+                }
+            }
+
+            // remove old nodes that no longer exist
+            for(const oldNodeId of oldNodeIds){
+                if(!newNodeIds.includes(oldNodeId)){
+                    console.log("Removed Node: " + oldNodeId);
+                    this.edges.remove(oldNodeId);
+                }
+            }
+
+        },
+        processNewEdges(newEdges) {
+
+            // update edges
+            const oldEdgeIds = this.edges.map((edge) => edge.id);
+            const newEdgeIds = newEdges.map((edge) => edge.id);
+            this.edges.update(newEdges);
+
+            // log new edges
+            for(const newEdgeId of newEdgeIds){
+                if(!oldEdgeIds.includes(newEdgeId)){
+                    console.log("Added Edge: " + newEdgeId);
+                }
+            }
+
+            // remove old edges that no longer exist
+            for(const oldEdgeId of oldEdgeIds){
+                if(!newEdgeIds.includes(oldEdgeId)){
+                    console.log("Removed Edge: " + oldEdgeId);
+                    this.edges.remove(oldEdgeId);
+                }
+            }
 
         },
         formatBytes: function(bytes) {
