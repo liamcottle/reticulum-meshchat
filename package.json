@@ -3,10 +3,13 @@
   "version": "1.9.0",
   "description": "",
   "main": "electron/main.js",
-  "postinstall": "electron-builder install-app-deps",
   "scripts": {
-    "build": "vite build",
-    "dist": "npm run build && python setup.py build && electron-builder --publish=never"
+    "build-frontend": "vite build",
+    "build-backend": "python setup.py build",
+    "build": "npm run build-frontend && npm run build-backend",
+    "electron-postinstall": "electron-builder install-app-deps",
+    "electron": "npm run electron-postinstall && npm run build && electron .",
+    "dist": "npm run electron-postinstall && npm run build && electron-builder --publish=never"
   },
   "license": "MIT",
   "engines": {
