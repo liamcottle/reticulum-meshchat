@@ -200,7 +200,7 @@ function quit() {
 
     // kill python process
     if(exeChildProcess){
-        exeChildProcess.kill();
+        exeChildProcess.kill("SIGKILL");
     }
 
     // quit electron app
