@@ -198,7 +198,10 @@ class ReticulumMeshChat:
         # serve index.html
         @routes.get("/")
         async def index(request):
-            return web.FileResponse(path=get_file_path("public/index.html"))
+            return web.FileResponse(path=get_file_path("public/index.html"), headers={
+                # don't allow browser to store page in cache, otherwise new app versions may get stale ui
+                "Cache-Control": "no-cache, no-store",
+            })
 
         # serve ping
         @routes.get("/api/v1/status")
