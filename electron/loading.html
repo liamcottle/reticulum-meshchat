@@ -67,7 +67,9 @@
     }
 
     function onReady() {
-        window.location.href = "http://localhost:9337";
+        // redirect to meshchat and bypass browser cache
+        var timestamp = (new Date()).getTime();
+        window.location.href = "http://localhost:9337/?nocache=" + timestamp;
     }
 
 </script>
