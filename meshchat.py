@@ -37,7 +37,7 @@ def get_file_path(filename):
 
 class ReticulumMeshChat:
 
-    def __init__(self, identity: RNS.Identity, storage_dir, reticulum_config_dir):
+    def __init__(self, identity: RNS.Identity, storage_dir, reticulum_config_dir, password):
 
         # when providing a custom storage_dir, files will be saved as
         # <storage_dir>/identities/<identity_hex>/
@@ -124,6 +124,8 @@ class ReticulumMeshChat:
         # register audio call identity
         self.audio_call_manager = AudioCallManager(identity=self.identity)
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
+
+        self.password = password
 
         # start background thread for auto announce loop
         thread = threading.Thread(target=asyncio.run, args=(self.announce_loop(),))
@@ -1120,6 +1122,22 @@ class ReticulumMeshChat:
                 "message": "ok",
             })
 
+        @web.middleware
+        async def password_protect(request, handler):
+            if self.password is not None:
+                correct_password = False
+                if "Authorization" in request.headers:
+                    # header value in format of "Basic <base64>"
+                    auth_header = request.headers["Authorization"]
+                    provided_password = ":".join(base64.b64decode(auth_header.split("Basic ")[1]).decode("utf-8").split(":")[1:])
+                    if provided_password == self.password and auth_header.startswith("Basic"):
+                        correct_password = True
+                if not correct_password:
+                    return web.Response(status=401, headers={
+                        "WWW-Authenticate": "Basic realm=\"Access the application\", charset=\"UTF-8\""
+                    })
+            return await handler(request);
+
         # called when web app has started
         async def on_startup(app):
 
@@ -1131,7 +1149,7 @@ class ReticulumMeshChat:
                     print("failed to launch web browser")
 
         # create and run web app
-        app = web.Application(client_max_size=1024 * 1024 * 50)  # allow uploading files up to 50mb
+        app = web.Application(client_max_size=1024 * 1024 * 50, middlewares=[password_protect])  # allow uploading files up to 50mb
         app.add_routes(routes)
         app.add_routes([web.static('/', get_file_path("public/"))])  # serve anything in public folder
         app.on_shutdown.append(self.shutdown)  # need to force close websockets and stop reticulum now
@@ -2169,6 +2187,7 @@ def main():
     parser.add_argument("--reticulum-config-dir", type=str, help="Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)")
     parser.add_argument("--storage-dir", type=str, help="Path to a directory for storing databases and config files (default: ./storage)")
     parser.add_argument("--test-exception-message", type=str, help="Throws an exception. Used for testing the electron error dialog")
+    parser.add_argument("--password", type=str, help="Use HTTP Basic Auth to password protect access to the application")
     parser.add_argument('args', nargs=argparse.REMAINDER)  # allow unknown command line args
     args = parser.parse_args()
 
@@ -2229,7 +2248,7 @@ def main():
         print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), default_identity_file))
 
     # init app
-    reticulum_meshchat = ReticulumMeshChat(identity, args.storage_dir, args.reticulum_config_dir)
+    reticulum_meshchat = ReticulumMeshChat(identity, args.storage_dir, args.reticulum_config_dir, args.password)
     reticulum_meshchat.run(args.host, args.port, launch_browser=args.headless is False)
 
 

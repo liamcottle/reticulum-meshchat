@@ -167,7 +167,7 @@ python meshchat.py --help
 
 ```
 usage: meshchat.py [-h] [--host [HOST]] [--port [PORT]] [--headless] [--identity-file IDENTITY_FILE] [--identity-base64 IDENTITY_BASE64] [--generate-identity-file GENERATE_IDENTITY_FILE] [--generate-identity-base64]
-              [--reticulum-config-dir RETICULUM_CONFIG_DIR] [--storage-dir STORAGE_DIR]
+              [--reticulum-config-dir RETICULUM_CONFIG_DIR] [--storage-dir STORAGE_DIR] [--password PASSWORD]
 
 ReticulumMeshChat
 
@@ -188,6 +188,8 @@ options:
                         Path to a Reticulum config directory for the RNS stack to use (e.g: ~/.reticulum)
   --storage-dir STORAGE_DIR
                         Path to a directory for storing databases and config files (default: ./storage)
+  --password PASSWORD
+                        Use HTTP Basic Auth to password protect access to the application
 ```
 
 ## Running on Android
