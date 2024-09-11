@@ -90,7 +90,7 @@
                             </div>
                         </div>
                         <div>
-                            <div class="text-gray-900">{{ peer.name }}</div>
+                            <div class="text-gray-900">{{ peer.display_name }}</div>
                             <div class="text-gray-500 text-sm">{{ formatTimeAgo(peer.updated_at) }}</div>
                         </div>
                     </div>
@@ -180,9 +180,9 @@ export default {
         searchedPeers() {
             return this.peersOrderedByLatestAnnounce.filter((peer) => {
                 const search = this.peersSearchTerm.toLowerCase();
-                const matchesAppData = peer.name.toLowerCase().includes(search);
+                const matchesDisplayName = peer.display_name.toLowerCase().includes(search);
                 const matchesDestinationHash = peer.destination_hash.toLowerCase().includes(search);
-                return matchesAppData || matchesDestinationHash;
+                return matchesDisplayName || matchesDestinationHash;
             });
         },
     },

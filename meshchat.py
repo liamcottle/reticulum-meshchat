@@ -1514,6 +1514,12 @@ class ReticulumMeshChat:
 
     # convert database announce to a dictionary
     def convert_db_announce_to_dict(self, announce: database.Announce):
+
+        # get display name for lxmf delivery announce
+        display_name = None
+        if announce.aspect == "lxmf.delivery":
+            display_name = self.parse_lxmf_display_name(announce.app_data)
+
         return {
             "id": announce.id,
             "destination_hash": announce.destination_hash,
@@ -1521,6 +1527,7 @@ class ReticulumMeshChat:
             "identity_hash": announce.identity_hash,
             "identity_public_key": announce.identity_public_key,
             "app_data": announce.app_data,
+            "display_name": display_name,
             "created_at": announce.created_at,
             "updated_at": announce.updated_at,
         }
@@ -1855,15 +1862,20 @@ class ReticulumMeshChat:
                          .get_or_none())
 
         # if app data is available in database, it should be base64 encoded text that was announced
-        # we will return this as the conversation name
+        # we will return the parsed lxmf display name as the conversation name
         if lxmf_announce is not None and lxmf_announce.app_data is not None:
-            try:
-                app_data_bytes = base64.b64decode(lxmf_announce.app_data)
-                return LXMF.display_name_from_app_data(app_data_bytes)
-            except:
-                pass
+            return self.parse_lxmf_display_name(app_data_base64=lxmf_announce.app_data)
 
-        return "Unknown"
+        # announce did not have app data, so provide a fallback name
+        return "Anonymous Peer"
+
+    # reads the lxmf display name from the provided base64 app data
+    def parse_lxmf_display_name(self, app_data_base64: str):
+        try:
+            app_data_bytes = base64.b64decode(app_data_base64)
+            return LXMF.display_name_from_app_data(app_data_bytes)
+        except:
+            return "Anonymous Peer"
 
     # returns true if the conversation has messages newer than the last read at timestamp
     def is_lxmf_conversation_unread(self, destination_hash):

@@ -8,7 +8,7 @@
 
             <!-- peer info -->
             <div>
-                <div class="font-semibold">{{ selectedPeer.name }}</div>
+                <div class="font-semibold">{{ selectedPeer.display_name }}</div>
                 <div class="text-sm"><{{ selectedPeer.destination_hash }}> <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span></div>
             </div>
 
