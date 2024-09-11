@@ -1497,8 +1497,8 @@ class ReticulumMeshChat:
 
         # convert state to string
         lxmf_message_state = "unknown"
-        if lxmf_message.state == LXMF.LXMessage.DRAFT:
-            lxmf_message_state = "draft"
+        if lxmf_message.state == LXMF.LXMessage.GENERATING:
+            lxmf_message_state = "generating"
         elif lxmf_message.state == LXMF.LXMessage.OUTBOUND:
             lxmf_message_state = "outbound"
         elif lxmf_message.state == LXMF.LXMessage.SENDING:
