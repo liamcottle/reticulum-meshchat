@@ -543,6 +543,8 @@ class ReticulumMeshChat:
             return web.json_response({
                 "app_info": {
                     "version": self.get_app_version(),
+                    "lxmf_version": LXMF.__version__,
+                    "rns_version": RNS.__version__,
                     "storage_path": self.storage_path,
                     "database_path": self.database_path,
                     "database_file_size": os.path.getsize(self.database_path),
