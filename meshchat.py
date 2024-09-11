@@ -1858,7 +1858,8 @@ class ReticulumMeshChat:
         # we will return this as the conversation name
         if lxmf_announce is not None and lxmf_announce.app_data is not None:
             try:
-                return base64.b64decode(lxmf_announce.app_data).decode("utf-8")
+                app_data_bytes = base64.b64decode(lxmf_announce.app_data)
+                return LXMF.display_name_from_app_data(app_data_bytes)
             except:
                 pass
 
