@@ -109,7 +109,10 @@ class ReticulumMeshChat:
         self.message_router.delivery_per_transfer_limit = self.config.lxmf_delivery_transfer_limit_in_bytes.get() / 1000
 
         # register lxmf identity
-        self.local_lxmf_destination = self.message_router.register_delivery_identity(self.identity)
+        self.local_lxmf_destination = self.message_router.register_delivery_identity(
+            identity=self.identity,
+            display_name=self.config.display_name.get(),
+        )
 
         # set a callback for when an lxmf message is received
         self.message_router.register_delivery_callback(self.on_lxmf_delivery)
@@ -1144,8 +1147,9 @@ class ReticulumMeshChat:
         # update last announced at timestamp
         self.config.last_announced_at.set(int(time.time()))
 
-        # send announce for lxmf
-        self.local_lxmf_destination.announce(app_data=self.config.display_name.get().encode("utf-8"))
+        # send announce for lxmf (ensuring name is updated before announcing)
+        self.local_lxmf_destination.display_name = self.config.display_name.get()
+        self.message_router.announce(destination_hash=self.local_lxmf_destination.hash)
 
         # send announce for audio call
         self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
