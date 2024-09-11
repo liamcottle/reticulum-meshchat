@@ -10,8 +10,8 @@
                     <!-- version -->
                     <div class="flex p-1">
                         <div class="mr-auto">
-                            <div>Version</div>
-                            <div class="text-sm text-gray-700">v{{ appInfo.version }}</div>
+                            <div>Versions</div>
+                            <div class="text-sm text-gray-700">MeshChat v{{ appInfo.version }} • RNS v{{ appInfo.rns_version }} • LXMF v{{ appInfo.lxmf_version }}</div>
                         </div>
                         <div class="mx-2 my-auto">
                             <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat/releases" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
