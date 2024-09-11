@@ -29,7 +29,7 @@
                             </div>
                         </div>
                         <div class="mr-auto">
-                            <div class="text-gray-900" :class="{ 'font-semibold': conversation.is_unread || conversation.failed_messages_count > 0 }">{{ conversation.name }}</div>
+                            <div class="text-gray-900" :class="{ 'font-semibold': conversation.is_unread || conversation.failed_messages_count > 0 }">{{ conversation.display_name }}</div>
                             <div class="text-gray-500 text-sm">{{ formatTimeAgo(conversation.updated_at) }}</div>
                         </div>
                         <div v-if="conversation.is_unread" class="my-auto ml-2 mr-2">
@@ -160,9 +160,9 @@ export default {
         searchedConversations() {
             return this.conversations.filter((conversation) => {
                 const search = this.conversationsSearchTerm.toLowerCase();
-                const matchesName = conversation.name.toLowerCase().includes(search);
+                const matchesDisplayName = conversation.display_name.toLowerCase().includes(search);
                 const matchesDestinationHash = conversation.destination_hash.toLowerCase().includes(search);
-                return matchesName || matchesDestinationHash;
+                return matchesDisplayName || matchesDestinationHash;
             });
         },
         peersCount() {

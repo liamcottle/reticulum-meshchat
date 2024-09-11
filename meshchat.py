@@ -1098,7 +1098,7 @@ class ReticulumMeshChat:
 
                 # add to conversations
                 conversations.append({
-                    "name": self.get_lxmf_conversation_name(other_user_hash),
+                    "display_name": self.get_lxmf_conversation_name(other_user_hash),
                     "destination_hash": other_user_hash,
                     "is_unread": self.is_lxmf_conversation_unread(other_user_hash),
                     "failed_messages_count": self.lxmf_conversation_failed_messages_count(other_user_hash),

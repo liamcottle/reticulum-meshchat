@@ -101,7 +101,7 @@ export default {
 
             // we didn't find an existing peer, so just use an unknown name
             this.onPeerClick({
-                name: "Unknown Peer",
+                display_name: "Unknown Peer",
                 destination_hash: destinationHash,
             });
 
