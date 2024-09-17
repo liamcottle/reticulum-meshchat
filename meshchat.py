@@ -185,12 +185,9 @@ class ReticulumMeshChat:
 
         # force close websocket clients
         for websocket_client in self.websocket_clients:
-            print("force closing websocket for shutdown")
             await websocket_client.close(code=WSCloseCode.GOING_AWAY)
-            print("force closed websocket")
 
         # stop reticulum
-        print("stopping reticulum")
         RNS.Transport.detach_interfaces()
         self.reticulum.exit_handler()
         RNS.exit()
@@ -500,7 +497,6 @@ class ReticulumMeshChat:
                 return web.json_response({
                     "message": "Interface has been added",
                 })
-
 
         # handle websocket clients
         @routes.get("/ws")
@@ -946,10 +942,13 @@ class ReticulumMeshChat:
             try:
 
                 # send lxmf message to destination
-                lxmf_message = await self.send_message(destination_hash, content,
-                                        image_field=image_field,
-                                        audio_field=audio_field,
-                                        file_attachments_field=file_attachments_field)
+                lxmf_message = await self.send_message(
+                    destination_hash=destination_hash,
+                    content=content,
+                    image_field=image_field,
+                    audio_field=audio_field,
+                    file_attachments_field=file_attachments_field
+                )
 
                 return web.json_response({
                     "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
@@ -1399,20 +1398,6 @@ class ReticulumMeshChat:
             "is_outbound": audio_call.is_outbound,
             "path": path,
         }
-
-    # convert app data to string, or return none unable to do so
-    def convert_app_data_to_string(self, app_data):
-
-        # attempt to convert to utf-8 string
-        if app_data is not None:
-            try:
-                return app_data.decode("utf-8")
-            except:
-                # ignore failure to convert to string
-                pass
-
-        # unable to convert to string
-        return None
 
     # convert an lxmf message to a dictionary, for sending over websocket
     def convert_lxmf_message_to_dict(self, lxmf_message: LXMF.LXMessage):
