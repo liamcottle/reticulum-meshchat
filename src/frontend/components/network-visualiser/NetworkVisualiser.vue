@@ -309,7 +309,7 @@ export default {
 
                 if(announce.aspect === "lxmf.delivery"){
 
-                    const name = announce.app_data ? atob(announce.app_data) : "Anonymous Peer";
+                    const name = announce.display_name;
 
                     node.shape = "circularImage";
                     node.image = entry.hops === 1 ? "/assets/images/network-visualiser/user_1hop.png" : "/assets/images/network-visualiser/user.png";
@@ -328,7 +328,7 @@ export default {
 
                 if(announce.aspect === "nomadnetwork.node"){
 
-                    const name = announce.app_data ? atob(announce.app_data) : "Anonymous Node";
+                    const name = announce.display_name;
 
                     node.shape = "circularImage";
                     node.image = entry.hops === 1 ? "/assets/images/network-visualiser/server_1hop.png" : "/assets/images/network-visualiser/server.png";
