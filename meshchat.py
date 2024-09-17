@@ -118,9 +118,9 @@ class ReticulumMeshChat:
         self.message_router.register_delivery_callback(self.on_lxmf_delivery)
 
         # set a callback for when an lxmf announce is received
-        RNS.Transport.register_announce_handler(LXMFAnnounceHandler(self.on_lxmf_announce_received))
-        RNS.Transport.register_announce_handler(LXMFPropagationAnnounceHandler(self.on_lxmf_propagation_announce_received))
-        RNS.Transport.register_announce_handler(NomadnetworkNodeAnnounceHandler(self.on_nomadnet_node_announce_received))
+        RNS.Transport.register_announce_handler(AnnounceHandler("lxmf.delivery", self.on_lxmf_announce_received))
+        RNS.Transport.register_announce_handler(AnnounceHandler("lxmf.propagation", self.on_lxmf_propagation_announce_received))
+        RNS.Transport.register_announce_handler(AnnounceHandler("nomadnetwork.node", self.on_nomadnet_node_announce_received))
 
         # remember websocket clients
         self.websocket_clients: List[web.WebSocketResponse] = []
@@ -1744,13 +1744,13 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for an lxmf address
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_lxmf_announce_received(self, destination_hash, announced_identity, app_data):
+    def on_lxmf_announce_received(self, aspect, destination_hash, announced_identity, app_data):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [lxmf.delivery]")
 
         # upsert announce to database
-        self.db_upsert_announce(announced_identity, destination_hash, "lxmf.delivery", app_data)
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
 
         # find announce from database
         announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
@@ -1769,13 +1769,13 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for an lxmf propagation node address
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_lxmf_propagation_announce_received(self, destination_hash, announced_identity, app_data):
+    def on_lxmf_propagation_announce_received(self, aspect, destination_hash, announced_identity, app_data):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [lxmf.propagation]")
 
         # upsert announce to database
-        self.db_upsert_announce(announced_identity, destination_hash, "lxmf.propagation", app_data)
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
 
         # find announce from database
         announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
@@ -1853,13 +1853,13 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for a nomadnet node
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_nomadnet_node_announce_received(self, destination_hash, announced_identity, app_data):
+    def on_nomadnet_node_announce_received(self, aspect, destination_hash, announced_identity, app_data):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [nomadnetwork.node]")
 
         # upsert announce to database
-        self.db_upsert_announce(announced_identity, destination_hash, "nomadnetwork.node", app_data)
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
 
         # find announce from database
         announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
@@ -2044,52 +2044,19 @@ class Config:
     lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
 
 
-# an announce handler for lxmf.delivery aspect that just forwards to a provided callback
-class LXMFAnnounceHandler:
+# an announce handler that forwards announces to a provided callback for the provided aspect filter
+# this handler exists so we can have access to the original aspect, as this is not provided in the announce itself
+class AnnounceHandler:
 
-    def __init__(self, received_announce_callback):
-        self.aspect_filter = "lxmf.delivery"
+    def __init__(self, aspect_filter, received_announce_callback):
+        self.aspect_filter = aspect_filter
         self.received_announce_callback = received_announce_callback
 
     # we will just pass the received announce back to the provided callback
     def received_announce(self, destination_hash, announced_identity, app_data):
         try:
             # handle received announce
-            self.received_announce_callback(destination_hash, announced_identity, app_data)
-        except:
-            # ignore failure to handle received announce
-            pass
-
-
-# an announce handler for lxmf.propagation aspect that just forwards to a provided callback
-class LXMFPropagationAnnounceHandler:
-
-    def __init__(self, received_announce_callback):
-        self.aspect_filter = "lxmf.propagation"
-        self.received_announce_callback = received_announce_callback
-
-    # we will just pass the received announce back to the provided callback
-    def received_announce(self, destination_hash, announced_identity, app_data):
-        try:
-            # handle received announce
-            self.received_announce_callback(destination_hash, announced_identity, app_data)
-        except:
-            # ignore failure to handle received announce
-            pass
-
-
-# an announce handler for nomadnetwork.node aspect that just forwards to a provided callback
-class NomadnetworkNodeAnnounceHandler:
-
-    def __init__(self, received_announce_callback):
-        self.aspect_filter = "nomadnetwork.node"
-        self.received_announce_callback = received_announce_callback
-
-    # we will just pass the received announce back to the provided callback
-    def received_announce(self, destination_hash, announced_identity, app_data):
-        try:
-            # handle received announce
-            self.received_announce_callback(destination_hash, announced_identity, app_data)
+            self.received_announce_callback(self.aspect_filter, destination_hash, announced_identity, app_data)
         except:
             # ignore failure to handle received announce
             pass
