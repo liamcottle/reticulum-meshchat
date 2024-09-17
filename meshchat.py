@@ -775,6 +775,7 @@ class ReticulumMeshChat:
 
             # get query params
             aspect = request.query.get("aspect", None)
+            identity_hash = request.query.get("identity_hash", None)
             limit = request.query.get("limit", None)
 
             # build announces database query
@@ -783,6 +784,10 @@ class ReticulumMeshChat:
             # filter by provided aspect
             if aspect is not None:
                 query = query.where(database.Announce.aspect == aspect)
+
+            # filter by provided identity hash
+            if identity_hash is not None:
+                query = query.where(database.Announce.identity_hash == identity_hash)
 
             # limit results
             if limit is not None:
