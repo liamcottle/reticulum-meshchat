@@ -20,6 +20,7 @@ from peewee import SqliteDatabase
 from serial.tools import list_ports
 
 import database
+from src.backend.announce_handler import AnnounceHandler
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.backend.audio_call_manager import AudioCall, AudioCallManager
 
@@ -2042,24 +2043,6 @@ class Config:
     allow_auto_resending_failed_messages_with_attachments = BoolConfig("allow_auto_resending_failed_messages_with_attachments", False)
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
     lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
-
-
-# an announce handler that forwards announces to a provided callback for the provided aspect filter
-# this handler exists so we can have access to the original aspect, as this is not provided in the announce itself
-class AnnounceHandler:
-
-    def __init__(self, aspect_filter, received_announce_callback):
-        self.aspect_filter = aspect_filter
-        self.received_announce_callback = received_announce_callback
-
-    # we will just pass the received announce back to the provided callback
-    def received_announce(self, destination_hash, announced_identity, app_data):
-        try:
-            # handle received announce
-            self.received_announce_callback(self.aspect_filter, destination_hash, announced_identity, app_data)
-        except:
-            # ignore failure to handle received announce
-            pass
 
 
 class NomadnetDownloader:
