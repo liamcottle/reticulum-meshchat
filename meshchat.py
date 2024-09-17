@@ -119,6 +119,7 @@ class ReticulumMeshChat:
         self.message_router.register_delivery_callback(self.on_lxmf_delivery)
 
         # set a callback for when an lxmf announce is received
+        RNS.Transport.register_announce_handler(AnnounceHandler("call.audio", self.on_audio_call_announce_received))
         RNS.Transport.register_announce_handler(AnnounceHandler("lxmf.delivery", self.on_lxmf_announce_received))
         RNS.Transport.register_announce_handler(AnnounceHandler("lxmf.propagation", self.on_lxmf_propagation_announce_received))
         RNS.Transport.register_announce_handler(AnnounceHandler("nomadnetwork.node", self.on_nomadnet_node_announce_received))
@@ -1727,6 +1728,26 @@ class ReticulumMeshChat:
                 "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
             }))
 
+    # handle an announce received from reticulum, for an audio call address
+    # NOTE: cant be async, as Reticulum doesn't await it
+    def on_audio_call_announce_received(self, aspect, destination_hash, announced_identity, app_data):
+
+        # log received announce
+        print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [call.audio]")
+
+        # upsert announce to database
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
+
+        # find announce from database
+        announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
+        if announce is None:
+            return
+
+        # send database announce to all websocket clients
+        asyncio.run(self.websocket_broadcast(json.dumps({
+            "type": "announce",
+            "announce": self.convert_db_announce_to_dict(announce),
+        })))
 
     # handle an announce received from reticulum, for an lxmf address
     # NOTE: cant be async, as Reticulum doesn't await it
