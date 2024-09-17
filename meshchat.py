@@ -1508,10 +1508,12 @@ class ReticulumMeshChat:
     # convert database announce to a dictionary
     def convert_db_announce_to_dict(self, announce: database.Announce):
 
-        # get display name for lxmf delivery announce
+        # parse display name from announce
         display_name = None
         if announce.aspect == "lxmf.delivery":
             display_name = self.parse_lxmf_display_name(announce.app_data)
+        elif announce.aspect == "nomadnetwork.node":
+            display_name = self.parse_nomadnetwork_node_display_name(announce.app_data)
 
         return {
             "id": announce.id,
@@ -1910,6 +1912,14 @@ class ReticulumMeshChat:
             return LXMF.display_name_from_app_data(app_data_bytes)
         except:
             return "Anonymous Peer"
+
+    # reads the nomadnetwork node display name from the provided base64 app data
+    def parse_nomadnetwork_node_display_name(self, app_data_base64: str):
+        try:
+            app_data_bytes = base64.b64decode(app_data_base64)
+            return app_data_bytes.decode("utf-8")
+        except:
+            return "Anonymous Node"
 
     # returns true if the conversation has messages newer than the last read at timestamp
     def is_lxmf_conversation_unread(self, destination_hash):
