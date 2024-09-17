@@ -301,6 +301,12 @@ export default {
                     continue;
                 }
 
+                // skip announces if we don't want to show them
+                const aspectsToShow = ["lxmf.delivery", "nomadnetwork.node"];
+                if(!aspectsToShow.includes(announce.aspect)){
+                    continue;
+                }
+
                 const node = {
                     id: entry.hash,
                     group: "announce",
