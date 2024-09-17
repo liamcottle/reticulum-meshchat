@@ -16,7 +16,7 @@
 
                 <!-- node info -->
                 <div class="my-auto">
-                    <span class="font-semibold">{{ selectedNode.name }}</span>
+                    <span class="font-semibold">{{ selectedNode.display_name }}</span>
                     <span v-if="selectedNodePath" @click="onDestinationPathClick(selectedNodePath)" class="text-sm cursor-pointer"> - {{ selectedNodePath.hops }} {{ selectedNodePath.hops === 1 ? 'hop' : 'hops' }} away</span>
                 </div>
 
@@ -268,19 +268,7 @@ export default {
             }
         },
         updateNodeFromAnnounce: function(announce) {
-            this.nodes[announce.destination_hash] = {
-                ...announce,
-                // helper property for easily grabbing node name from app data
-                name: this.getNodeNameFromAppData(announce.app_data),
-            };
-        },
-        getNodeNameFromAppData: function(appData) {
-            try {
-                // app data should be node name, and our server provides it base64 encoded
-                return Utils.decodeBase64ToUtf8String(appData);
-            } catch(e){
-                return "Anonymous Node";
-            }
+            this.nodes[announce.destination_hash] = announce;
         },
         async loadNodePage(destinationHash, pagePath, addToHistory = true, loadFromCache = true) {
 
@@ -498,7 +486,7 @@ export default {
 
                 // update selected node, so relative urls work correctly when returned by the new node
                 this.selectedNode = this.nodes[destinationHash] || {
-                    name: "Unknown Node",
+                    display_name: "Unknown Node",
                     destination_hash: destinationHash,
                 };
 

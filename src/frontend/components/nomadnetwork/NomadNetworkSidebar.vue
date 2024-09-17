@@ -19,7 +19,7 @@
                             </div>
                         </div>
                         <div>
-                            <div class="text-gray-900">{{ node.name }}</div>
+                            <div class="text-gray-900">{{ node.display_name }}</div>
                             <div class="text-gray-500 text-sm">{{ formatTimeAgo(node.updated_at) }}</div>
                         </div>
                     </div>
@@ -95,9 +95,9 @@ export default {
         searchedNodes() {
             return this.nodesOrderedByLatestAnnounce.filter((node) => {
                 const search = this.nodesSearchTerm.toLowerCase();
-                const matchesAppData = node.name.toLowerCase().includes(search);
+                const matchesDisplayName = node.display_name.toLowerCase().includes(search);
                 const matchesDestinationHash = node.destination_hash.toLowerCase().includes(search);
-                return matchesAppData || matchesDestinationHash;
+                return matchesDisplayName || matchesDestinationHash;
             });
         },
     },
