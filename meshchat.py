@@ -1474,6 +1474,7 @@ class ReticulumMeshChat:
             "is_incoming": lxmf_message.incoming,
             "state": self.convert_lxmf_state_to_string(lxmf_message),
             "progress": progress_percentage,
+            "method": self.convert_lxmf_method_to_string(lxmf_message),
             "delivery_attempts": lxmf_message.delivery_attempts,
             "next_delivery_attempt_at": getattr(lxmf_message, "next_delivery_attempt", None),  # attribute may not exist yet
             "title": lxmf_message.title.decode('utf-8'),
@@ -1504,6 +1505,22 @@ class ReticulumMeshChat:
             lxmf_message_state = "failed"
 
         return lxmf_message_state
+
+    # convert lxmf method to a human friendly string
+    def convert_lxmf_method_to_string(self, lxmf_message: LXMF.LXMessage):
+
+        # convert method to string
+        lxmf_message_method = "unknown"
+        if lxmf_message.method == LXMF.LXMessage.OPPORTUNISTIC:
+            lxmf_message_method = "opportunistic"
+        elif lxmf_message.method == LXMF.LXMessage.DIRECT:
+            lxmf_message_method = "direct"
+        elif lxmf_message.method == LXMF.LXMessage.PROPAGATED:
+            lxmf_message_method = "propagated"
+        elif lxmf_message.method == LXMF.LXMessage.PAPER:
+            lxmf_message_method = "paper"
+
+        return lxmf_message_method
 
     # convert database announce to a dictionary
     def convert_db_announce_to_dict(self, announce: database.Announce):
@@ -1559,8 +1576,29 @@ class ReticulumMeshChat:
 
     # handle delivery failed for an outbound lxmf message
     def on_lxmf_sending_failed(self, lxmf_message):
-        # just pass this on, we don't need to do anything special
+
+        # check if this failed message should fall back to sending via a propagation node
+        if lxmf_message.state == LXMF.LXMessage.FAILED and hasattr(lxmf_message, "try_propagation_on_fail") and lxmf_message.try_propagation_on_fail:
+            self.send_failed_message_via_propagation_node(lxmf_message)
+
+        # update state
         self.on_lxmf_sending_state_updated(lxmf_message)
+
+    # sends a previously failed message via a propagation node
+    def send_failed_message_via_propagation_node(self, lxmf_message: LXMF.LXMessage):
+
+        # reset internal message state
+        lxmf_message.packed = None
+        lxmf_message.delivery_attempts = 0
+        if hasattr(lxmf_message, "next_delivery_attempt"):
+            del lxmf_message.next_delivery_attempt
+
+        # this message should now be sent via a propagation node
+        lxmf_message.desired_method = LXMF.LXMessage.PROPAGATED
+        lxmf_message.try_propagation_on_fail = False
+
+        # resend message
+        self.message_router.handle_outbound(lxmf_message)
 
     # upserts the provided lxmf message to the database
     def db_upsert_lxmf_message(self, lxmf_message: LXMF.LXMessage):
@@ -1576,6 +1614,7 @@ class ReticulumMeshChat:
             "is_incoming": lxmf_message_dict["is_incoming"],
             "state": lxmf_message_dict["state"],
             "progress": lxmf_message_dict["progress"],
+            "method": lxmf_message_dict["method"],
             "delivery_attempts": lxmf_message_dict["delivery_attempts"],
             "next_delivery_attempt_at": lxmf_message_dict["next_delivery_attempt_at"],
             "title": lxmf_message_dict["title"],
@@ -1719,9 +1758,9 @@ class ReticulumMeshChat:
     # updates lxmf message in database and broadcasts to websocket until it's delivered, or it fails
     async def handle_lxmf_message_progress(self, lxmf_message):
 
-        # FIXME: there's no register_progress_callback on the lxmf message, so manually send progress until delivered or failed
+        # FIXME: there's no register_progress_callback on the lxmf message, so manually send progress until delivered, sent or failed
         # we also can't use on_lxmf_sending_state_updated method to do this, because of async/await issues...
-        while lxmf_message.state != LXMF.LXMessage.DELIVERED and lxmf_message.state != LXMF.LXMessage.FAILED:
+        while lxmf_message.state != LXMF.LXMessage.DELIVERED and lxmf_message.state != LXMF.LXMessage.SENT and lxmf_message.state != LXMF.LXMessage.FAILED:
 
             # wait 1 second between sending updates
             await asyncio.sleep(1)

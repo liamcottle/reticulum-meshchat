@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from peewee import *
 from playhouse.migrate import migrate as migrate_database, SqliteMigrator
 
-latest_version = 3  # increment each time new database migrations are added
+latest_version = 4  # increment each time new database migrations are added
 database = DatabaseProxy()  # use a proxy object, as we will init real db client inside meshchat.py
 migrator = SqliteMigrator(database)
 
@@ -24,6 +24,12 @@ def migrate(current_version):
             migrator.add_column("lxmf_messages", 'rssi', LxmfMessage.rssi),
             migrator.add_column("lxmf_messages", 'snr', LxmfMessage.snr),
             migrator.add_column("lxmf_messages", 'quality', LxmfMessage.quality),
+        )
+
+    # migrate to version 4
+    if current_version < 4:
+        migrate_database(
+            migrator.add_column("lxmf_messages", 'method', LxmfMessage.method),
         )
 
     return latest_version
@@ -73,6 +79,7 @@ class LxmfMessage(BaseModel):
     state = CharField()  # state is converted from internal int to a human friendly string
     progress = FloatField()  # progress is converted from internal float 0.00-1.00 to float between 0.00/100 (2 decimal places)
     is_incoming = BooleanField()  # if true, we should ignore state, it's set to draft by default on incoming messages
+    method = CharField(null=True)  # what method is being used to send the message, e.g: direct, propagated
     delivery_attempts = IntegerField(default=0)  # how many times delivery has been attempted for this message
     next_delivery_attempt_at = FloatField(null=True)  # timestamp of when the message will attempt delivery again
     title = TextField()
