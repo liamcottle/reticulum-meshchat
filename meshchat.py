@@ -1291,6 +1291,10 @@ class ReticulumMeshChat:
             value = bool(data["allow_auto_resending_failed_messages_with_attachments"])
             self.config.allow_auto_resending_failed_messages_with_attachments.set(value)
 
+        if "auto_send_failed_messages_to_propagation_node" in data:
+            value = bool(data["auto_send_failed_messages_to_propagation_node"])
+            self.config.auto_send_failed_messages_to_propagation_node.set(value)
+
         if "show_suggested_community_interfaces" in data:
             value = bool(data["show_suggested_community_interfaces"])
             self.config.show_suggested_community_interfaces.set(value)
@@ -1470,6 +1474,7 @@ class ReticulumMeshChat:
             "last_announced_at": self.config.last_announced_at.get(),
             "auto_resend_failed_messages_when_announce_received": self.config.auto_resend_failed_messages_when_announce_received.get(),
             "allow_auto_resending_failed_messages_with_attachments": self.config.allow_auto_resending_failed_messages_with_attachments.get(),
+            "auto_send_failed_messages_to_propagation_node": self.config.auto_send_failed_messages_to_propagation_node.get(),
             "show_suggested_community_interfaces": self.config.show_suggested_community_interfaces.get(),
             "lxmf_preferred_propagation_node_destination_hash": self.config.lxmf_preferred_propagation_node_destination_hash.get(),
             "lxmf_preferred_propagation_node_auto_sync_interval_seconds": self.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds.get(),
@@ -1844,7 +1849,7 @@ class ReticulumMeshChat:
 
         # create lxmf message
         lxmf_message = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, content, desired_method=LXMF.LXMessage.DIRECT)
-        lxmf_message.try_propagation_on_fail = True
+        lxmf_message.try_propagation_on_fail = self.config.auto_send_failed_messages_to_propagation_node.get()
 
         lxmf_message.fields = {}
 
@@ -2242,6 +2247,7 @@ class Config:
     last_announced_at = IntConfig("last_announced_at", None)
     auto_resend_failed_messages_when_announce_received = BoolConfig("auto_resend_failed_messages_when_announce_received", True)
     allow_auto_resending_failed_messages_with_attachments = BoolConfig("allow_auto_resending_failed_messages_with_attachments", False)
+    auto_send_failed_messages_to_propagation_node = BoolConfig("auto_send_failed_messages_to_propagation_node", False)
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
     lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
     lxmf_preferred_propagation_node_destination_hash = StringConfig("lxmf_preferred_propagation_node_destination_hash", None)

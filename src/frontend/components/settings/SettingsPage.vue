@@ -27,6 +27,16 @@
                         <div class="text-sm text-gray-700">When enabled, failed messages that have attachments are allowed to auto resend.</div>
                     </div>
 
+                    <div class="p-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input v-model="config.auto_send_failed_messages_to_propagation_node" @change="onAutoSendFailedMessagesToPropagationNodeChange" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300">
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900">Auto send to propagation node</label>
+                        </div>
+                        <div class="text-sm text-gray-700">When enabled, messages that fail to send will be sent to the configured propagation node.</div>
+                    </div>
+
                 </div>
             </div>
 
@@ -69,7 +79,7 @@
                         <div class="flex">
                             <input v-model="config.lxmf_preferred_propagation_node_destination_hash" @input="onLxmfPreferredPropagationNodeDestinationHashChange" type="text" placeholder="Destination Hash. e.g: a39610c89d18bb48c73e429582423c24" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         </div>
-                        <div class="text-sm text-gray-700">When provided, messages that fail to send will automatically send to this propagation node.</div>
+                        <div class="text-sm text-gray-700">This is the propagation node your messages will be sent to and retrieved from.</div>
                     </div>
 
                     <div class="p-2">
@@ -110,6 +120,7 @@ export default {
             config: {
                 auto_resend_failed_messages_when_announce_received: null,
                 allow_auto_resending_failed_messages_with_attachments: null,
+                auto_send_failed_messages_to_propagation_node: null,
                 show_suggested_community_interfaces: null,
                 lxmf_preferred_propagation_node_destination_hash: null,
             },
@@ -165,6 +176,11 @@ export default {
         async onAllowAutoResendingFailedMessagesWithAttachmentsChange() {
             await this.updateConfig({
                 "allow_auto_resending_failed_messages_with_attachments": this.config.allow_auto_resending_failed_messages_with_attachments,
+            });
+        },
+        async onAutoSendFailedMessagesToPropagationNodeChange() {
+            await this.updateConfig({
+                "auto_send_failed_messages_to_propagation_node": this.config.auto_send_failed_messages_to_propagation_node,
             });
         },
         async onShowSuggestedCommunityInterfacesChange() {
