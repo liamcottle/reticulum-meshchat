@@ -48,6 +48,35 @@
                 </div>
             </div>
 
+            <!-- propagation nodes -->
+            <div class="bg-white rounded shadow">
+                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Propagation Nodes</div>
+                <div class="divide-y text-gray-900">
+
+                    <div class="p-2">
+                        <div class="text-sm text-gray-700">
+                            <ul class="list-disc list-inside">
+                                <li>When you send a message, the intended recipient may be offline and your message will fail to send.</li>
+                                <li>Instead, messages can be sent to propagation nodes, which store the messages and allow recipients to retrieve them when they're next online.</li>
+                                <li>Propagation nodes automatically peer and sync messages with each other, creating an encrypted, distributed message store.</li>
+                                <li>By default, propagation nodes store messages for up to 30 days. If the recipient hasn't retrieved it by then, the message will be lost.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="p-2">
+                        <div>
+                            <label class="text-sm font-medium text-gray-900">Preferred Propagation Node</label>
+                        </div>
+                        <div class="flex">
+                            <input v-model="config.lxmf_preferred_propagation_node_destination_hash" @input="onLxmfPreferredPropagationNodeDestinationHashChange" type="text" placeholder="Destination Hash. e.g: a39610c89d18bb48c73e429582423c24" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+                        <div class="text-sm text-gray-700">When provided, messages that fail to send will automatically send to this propagation node.</div>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
     </div>
 </template>
@@ -61,6 +90,7 @@ export default {
                 auto_resend_failed_messages_when_announce_received: null,
                 allow_auto_resending_failed_messages_with_attachments: null,
                 show_suggested_community_interfaces: null,
+                lxmf_preferred_propagation_node_destination_hash: null,
             },
         };
     },
@@ -99,6 +129,11 @@ export default {
         async onShowSuggestedCommunityInterfacesChange() {
             await this.updateConfig({
                 "show_suggested_community_interfaces": this.config.show_suggested_community_interfaces,
+            });
+        },
+        async onLxmfPreferredPropagationNodeDestinationHashChange() {
+            await this.updateConfig({
+                "lxmf_preferred_propagation_node_destination_hash": this.config.lxmf_preferred_propagation_node_destination_hash,
             });
         },
     },

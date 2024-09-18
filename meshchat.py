@@ -118,6 +118,9 @@ class ReticulumMeshChat:
         # set a callback for when an lxmf message is received
         self.message_router.register_delivery_callback(self.on_lxmf_delivery)
 
+        # update active propagation node
+        self.set_active_propagation_node(self.config.lxmf_preferred_propagation_node_destination_hash.get())
+
         # handle received announces based on aspect
         RNS.Transport.register_announce_handler(AnnounceHandler("call.audio", self.on_audio_call_announce_received))
         RNS.Transport.register_announce_handler(AnnounceHandler("lxmf.delivery", self.on_lxmf_announce_received))
@@ -173,6 +176,22 @@ class ReticulumMeshChat:
 
             # wait 1 second before next loop
             await asyncio.sleep(1)
+
+    # uses the provided destination hash as the active propagation node
+    def set_active_propagation_node(self, destination_hash: str | None):
+
+        # set outbound propagation node
+        if destination_hash is not None and destination_hash != "":
+            try:
+                self.message_router.set_outbound_propagation_node(bytes.fromhex(destination_hash))
+            except:
+                # failed to set propagation node, clear it to ensure we don't use an old one by mistake
+                self.message_router.outbound_propagation_node = None
+                pass
+
+        # stop using propagation node
+        else:
+            self.message_router.outbound_propagation_node = None
 
     # handle receiving a new audio call
     def on_incoming_audio_call(self, audio_call: AudioCall):
@@ -1197,6 +1216,16 @@ class ReticulumMeshChat:
             value = bool(data["show_suggested_community_interfaces"])
             self.config.show_suggested_community_interfaces.set(value)
 
+        if "lxmf_preferred_propagation_node_destination_hash" in data:
+
+            # update config value
+            value = data["lxmf_preferred_propagation_node_destination_hash"]
+            self.config.lxmf_preferred_propagation_node_destination_hash.set(value)
+
+            # update active propagation node
+            self.set_active_propagation_node(value)
+
+
         # send config to websocket clients
         await self.send_config_to_websocket_clients()
 
@@ -1359,6 +1388,7 @@ class ReticulumMeshChat:
             "auto_resend_failed_messages_when_announce_received": self.config.auto_resend_failed_messages_when_announce_received.get(),
             "allow_auto_resending_failed_messages_with_attachments": self.config.allow_auto_resending_failed_messages_with_attachments.get(),
             "show_suggested_community_interfaces": self.config.show_suggested_community_interfaces.get(),
+            "lxmf_preferred_propagation_node_destination_hash": self.config.lxmf_preferred_propagation_node_destination_hash.get(),
         }
 
     # convert audio call to dict
@@ -2037,7 +2067,7 @@ class Config:
     # handle config values that should be strings
     class StringConfig:
 
-        def __init__(self, key: str, default_value: str = None):
+        def __init__(self, key: str, default_value: str | None = None):
             self.key = key
             self.default_value = default_value
 
@@ -2103,6 +2133,7 @@ class Config:
     allow_auto_resending_failed_messages_with_attachments = BoolConfig("allow_auto_resending_failed_messages_with_attachments", False)
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
     lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
+    lxmf_preferred_propagation_node_destination_hash = StringConfig("lxmf_preferred_propagation_node_destination_hash", None)
 
 
 class NomadnetDownloader:
