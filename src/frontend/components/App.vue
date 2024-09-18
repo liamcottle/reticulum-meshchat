@@ -406,10 +406,14 @@ export default {
             // request sync
             try {
                 await axios.get("/api/v1/lxmf/propagation-node/sync");
-                await this.updatePropagationNodeStatus();
             } catch(e) {
-                DialogUtils.alert("Failed to sync propagation node");
+                const errorMessage = e.response?.data?.message ?? "Something went wrong. Try again later.";
+                DialogUtils.alert(errorMessage);
+                return;
             }
+
+            // update propagation status
+            await this.updatePropagationNodeStatus();
 
             // wait until sync has finished
             const syncFinishedInterval = setInterval(() => {

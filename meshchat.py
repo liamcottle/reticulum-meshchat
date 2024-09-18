@@ -840,6 +840,12 @@ class ReticulumMeshChat:
         @routes.get("/api/v1/lxmf/propagation-node/sync")
         async def index(request):
 
+            # ensure propagation node is configured before attempting to sync
+            if self.message_router.get_outbound_propagation_node() is None:
+                return web.json_response({
+                    "message": "A propagation node must be configured to sync messages.",
+                }, status=400)
+
             # request messages from propagation node
             self.message_router.request_messages_from_propagation_node(self.identity)
 
