@@ -14,6 +14,16 @@
                     <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500">Liam Cottle</a></div>
                 </div>
                 <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
+                    <button @click="syncPropagationNode" type="button" class="rounded-full">
+                        <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
+                            <span :class="{ 'animate-spin': isSyncingPropagationNode }">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                            </span>
+                            <span class="hidden sm:inline-block my-auto mx-1 text-sm">Sync Messages</span>
+                        </span>
+                    </button>
                     <button @click="composeNewMessage" type="button" class="rounded-full">
                         <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
                             <span>
@@ -21,7 +31,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                                 </svg>
                             </span>
-                            <span class="my-auto mx-1 text-sm">Compose</span>
+                            <span class="hidden sm:inline-block my-auto mx-1 text-sm">Compose</span>
                         </span>
                     </button>
                 </div>
@@ -278,6 +288,7 @@ export default {
             appInfo: null,
 
             audioCalls: [],
+            propagationNodeStatus: null,
 
         };
     },
@@ -296,11 +307,12 @@ export default {
 
         this.getAppInfo();
         this.updateCallsList();
+        this.updatePropagationNodeStatus();
 
-        // fixme: clear interval on unmount
         // update info every few seconds
         this.reloadInterval = setInterval(() => {
             this.updateCallsList();
+            this.updatePropagationNodeStatus();
         }, 3000);
 
     },
@@ -384,6 +396,52 @@ export default {
             GlobalEmitter.emit("compose-new-message");
 
         },
+        async syncPropagationNode() {
+
+            // do nothing if already syncing
+            if(this.isSyncingPropagationNode){
+                return;
+            }
+
+            // request sync
+            try {
+                await axios.get("/api/v1/lxmf/propagation-node/sync");
+                await this.updatePropagationNodeStatus();
+            } catch(e) {
+                DialogUtils.alert("Failed to sync propagation node");
+            }
+
+            // wait until sync has finished
+            const syncFinishedInterval = setInterval(() => {
+
+                // do nothing if still syncing
+                if(this.isSyncingPropagationNode){
+                    return;
+                }
+
+                // finished syncing, stop checking
+                clearInterval(syncFinishedInterval);
+
+                // show result
+                const status = this.propagationNodeStatus?.state;
+                const messagesReceived = this.propagationNodeStatus?.messages_received ?? 0;
+                if(status === "complete"){
+                    DialogUtils.alert(`Sync complete. ${messagesReceived} messages received.`);
+                } else {
+                    DialogUtils.alert(`Sync error: ${status}`);
+                }
+
+            }, 500);
+
+        },
+        async updatePropagationNodeStatus() {
+            try {
+                const response = await axios.get("/api/v1/lxmf/propagation-node/status");
+                this.propagationNodeStatus = response.data.propagation_node_status;
+            } catch(e) {
+                // do nothing on error
+            }
+        },
         formatSecondsAgo: function(seconds) {
             return Utils.formatSecondsAgo(seconds);
         },
@@ -447,6 +505,16 @@ export default {
             return this.activeAudioCalls.filter(function(audioCall) {
                 return audioCall.is_outbound;
             });
+        },
+        isSyncingPropagationNode() {
+            return [
+                "path_requested",
+                "link_establishing",
+                "link_established",
+                "request_sent",
+                "receiving",
+                "response_received",
+            ].includes(this.propagationNodeStatus?.state);
         },
     },
 }
