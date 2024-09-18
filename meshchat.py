@@ -11,6 +11,7 @@ from typing import Callable, List
 
 import RNS
 import LXMF
+from LXMF import LXMRouter
 from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
 import asyncio
 import base64
@@ -824,6 +825,28 @@ class ReticulumMeshChat:
                 "announces": announces,
             })
 
+        # propagation node status
+        @routes.get("/api/v1/lxmf/propagation-node/status")
+        async def index(request):
+            return web.json_response({
+                "propagation_node_status": {
+                    "state": self.convert_propagation_node_state_to_string(self.message_router.propagation_transfer_state),
+                    "progress": self.message_router.propagation_transfer_progress * 100,  # convert to percentage
+                    "messages_received": self.message_router.propagation_transfer_last_result,
+                },
+            })
+
+        # sync propagation node
+        @routes.get("/api/v1/lxmf/propagation-node/sync")
+        async def index(request):
+
+            # request messages from propagation node
+            self.message_router.request_messages_from_propagation_node(self.identity)
+
+            return web.json_response({
+                "message": "Sync is starting",
+            })
+
         # get path to destination
         @routes.get("/api/v1/destination/{destination_hash}/path")
         async def index(request):
@@ -1551,6 +1574,32 @@ class ReticulumMeshChat:
             lxmf_message_method = "paper"
 
         return lxmf_message_method
+
+    def convert_propagation_node_state_to_string(self, state):
+
+        # map states to strings
+        state_map = {
+            LXMRouter.PR_IDLE: "idle",
+            LXMRouter.PR_PATH_REQUESTED: "path_requested",
+            LXMRouter.PR_LINK_ESTABLISHING: "link_establishing",
+            LXMRouter.PR_LINK_ESTABLISHED: "link_established",
+            LXMRouter.PR_REQUEST_SENT: "request_sent",
+            LXMRouter.PR_RECEIVING: "receiving",
+            LXMRouter.PR_RESPONSE_RECEIVED: "response_received",
+            LXMRouter.PR_COMPLETE: "complete",
+            LXMRouter.PR_NO_PATH: "no_path",
+            LXMRouter.PR_LINK_FAILED: "link_failed",
+            LXMRouter.PR_TRANSFER_FAILED: "transfer_failed",
+            LXMRouter.PR_NO_IDENTITY_RCVD: "no_identity_received",
+            LXMRouter.PR_NO_ACCESS: "no_access",
+            LXMRouter.PR_FAILED: "failed",
+        }
+
+        # return string for state, or fallback to unknown
+        if state in state_map:
+            return state_map[state]
+        else:
+            return "unknown"
 
     # convert database announce to a dictionary
     def convert_db_announce_to_dict(self, announce: database.Announce):
