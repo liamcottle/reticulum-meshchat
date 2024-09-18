@@ -1,17 +1,14 @@
 <template>
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
 
-        <!-- header -->
-        <div class="flex bg-white p-2 shadow">
-            <div class="my-auto">
-                <div class="font-semibold">Propagation Nodes</div>
-                <div class="text-sm">Showing {{ propagationNodes.length }} recently heard nodes.</div>
-            </div>
+        <!-- search -->
+        <div class="flex bg-white p-1 border-b border-gray-300">
+            <input v-model="searchTerm" type="text" :placeholder="`Search ${propagationNodes.length} Propagation Nodes...`" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
         </div>
 
         <!-- propagation nodes -->
         <div class="overflow-y-auto p-2 space-y-2">
-            <div v-for="propagationNode of propagationNodes" class="border rounded bg-white shadow">
+            <div v-for="propagationNode of searchedPropagationNodes" class="border rounded bg-white shadow">
                 <div class="p-1 flex">
                     <div class="my-auto">
                         <div class="font-semibold">{{ propagationNode.operator_display_name ?? "Unknown Operator" }}</div>
@@ -48,6 +45,7 @@ export default {
     name: 'PropagationNodesPage',
     data() {
         return {
+            searchTerm: "",
             propagationNodes: [],
             config: {
                 lxmf_preferred_propagation_node_destination_hash: null,
@@ -121,6 +119,16 @@ export default {
         },
         formatTimeAgo: function(datetimeString) {
             return Utils.formatTimeAgo(datetimeString);
+        },
+    },
+    computed: {
+        searchedPropagationNodes() {
+            return this.propagationNodes.filter((propagationNode) => {
+                const search = this.searchTerm.toLowerCase();
+                const matchesOperatorDisplayName = propagationNode.operator_display_name?.toLowerCase()?.includes(search) ?? false;
+                const matchesDestinationHash = propagationNode.destination_hash.toLowerCase().includes(search);
+                return matchesOperatorDisplayName || matchesDestinationHash;
+            });
         },
     },
 }
