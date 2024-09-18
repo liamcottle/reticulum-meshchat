@@ -2,9 +2,27 @@
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
         <div class="overflow-y-auto space-y-2 p-2">
 
-            <!-- failed messages -->
+            <!-- interfaces -->
             <div class="bg-white rounded shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Failed Messages</div>
+                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Interfaces</div>
+                <div class="divide-y text-gray-900">
+
+                    <div class="p-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input v-model="config.show_suggested_community_interfaces" @change="onShowSuggestedCommunityInterfacesChange" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300">
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900">Show Community Interfaces</label>
+                        </div>
+                        <div class="text-sm text-gray-700">When enabled, community interfaces will be shown on the Add Interface page.</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- messages -->
+            <div class="bg-white rounded shadow">
+                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Messages</div>
                 <div class="divide-y text-gray-900">
 
                     <div class="p-2">
@@ -35,24 +53,6 @@
                             <label class="ml-2 text-sm font-medium text-gray-900">Auto send to propagation node</label>
                         </div>
                         <div class="text-sm text-gray-700">When enabled, messages that fail to send will be sent to the configured propagation node.</div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- interfaces -->
-            <div class="bg-white rounded shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Interfaces</div>
-                <div class="divide-y text-gray-900">
-
-                    <div class="p-2">
-                        <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <input v-model="config.show_suggested_community_interfaces" @change="onShowSuggestedCommunityInterfacesChange" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300">
-                            </div>
-                            <label class="ml-2 text-sm font-medium text-gray-900">Show Community Interfaces</label>
-                        </div>
-                        <div class="text-sm text-gray-700">When enabled, community interfaces will be shown on the Add Interface page.</div>
                     </div>
 
                 </div>
