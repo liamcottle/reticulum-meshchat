@@ -890,6 +890,58 @@ class ReticulumMeshChat:
                 "message": "Sync is starting",
             })
 
+        # serve propagation nodes
+        @routes.get("/api/v1/lxmf/propagation-nodes")
+        async def index(request):
+
+            # get query params
+            limit = request.query.get("limit", None)
+
+            # get lxmf.propagation announces
+            query = database.Announce.select().where(database.Announce.aspect == "lxmf.propagation")
+
+            # limit results
+            if limit is not None:
+                query = query.limit(limit)
+
+            # order announces latest to oldest
+            query_results = query.order_by(database.Announce.updated_at.desc())
+
+            # process announces
+            lxmf_propagation_nodes = []
+            for announce in query_results:
+
+                # find an lxmf.delivery announce for the same identity hash, so we can use that as an "operater by" name
+                lxmf_delivery_announce = (database.Announce.select()
+                                          .where(database.Announce.aspect == "lxmf.delivery")
+                                          .where(database.Announce.identity_hash == announce.identity_hash)
+                                          .get_or_none())
+
+                # find a nomadnetwork.node announce for the same identity hash, so we can use that as an "operated by" name
+                nomadnetwork_node_announce = (database.Announce.select()
+                                          .where(database.Announce.aspect == "nomadnetwork.node")
+                                          .where(database.Announce.identity_hash == announce.identity_hash)
+                                          .get_or_none())
+
+                # get a display name from other announces belonging to the propagation nodes identity
+                operator_display_name = None
+                if lxmf_delivery_announce is not None and lxmf_delivery_announce.app_data is not None:
+                    operator_display_name = self.parse_lxmf_display_name(lxmf_delivery_announce.app_data, None)
+                elif nomadnetwork_node_announce is not None and nomadnetwork_node_announce.app_data is not None:
+                    operator_display_name = self.parse_nomadnetwork_node_display_name(nomadnetwork_node_announce.app_data, None)
+
+                lxmf_propagation_nodes.append({
+                    "destination_hash": announce.destination_hash,
+                    "identity_hash": announce.identity_hash,
+                    "operator_display_name": operator_display_name,
+                    "created_at": announce.created_at,
+                    "updated_at": announce.updated_at,
+                })
+
+            return web.json_response({
+                "lxmf_propagation_nodes": lxmf_propagation_nodes,
+            })
+
         # get path to destination
         @routes.get("/api/v1/destination/{destination_hash}/path")
         async def index(request):
@@ -2101,20 +2153,20 @@ class ReticulumMeshChat:
         return "Anonymous Peer"
 
     # reads the lxmf display name from the provided base64 app data
-    def parse_lxmf_display_name(self, app_data_base64: str):
+    def parse_lxmf_display_name(self, app_data_base64: str, default_value: str | None = "Anonymous Peer"):
         try:
             app_data_bytes = base64.b64decode(app_data_base64)
             return LXMF.display_name_from_app_data(app_data_bytes)
         except:
-            return "Anonymous Peer"
+            return default_value
 
     # reads the nomadnetwork node display name from the provided base64 app data
-    def parse_nomadnetwork_node_display_name(self, app_data_base64: str):
+    def parse_nomadnetwork_node_display_name(self, app_data_base64: str, default_value: str | None = "Anonymous Node"):
         try:
             app_data_bytes = base64.b64decode(app_data_base64)
             return app_data_bytes.decode("utf-8")
         except:
-            return "Anonymous Node"
+            return default_value
 
     # returns true if the conversation has messages newer than the last read at timestamp
     def is_lxmf_conversation_unread(self, destination_hash):
