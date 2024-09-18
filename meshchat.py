@@ -140,6 +140,11 @@ class ReticulumMeshChat:
         thread.daemon = True
         thread.start()
 
+        # start background thread for auto syncing propagation nodes
+        thread = threading.Thread(target=asyncio.run, args=(self.announce_sync_propagation_nodes(),))
+        thread.daemon = True
+        thread.start()
+
     # gets app version from package.json
     def get_app_version(self) -> str:
         with open(get_file_path("package.json")) as f:
@@ -174,6 +179,38 @@ class ReticulumMeshChat:
             # announce
             if should_announce:
                 await self.announce()
+
+            # wait 1 second before next loop
+            await asyncio.sleep(1)
+
+    # automatically syncs propagation nodes based on user config
+    async def announce_sync_propagation_nodes(self):
+        while True:
+
+            should_sync = False
+
+            # check if auto sync is enabled
+            auto_sync_interval_seconds = self.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds.get()
+            if auto_sync_interval_seconds > 0:
+
+                # check if we have synced recently
+                last_synced_at = self.config.lxmf_preferred_propagation_node_last_synced_at.get()
+                if last_synced_at is not None:
+
+                    # determine when next sync should happen
+                    next_sync_at = last_synced_at + auto_sync_interval_seconds
+
+                    # we should sync if current time has passed next sync at timestamp
+                    if time.time() > next_sync_at:
+                        should_sync = True
+
+                else:
+                    # last synced at is null, so we have never synced, lets do it now
+                    should_sync = True
+
+            # sync
+            if should_sync:
+                await self.sync_propagation_nodes()
 
             # wait 1 second before next loop
             await asyncio.sleep(1)
@@ -847,7 +884,7 @@ class ReticulumMeshChat:
                 }, status=400)
 
             # request messages from propagation node
-            self.message_router.request_messages_from_propagation_node(self.identity)
+            await self.sync_propagation_nodes()
 
             return web.json_response({
                 "message": "Sync is starting",
@@ -1215,6 +1252,18 @@ class ReticulumMeshChat:
         # tell websocket clients we just announced
         await self.send_announced_to_websocket_clients()
 
+    # handle syncing propagation nodes
+    async def sync_propagation_nodes(self):
+
+        # update last synced at timestamp
+        self.config.lxmf_preferred_propagation_node_last_synced_at.set(int(time.time()))
+
+        # request messages from propagation node
+        self.message_router.request_messages_from_propagation_node(self.identity)
+
+        # send config to websocket clients (used to tell ui last synced at)
+        await self.send_config_to_websocket_clients()
+
     async def update_config(self, data):
 
         # update display name in config
@@ -1255,6 +1304,10 @@ class ReticulumMeshChat:
             # update active propagation node
             self.set_active_propagation_node(value)
 
+        # update auto sync interval
+        if "lxmf_preferred_propagation_node_auto_sync_interval_seconds" in data:
+            value = int(data["lxmf_preferred_propagation_node_auto_sync_interval_seconds"])
+            self.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds.set(value)
 
         # send config to websocket clients
         await self.send_config_to_websocket_clients()
@@ -1419,6 +1472,8 @@ class ReticulumMeshChat:
             "allow_auto_resending_failed_messages_with_attachments": self.config.allow_auto_resending_failed_messages_with_attachments.get(),
             "show_suggested_community_interfaces": self.config.show_suggested_community_interfaces.get(),
             "lxmf_preferred_propagation_node_destination_hash": self.config.lxmf_preferred_propagation_node_destination_hash.get(),
+            "lxmf_preferred_propagation_node_auto_sync_interval_seconds": self.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds.get(),
+            "lxmf_preferred_propagation_node_last_synced_at": self.config.lxmf_preferred_propagation_node_last_synced_at.get(),
         }
 
     # convert audio call to dict
@@ -2190,6 +2245,8 @@ class Config:
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
     lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
     lxmf_preferred_propagation_node_destination_hash = StringConfig("lxmf_preferred_propagation_node_destination_hash", None)
+    lxmf_preferred_propagation_node_auto_sync_interval_seconds = IntConfig("lxmf_preferred_propagation_node_auto_sync_interval_seconds", 0)
+    lxmf_preferred_propagation_node_last_synced_at = IntConfig("lxmf_preferred_propagation_node_last_synced_at", None)
 
 
 class NomadnetDownloader:

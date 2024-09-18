@@ -65,13 +65,31 @@
                     </div>
 
                     <div class="p-2">
-                        <div>
-                            <label class="text-sm font-medium text-gray-900">Preferred Propagation Node</label>
-                        </div>
+                        <div class="text-sm font-medium text-gray-900">Preferred Propagation Node</div>
                         <div class="flex">
                             <input v-model="config.lxmf_preferred_propagation_node_destination_hash" @input="onLxmfPreferredPropagationNodeDestinationHashChange" type="text" placeholder="Destination Hash. e.g: a39610c89d18bb48c73e429582423c24" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         </div>
                         <div class="text-sm text-gray-700">When provided, messages that fail to send will automatically send to this propagation node.</div>
+                    </div>
+
+                    <div class="p-2">
+                        <div class="text-sm font-medium text-gray-900">Auto Sync Interval</div>
+                        <div class="flex">
+                            <select v-model="config.lxmf_preferred_propagation_node_auto_sync_interval_seconds" @change="onLxmfPreferredPropagationNodeAutoSyncIntervalSecondsChange" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="0">Disabled</option>
+                                <option value="900">Every 15 Minutes</option>
+                                <option value="1800">Every 30 Minutes</option>
+                                <option value="3600">Every 1 Hour</option>
+                                <option value="10800">Every 3 Hours</option>
+                                <option value="21600">Every 6 Hours</option>
+                                <option value="43200">Every 12 Hours</option>
+                                <option value="86400">Every 24 Hours</option>
+                            </select>
+                        </div>
+                        <div class="text-sm text-gray-700">
+                            <span v-if="config.lxmf_preferred_propagation_node_last_synced_at">Last Synced: {{ formatSecondsAgo(config.lxmf_preferred_propagation_node_last_synced_at) }}</span>
+                            <span v-else>Last Synced: Never</span>
+                        </div>
                     </div>
 
                 </div>
@@ -82,6 +100,9 @@
 </template>
 
 <script>
+import Utils from "../../js/Utils";
+import WebSocketConnection from "../../js/WebSocketConnection";
+
 export default {
     name: 'SettingsPage',
     data() {
@@ -94,10 +115,30 @@ export default {
             },
         };
     },
+    beforeUnmount() {
+
+        // stop listening for websocket messages
+        WebSocketConnection.off("message", this.onWebsocketMessage);
+
+    },
     mounted() {
+
+        // listen for websocket messages
+        WebSocketConnection.on("message", this.onWebsocketMessage);
+
         this.getConfig();
+
     },
     methods: {
+        async onWebsocketMessage(message) {
+            const json = JSON.parse(message.data);
+            switch(json.type){
+                case 'config': {
+                    this.config = json.config;
+                    break;
+                }
+            }
+        },
         async getConfig() {
             try {
                 const response = await window.axios.get("/api/v1/config");
@@ -135,6 +176,14 @@ export default {
             await this.updateConfig({
                 "lxmf_preferred_propagation_node_destination_hash": this.config.lxmf_preferred_propagation_node_destination_hash,
             });
+        },
+        async onLxmfPreferredPropagationNodeAutoSyncIntervalSecondsChange() {
+            await this.updateConfig({
+                "lxmf_preferred_propagation_node_auto_sync_interval_seconds": this.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds,
+            });
+        },
+        formatSecondsAgo: function(seconds) {
+            return Utils.formatSecondsAgo(seconds);
         },
     },
 }
