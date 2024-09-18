@@ -70,6 +70,7 @@
                                 <li>Instead, messages can be sent to propagation nodes, which store the messages and allow recipients to retrieve them when they're next online.</li>
                                 <li>Propagation nodes automatically peer and sync messages with each other, creating an encrypted, distributed message store.</li>
                                 <li>By default, propagation nodes store messages for up to 30 days. If the recipient hasn't retrieved it by then, the message will be lost.</li>
+                                <li>At this time, delivery reports are unavailable for messages sent to propagation nodes.</li>
                             </ul>
                         </div>
                     </div>
