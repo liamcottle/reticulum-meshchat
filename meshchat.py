@@ -1103,27 +1103,7 @@ class ReticulumMeshChat:
             # convert to response json
             lxmf_messages = []
             for db_lxmf_message in db_lxmf_messages:
-                lxmf_messages.append({
-                    "id": db_lxmf_message.id,
-                    "hash": db_lxmf_message.hash,
-                    "source_hash": db_lxmf_message.source_hash,
-                    "destination_hash": db_lxmf_message.destination_hash,
-                    "is_incoming": db_lxmf_message.is_incoming,
-                    "state": db_lxmf_message.state,
-                    "progress": db_lxmf_message.progress,
-                    "method": db_lxmf_message.method,
-                    "delivery_attempts": db_lxmf_message.delivery_attempts,
-                    "next_delivery_attempt_at": db_lxmf_message.next_delivery_attempt_at,
-                    "title": db_lxmf_message.title,
-                    "content": db_lxmf_message.content,
-                    "fields": json.loads(db_lxmf_message.fields),
-                    "timestamp": db_lxmf_message.timestamp,
-                    "rssi": db_lxmf_message.rssi,
-                    "snr": db_lxmf_message.snr,
-                    "quality": db_lxmf_message.quality,
-                    "created_at": db_lxmf_message.created_at,
-                    "updated_at": db_lxmf_message.updated_at,
-                })
+                lxmf_messages.append(self.convert_db_lxmf_message_to_dict(db_lxmf_message))
 
             return web.json_response({
                 "lxmf_messages": lxmf_messages,
@@ -1690,6 +1670,31 @@ class ReticulumMeshChat:
             "updated_at": announce.updated_at,
         }
 
+    # convert database lxmf message to a dictionary
+    def convert_db_lxmf_message_to_dict(self, db_lxmf_message: database.LxmfMessage):
+
+        return {
+            "id": db_lxmf_message.id,
+            "hash": db_lxmf_message.hash,
+            "source_hash": db_lxmf_message.source_hash,
+            "destination_hash": db_lxmf_message.destination_hash,
+            "is_incoming": db_lxmf_message.is_incoming,
+            "state": db_lxmf_message.state,
+            "progress": db_lxmf_message.progress,
+            "method": db_lxmf_message.method,
+            "delivery_attempts": db_lxmf_message.delivery_attempts,
+            "next_delivery_attempt_at": db_lxmf_message.next_delivery_attempt_at,
+            "title": db_lxmf_message.title,
+            "content": db_lxmf_message.content,
+            "fields": json.loads(db_lxmf_message.fields),
+            "timestamp": db_lxmf_message.timestamp,
+            "rssi": db_lxmf_message.rssi,
+            "snr": db_lxmf_message.snr,
+            "quality": db_lxmf_message.quality,
+            "created_at": db_lxmf_message.created_at,
+            "updated_at": db_lxmf_message.updated_at,
+        }
+
     # handle an lxmf delivery from reticulum
     # NOTE: cant be async, as Reticulum doesn't await it
     def on_lxmf_delivery(self, lxmf_message: LXMF.LXMessage):
@@ -1698,10 +1703,15 @@ class ReticulumMeshChat:
             # upsert lxmf message to database
             self.db_upsert_lxmf_message(lxmf_message)
 
+            # find message from database
+            db_lxmf_message = database.LxmfMessage.get_or_none(database.LxmfMessage.hash == lxmf_message.hash.hex())
+            if db_lxmf_message is None:
+                return
+
             # send received lxmf message data to all websocket clients
             asyncio.run(self.websocket_broadcast(json.dumps({
                 "type": "lxmf.delivery",
-                "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
+                "lxmf_message": self.convert_db_lxmf_message_to_dict(db_lxmf_message),
             })))
 
         except Exception as e:
