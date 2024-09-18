@@ -1074,6 +1074,7 @@ class ReticulumMeshChat:
                     "is_incoming": db_lxmf_message.is_incoming,
                     "state": db_lxmf_message.state,
                     "progress": db_lxmf_message.progress,
+                    "method": db_lxmf_message.method,
                     "delivery_attempts": db_lxmf_message.delivery_attempts,
                     "next_delivery_attempt_at": db_lxmf_message.next_delivery_attempt_at,
                     "title": db_lxmf_message.title,

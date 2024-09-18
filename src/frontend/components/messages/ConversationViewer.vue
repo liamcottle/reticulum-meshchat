@@ -140,7 +140,7 @@
 
                             <!-- state label -->
                             <div class="my-auto space-x-1">
-                                <span>{{ chatItem.lxmf_message.state }}</span>
+                                <span @click="showSentMessageInfo(chatItem.lxmf_message)" class="cursor-pointer">{{ chatItem.lxmf_message.state }}</span>
                                 <span v-if="chatItem.lxmf_message.state === 'outbound' && chatItem.lxmf_message.delivery_attempts >= 1">(attempt {{ chatItem.lxmf_message.delivery_attempts + 1 }})</span>
                                 <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress.toFixed(0) }}%</span>
                                 <a v-if="chatItem.lxmf_message.state === 'failed'" @click="retrySendingMessage(chatItem)" class="cursor-pointer underline text-blue-500">retry?</a>
@@ -177,7 +177,7 @@
                         <span v-if="chatItem.is_actions_expanded && chatItem.lxmf_message.quality && chatItem.lxmf_message.rssi && chatItem.lxmf_message.snr">Signal {{ chatItem.lxmf_message.quality }}% • RSSI {{ chatItem.lxmf_message.rssi }} • SNR {{ chatItem.lxmf_message.snr }}</span>
 
                         <!-- received timestamp -->
-                        <span>{{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}</span>
+                        <span @click="showReceivedMessageInfo(chatItem.lxmf_message)" class="cursor-pointer">{{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}</span>
 
                     </div>
 
@@ -1174,6 +1174,19 @@ export default {
             // reload conversations
             this.$emit("reload-conversations");
 
+        },
+        showSentMessageInfo: function(lxmfMessage) {
+            DialogUtils.alert([
+                `Created: ${Utils.convertDateTimeToLocalDateTimeString(new Date(lxmfMessage.created_at))}`,
+                `Method: ${lxmfMessage.method ?? "unknown"}`,
+            ].join("\n"));
+        },
+        showReceivedMessageInfo: function(lxmfMessage) {
+            DialogUtils.alert([
+                `Sent: ${Utils.convertUnixMillisToLocalDateTimeString(lxmfMessage.timestamp * 1000)}`,
+                `Received: ${Utils.convertDateTimeToLocalDateTimeString(new Date(lxmfMessage.created_at))}`,
+                `Method: ${lxmfMessage.method ?? "unknown"}`,
+            ].join("\n"));
         },
     },
     computed: {

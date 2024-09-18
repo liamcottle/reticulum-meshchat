@@ -1,3 +1,5 @@
+import moment from "moment";
+
 class Utils {
 
     static formatBytes(bytes) {
@@ -82,6 +84,14 @@ class Utils {
         const paddedMinutes = parsedSeconds.minutes.toString().padStart(2, "0");
         const paddedSeconds = parsedSeconds.seconds.toString().padStart(2, "0");
         return `${paddedMinutes}:${paddedSeconds}`;
+    }
+
+    static convertUnixMillisToLocalDateTimeString(unixTimestampInMilliseconds) {
+        return moment(unixTimestampInMilliseconds, "x").local().format('YYYY-MM-DD hh:mm A')
+    }
+
+    static convertDateTimeToLocalDateTimeString(dateTime) {
+        return this.convertUnixMillisToLocalDateTimeString(dateTime.getTime());
     }
 
     static arrayBufferToBase64(arrayBuffer) {
