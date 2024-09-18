@@ -60,7 +60,14 @@
 
             <!-- propagation nodes -->
             <div class="bg-white rounded shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Propagation Nodes</div>
+                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">
+                    <div class="my-auto mr-auto">Propagation Nodes</div>
+                    <div class="my-auto">
+                        <RouterLink :to="{ name: 'propagation-nodes' }" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            Browse Nodes
+                        </RouterLink>
+                    </div>
+                </div>
                 <div class="divide-y text-gray-900">
 
                     <div class="p-2">

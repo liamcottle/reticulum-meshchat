@@ -2228,7 +2228,12 @@ class Config:
         return default_value
 
     @staticmethod
-    def set(key: str, value: str):
+    def set(key: str, value: str | None):
+
+        # if none, delete the config entry
+        if value is None:
+            database.Config.delete().where(database.Config.key == key).execute()
+            return
 
         # prepare data to insert or update
         data = {
@@ -2253,7 +2258,7 @@ class Config:
             _default_value = default_value or self.default_value
             return Config.get(self.key, default_value=_default_value)
 
-        def set(self, value: str):
+        def set(self, value: str | None):
             Config.set(self.key, value)
 
     # handle config values that should be bools

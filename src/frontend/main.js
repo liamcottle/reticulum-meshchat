@@ -50,6 +50,11 @@ const router = createRouter({
             component: defineAsyncComponent(() => import("./components/nomadnetwork/NomadNetworkPage.vue")),
         },
         {
+            name: "propagation-nodes",
+            path: '/propagation-nodes',
+            component: defineAsyncComponent(() => import("./components/propagation-nodes/PropagationNodesPage.vue")),
+        },
+        {
             name: "settings",
             path: '/settings',
             component: defineAsyncComponent(() => import("./components/settings/SettingsPage.vue")),
