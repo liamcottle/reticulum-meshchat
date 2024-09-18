@@ -224,12 +224,24 @@ class ReticulumMeshChat:
                 self.message_router.set_outbound_propagation_node(bytes.fromhex(destination_hash))
             except:
                 # failed to set propagation node, clear it to ensure we don't use an old one by mistake
-                self.message_router.outbound_propagation_node = None
+                self.remove_active_propagation_node()
                 pass
 
         # stop using propagation node
         else:
-            self.message_router.outbound_propagation_node = None
+            self.remove_active_propagation_node()
+
+    # stops the in progress propagation node sync
+    def stop_propagation_node_sync(self):
+        self.message_router.cancel_propagation_node_requests()
+
+    # stops and removes the active propagation node
+    def remove_active_propagation_node(self):
+        # fixme: it's possible for internal transfer state to get stuck if we change propagation node during a sync
+        # this still happens even if we cancel the propagation node requests
+        # for now, the user can just manually cancel syncing in the ui if they think it's stuck...
+        self.stop_propagation_node_sync()
+        self.message_router.outbound_propagation_node = None
 
     # handle receiving a new audio call
     def on_incoming_audio_call(self, audio_call: AudioCall):
@@ -888,6 +900,16 @@ class ReticulumMeshChat:
 
             return web.json_response({
                 "message": "Sync is starting",
+            })
+
+        # stop syncing propagation node
+        @routes.get("/api/v1/lxmf/propagation-node/stop-sync")
+        async def index(request):
+
+            self.stop_propagation_node_sync()
+
+            return web.json_response({
+                "message": "Sync is stopping",
             })
 
         # serve propagation nodes

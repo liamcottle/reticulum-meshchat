@@ -398,8 +398,11 @@ export default {
         },
         async syncPropagationNode() {
 
-            // do nothing if already syncing
+            // ask to stop syncing if already syncing
             if(this.isSyncingPropagationNode){
+                if(confirm("Are you sure you want to stop syncing?")){
+                    await this.stopSyncingPropagationNode();
+                }
                 return;
             }
 
@@ -429,13 +432,26 @@ export default {
                 // show result
                 const status = this.propagationNodeStatus?.state;
                 const messagesReceived = this.propagationNodeStatus?.messages_received ?? 0;
-                if(status === "complete"){
+                if(status === "complete" || status === "idle"){
                     DialogUtils.alert(`Sync complete. ${messagesReceived} messages received.`);
                 } else {
                     DialogUtils.alert(`Sync error: ${status}`);
                 }
 
             }, 500);
+
+        },
+        async stopSyncingPropagationNode() {
+
+            // stop sync
+            try {
+                await axios.get("/api/v1/lxmf/propagation-node/stop-sync");
+            } catch(e) {
+                // do nothing on error
+            }
+
+            // update propagation status
+            await this.updatePropagationNodeStatus();
 
         },
         async updatePropagationNodeStatus() {
