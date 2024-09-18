@@ -7,11 +7,6 @@
                 <div class="font-semibold">Propagation Nodes</div>
                 <div class="text-sm">Showing {{ propagationNodes.length }} recently heard nodes.</div>
             </div>
-            <div class="ml-auto my-auto">
-                <button @click="loadPropagationNodes" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
-                    Reload
-                </button>
-            </div>
         </div>
 
         <!-- propagation nodes -->
