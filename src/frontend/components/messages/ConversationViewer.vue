@@ -1177,7 +1177,7 @@ export default {
         },
         showSentMessageInfo: function(lxmfMessage) {
             DialogUtils.alert([
-                `Created: ${Utils.convertDateTimeToLocalDateTimeString(new Date(lxmfMessage.created_at))}`,
+                `Created: ${Utils.convertUnixMillisToLocalDateTimeString(lxmfMessage.timestamp * 1000)}`,
                 `Method: ${lxmfMessage.method ?? "unknown"}`,
             ].join("\n"));
         },
