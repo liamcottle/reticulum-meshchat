@@ -96,6 +96,7 @@ class ReticulumMeshChat:
         # lxmf messages in outbound or sending state should be marked as failed when app starts as they are no longer being processed
         (database.LxmfMessage.update(state="failed")
          .where(database.LxmfMessage.state == "outbound")
+         .orwhere((database.LxmfMessage.state == "sent") & (database.LxmfMessage.method == "opportunistic"))
          .orwhere(database.LxmfMessage.state == "sending").execute())
 
         # init reticulum
