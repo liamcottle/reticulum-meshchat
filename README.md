@@ -303,11 +303,7 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 
 ## TODO
 
-- [ ] contact management to save identity, addresses, custom name and notes
-- [ ] move peer announces to a new "Discover" page?
-- [ ] button to add peer to contacts, and show a tab for contacts, separate from peers list
-- [ ] allow setting a custom name to show for a contact
-- [ ] button to forget peers and contacts
+- [ ] button to forget announces
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
   - [ ] will probably write a new app for mobile devices once [microReticulum](https://github.com/attermann/microReticulum) supports Links
 - [ ] support for micron input fields, to allow interacting with pages like Retipedia
