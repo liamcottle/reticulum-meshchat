@@ -89,7 +89,10 @@
                             </div>
                             <label class="ml-2 text-sm font-medium text-gray-900">Local Propagation Node</label>
                         </div>
-                        <div class="text-sm text-gray-700">When enabled, MeshChat will run a Propagation Node and announce it for other clients to use.</div>
+                        <div class="text-sm text-gray-700">When enabled, MeshChat will run a Propagation Node and announce it with the following address for other clients to use.</div>
+                        <div class="flex">
+                            <input disabled v-model="config.lxmf_local_propagation_node_address_hash" type="text" class="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
                     </div>
 
                     <div class="p-2">
