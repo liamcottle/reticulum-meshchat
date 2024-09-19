@@ -968,6 +968,8 @@ class ReticulumMeshChat:
                 elif nomadnetwork_node_announce is not None and nomadnetwork_node_announce.app_data is not None:
                     operator_display_name = self.parse_nomadnetwork_node_display_name(nomadnetwork_node_announce.app_data, None)
 
+                # todo: parse app_data so we can see if propagation is enabled or disabled for this node
+
                 lxmf_propagation_nodes.append({
                     "destination_hash": announce.destination_hash,
                     "identity_hash": announce.identity_hash,
