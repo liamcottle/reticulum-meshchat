@@ -173,9 +173,6 @@
                     <!-- inbound message info -->
                     <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 mt-0.5 flex flex-col">
 
-                        <!-- signal info -->
-                        <span v-if="chatItem.is_actions_expanded && chatItem.lxmf_message.quality && chatItem.lxmf_message.rssi && chatItem.lxmf_message.snr">Signal {{ chatItem.lxmf_message.quality }}% • RSSI {{ chatItem.lxmf_message.rssi }} • SNR {{ chatItem.lxmf_message.snr }}</span>
-
                         <!-- received timestamp -->
                         <span @click="showReceivedMessageInfo(chatItem.lxmf_message)" class="cursor-pointer">{{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}</span>
 
@@ -1182,11 +1179,32 @@ export default {
             ].join("\n"));
         },
         showReceivedMessageInfo: function(lxmfMessage) {
-            DialogUtils.alert([
+
+            // basic info
+            const info = [
                 `Sent: ${Utils.convertUnixMillisToLocalDateTimeString(lxmfMessage.timestamp * 1000)}`,
                 `Received: ${Utils.convertDateTimeToLocalDateTimeString(new Date(lxmfMessage.created_at))}`,
                 `Method: ${lxmfMessage.method ?? "unknown"}`,
-            ].join("\n"));
+            ];
+
+            // add signal quality if available
+            if(lxmfMessage.quality != null){
+                info.push(`Signal Quality: ${lxmfMessage.quality}%`);
+            }
+
+            // add rssi if available
+            if(lxmfMessage.rssi != null){
+                info.push(`RSSI: ${lxmfMessage.rssi}dBm`);
+            }
+
+            // add snr if available
+            if(lxmfMessage.snr != null){
+                info.push(`SNR: ${lxmfMessage.snr}dB`);
+            }
+
+            // show message info
+            DialogUtils.alert(info.join("\n"));
+
         },
     },
     computed: {
