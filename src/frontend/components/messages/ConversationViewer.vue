@@ -178,7 +178,7 @@
                     <div v-if="!chatItem.is_outbound" class="text-xs text-gray-500 mt-0.5 flex flex-col">
 
                         <!-- received timestamp -->
-                        <span @click="showReceivedMessageInfo(chatItem.lxmf_message)" class="cursor-pointer">{{ formatSecondsAgo(chatItem.lxmf_message.timestamp) }}</span>
+                        <span @click="showReceivedMessageInfo(chatItem.lxmf_message)" class="cursor-pointer">{{ formatTimeAgo(chatItem.lxmf_message.created_at) }}</span>
 
                     </div>
 
@@ -974,8 +974,8 @@ export default {
             }
 
         },
-        formatSecondsAgo: function(seconds) {
-            return Utils.formatSecondsAgo(seconds);
+        formatTimeAgo: function(datetimeString) {
+            return Utils.formatTimeAgo(datetimeString);
         },
         formatBytes: function(bytes) {
             return Utils.formatBytes(bytes);
