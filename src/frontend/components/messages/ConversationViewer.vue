@@ -139,13 +139,15 @@
                         <div class="flex ml-auto space-x-1">
 
                             <!-- state label -->
-                            <div class="my-auto space-x-1">
-                                <span @click="showSentMessageInfo(chatItem.lxmf_message)" class="cursor-pointer">{{ chatItem.lxmf_message.state }}</span>
-                                <span v-if="chatItem.lxmf_message.state === 'outbound' && chatItem.lxmf_message.delivery_attempts >= 1">(attempt {{ chatItem.lxmf_message.delivery_attempts + 1 }})</span>
-                                <span v-if="chatItem.lxmf_message.state === 'sent' && chatItem.lxmf_message.method === 'opportunistic' && chatItem.lxmf_message.delivery_attempts >= 1">(attempt {{ chatItem.lxmf_message.delivery_attempts }})</span>
-                                <span v-if="chatItem.lxmf_message.state === 'sent' && chatItem.lxmf_message.method === 'propagated'">to propagation node</span>
-                                <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress.toFixed(0) }}%</span>
-                                <a v-if="chatItem.lxmf_message.state === 'failed'" @click="retrySendingMessage(chatItem)" class="cursor-pointer underline text-blue-500">retry?</a>
+                            <div class="my-auto">
+                                <span @click="showSentMessageInfo(chatItem.lxmf_message)" class="space-x-1 cursor-pointer">
+                                    <span>{{ chatItem.lxmf_message.state }}</span>
+                                    <span v-if="chatItem.lxmf_message.state === 'outbound' && chatItem.lxmf_message.delivery_attempts >= 1">(attempt {{ chatItem.lxmf_message.delivery_attempts + 1 }})</span>
+                                    <span v-if="chatItem.lxmf_message.state === 'sent' && chatItem.lxmf_message.method === 'opportunistic' && chatItem.lxmf_message.delivery_attempts >= 1">(attempt {{ chatItem.lxmf_message.delivery_attempts }})</span>
+                                    <span v-if="chatItem.lxmf_message.state === 'sent' && chatItem.lxmf_message.method === 'propagated'">to propagation node</span>
+                                    <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress.toFixed(0) }}%</span>
+                                </span>
+                                <a v-if="chatItem.lxmf_message.state === 'failed'" @click="retrySendingMessage(chatItem)" class="ml-1 cursor-pointer underline text-blue-500">retry?</a>
                             </div>
 
                             <!-- delivered icon -->
