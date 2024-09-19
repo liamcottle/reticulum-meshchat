@@ -970,7 +970,7 @@ class ReticulumMeshChat:
                     operator_display_name = self.parse_nomadnetwork_node_display_name(nomadnetwork_node_announce.app_data, None)
 
                 # parse app_data so we can see if propagation is enabled or disabled for this node
-                is_propagation_enabled = False
+                is_propagation_enabled = None
                 per_transfer_limit = None
                 propagation_node_data = self.parse_lxmf_propagation_node_app_data(announce.app_data)
                 if propagation_node_data is not None:
