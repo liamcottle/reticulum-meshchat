@@ -1989,9 +1989,10 @@ class ReticulumMeshChat:
     # updates lxmf message in database and broadcasts to websocket until it's delivered, or it fails
     async def handle_lxmf_message_progress(self, lxmf_message):
 
-        # FIXME: there's no register_progress_callback on the lxmf message, so manually send progress until delivered, sent or failed
+        # FIXME: there's no register_progress_callback on the lxmf message, so manually send progress until delivered, propagated or failed
         # we also can't use on_lxmf_sending_state_updated method to do this, because of async/await issues...
-        while lxmf_message.state != LXMF.LXMessage.DELIVERED and lxmf_message.state != LXMF.LXMessage.SENT and lxmf_message.state != LXMF.LXMessage.FAILED:
+        should_update_message = True
+        while should_update_message:
 
             # wait 1 second between sending updates
             await asyncio.sleep(1)
@@ -2004,6 +2005,15 @@ class ReticulumMeshChat:
                 "type": "lxmf_message_state_updated",
                 "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
             }))
+
+            # check message state
+            has_delivered = lxmf_message.state == LXMF.LXMessage.DELIVERED
+            has_propagated = lxmf_message.state == LXMF.LXMessage.SENT and lxmf_message.method == LXMF.LXMessage.PROPAGATED
+            has_failed = lxmf_message.state == LXMF.LXMessage.FAILED
+
+            # check if we should stop updating
+            if has_delivered or has_propagated or has_failed:
+                should_update_message = False
 
     # handle an announce received from reticulum, for an audio call address
     # NOTE: cant be async, as Reticulum doesn't await it
