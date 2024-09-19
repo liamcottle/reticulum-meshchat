@@ -70,6 +70,20 @@ class Announce(BaseModel):
         table_name = "announces"
 
 
+class CustomDestinationDisplayName(BaseModel):
+
+    id = BigAutoField()
+    destination_hash = CharField(unique=True)  # unique destination hash
+    display_name = CharField()  # custom display name for the destination hash
+
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+
+    # define table name
+    class Meta:
+        table_name = "custom_destination_display_names"
+
+
 class LxmfMessage(BaseModel):
 
     id = BigAutoField()

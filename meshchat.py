@@ -71,6 +71,7 @@ class ReticulumMeshChat:
         self.db.create_tables([
             database.Config,
             database.Announce,
+            database.CustomDestinationDisplayName,
             database.LxmfMessage,
             database.LxmfConversationReadState,
         ])
@@ -1045,6 +1046,42 @@ class ReticulumMeshChat:
                 },
             })
 
+        # get custom destination display name
+        @routes.get("/api/v1/destination/{destination_hash}/custom-display-name")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            return web.json_response({
+                "custom_display_name": self.get_custom_destination_display_name(destination_hash),
+            })
+
+        # set custom destination display name
+        @routes.post("/api/v1/destination/{destination_hash}/custom-display-name/update")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # get request data
+            data = await request.json()
+            display_name = data.get('display_name')
+
+            # update display name if provided
+            if len(display_name) > 0:
+                self.db_upsert_custom_destination_display_name(destination_hash, display_name)
+                return web.json_response({
+                    "message": "Custom display name has been updated",
+                })
+
+            # otherwise remove display name
+            else:
+                database.CustomDestinationDisplayName.delete().where(database.CustomDestinationDisplayName.destination_hash == destination_hash).execute()
+                return web.json_response({
+                    "message": "Custom display name has been removed",
+                })
+
         # get interface stats
         @routes.get("/api/v1/interface-stats")
         async def index(request):
@@ -1273,6 +1310,7 @@ class ReticulumMeshChat:
                 # add to conversations
                 conversations.append({
                     "display_name": self.get_lxmf_conversation_name(other_user_hash),
+                    "custom_display_name": self.get_custom_destination_display_name(other_user_hash),
                     "destination_hash": other_user_hash,
                     "is_unread": self.is_lxmf_conversation_unread(other_user_hash),
                     "failed_messages_count": self.lxmf_conversation_failed_messages_count(other_user_hash),
@@ -1782,6 +1820,7 @@ class ReticulumMeshChat:
             "identity_public_key": announce.identity_public_key,
             "app_data": announce.app_data,
             "display_name": display_name,
+            "custom_display_name": self.get_custom_destination_display_name(announce.destination_hash),
             "created_at": announce.created_at,
             "updated_at": announce.updated_at,
         }
@@ -1924,6 +1963,21 @@ class ReticulumMeshChat:
         # upsert to database
         query = database.Announce.insert(data)
         query = query.on_conflict(conflict_target=[database.Announce.destination_hash], update=data)
+        query.execute()
+
+    # upserts a custom destination display name to the database
+    def db_upsert_custom_destination_display_name(self, destination_hash: str, display_name: str):
+
+        # prepare data to insert or update
+        data = {
+            "destination_hash": destination_hash,
+            "display_name": display_name,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+        # upsert to database
+        query = database.CustomDestinationDisplayName.insert(data)
+        query = query.on_conflict(conflict_target=[database.CustomDestinationDisplayName.destination_hash], update=data)
         query.execute()
 
     # upserts lxmf conversation read state to the database
@@ -2206,6 +2260,16 @@ class ReticulumMeshChat:
             "type": "announce",
             "announce": self.convert_db_announce_to_dict(announce),
         })))
+
+    # gets the custom display name a user has set for the provided destination hash
+    def get_custom_destination_display_name(self, destination_hash: str):
+
+        # get display name from database
+        db_destination_display_name = database.CustomDestinationDisplayName.get_or_none(database.CustomDestinationDisplayName.destination_hash == destination_hash)
+        if db_destination_display_name is not None:
+            return db_destination_display_name.display_name
+
+        return None
 
     # get name to show for an lxmf conversation
     # currently, this will use the app data from the most recent announce

@@ -29,7 +29,7 @@
                             </div>
                         </div>
                         <div class="mr-auto">
-                            <div class="text-gray-900" :class="{ 'font-semibold': conversation.is_unread || conversation.failed_messages_count > 0 }">{{ conversation.display_name }}</div>
+                            <div class="text-gray-900" :class="{ 'font-semibold': conversation.is_unread || conversation.failed_messages_count > 0 }">{{ conversation.custom_display_name ?? conversation.display_name }}</div>
                             <div class="text-gray-500 text-sm">{{ formatTimeAgo(conversation.updated_at) }}</div>
                         </div>
                         <div v-if="conversation.is_unread" class="my-auto ml-2 mr-2">
@@ -90,7 +90,7 @@
                             </div>
                         </div>
                         <div>
-                            <div class="text-gray-900">{{ peer.display_name }}</div>
+                            <div class="text-gray-900">{{ peer.custom_display_name ?? peer.display_name }}</div>
                             <div class="text-gray-500 text-sm">{{ formatTimeAgo(peer.updated_at) }}</div>
                         </div>
                     </div>
@@ -161,8 +161,9 @@ export default {
             return this.conversations.filter((conversation) => {
                 const search = this.conversationsSearchTerm.toLowerCase();
                 const matchesDisplayName = conversation.display_name.toLowerCase().includes(search);
+                const matchesCustomDisplayName = conversation.custom_display_name?.toLowerCase()?.includes(search) === true;
                 const matchesDestinationHash = conversation.destination_hash.toLowerCase().includes(search);
-                return matchesDisplayName || matchesDestinationHash;
+                return matchesDisplayName || matchesCustomDisplayName || matchesDestinationHash;
             });
         },
         peersCount() {
@@ -181,8 +182,9 @@ export default {
             return this.peersOrderedByLatestAnnounce.filter((peer) => {
                 const search = this.peersSearchTerm.toLowerCase();
                 const matchesDisplayName = peer.display_name.toLowerCase().includes(search);
+                const matchesCustomDisplayName = peer.custom_display_name?.toLowerCase()?.includes(search) === true;
                 const matchesDestinationHash = peer.destination_hash.toLowerCase().includes(search);
-                return matchesDisplayName || matchesDestinationHash;
+                return matchesDisplayName || matchesCustomDisplayName || matchesDestinationHash;
             });
         },
     },

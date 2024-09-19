@@ -8,7 +8,15 @@
 
             <!-- peer info -->
             <div>
-                <div class="font-semibold">{{ selectedPeer.display_name }}</div>
+                <div @click="updateCustomDisplayName" class="flex cursor-pointer">
+                    <div v-if="selectedPeer.custom_display_name != null" class="my-auto mr-1" title="Custom Display Name">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
+                        </svg>
+                    </div>
+                    <div class="my-auto font-semibold" :title="selectedPeer.display_name">{{ selectedPeer.custom_display_name ?? selectedPeer.display_name }}</div>
+                </div>
                 <div class="text-sm"><{{ selectedPeer.destination_hash }}> <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span></div>
             </div>
 
@@ -637,6 +645,53 @@ export default {
         },
         isLxmfMessageInUi: function(hash) {
             return this.chatItems.findIndex((chatItem) => chatItem.lxmf_message?.hash === hash) !== -1;
+        },
+        async getCustomDisplayName() {
+            if(this.selectedPeer){
+                try {
+
+                    // get custom display name
+                    const response = await window.axios.get(`/api/v1/destination/${this.selectedPeer.destination_hash}/custom-display-name`);
+
+                    // update ui
+                    this.selectedPeer.custom_display_name = response.data.custom_display_name;
+
+                } catch(e) {
+                    console.log(e);
+                }
+            }
+        },
+        async updateCustomDisplayName() {
+
+            // do nothing if no peer selected
+            if(!this.selectedPeer){
+                return;
+            }
+
+            // ask user for new display name
+            const displayName = await DialogUtils.prompt("Enter a custom display name");
+            if(displayName == null){
+                return;
+            }
+
+            try {
+
+                // update display name on server
+                await axios.post(`/api/v1/destination/${this.selectedPeer.destination_hash}/custom-display-name/update`, {
+                    display_name: displayName,
+                });
+
+                // update display name in ui
+                await this.getCustomDisplayName();
+
+                // reload conversations (so conversations list updates name)
+                this.$emit("reload-conversations");
+
+            } catch(e) {
+                console.log(e);
+                DialogUtils.alert("Failed to update display name");
+            }
+
         },
         async deleteConversation() {
 
