@@ -94,6 +94,10 @@
                         <div class="text-sm text-gray-700">{{ config.lxmf_address_hash }}</div>
                     </div>
                     <div class="p-1">
+                        <div>LXMF Propagation Node Address</div>
+                        <div class="text-sm text-gray-700">{{ config.lxmf_local_propagation_node_address_hash }}</div>
+                    </div>
+                    <div class="p-1">
                         <div>Audio Call Address</div>
                         <div class="text-sm text-gray-700">{{ config.audio_call_address_hash }}</div>
                     </div>

@@ -123,6 +123,10 @@ class ReticulumMeshChat:
         # update active propagation node
         self.set_active_propagation_node(self.config.lxmf_preferred_propagation_node_destination_hash.get())
 
+        # enable propagation node (we don't call with false if disabled, as no need to announce disabled state every launch)
+        if self.config.lxmf_local_propagation_node_enabled.get():
+            self.enable_local_propagation_node()
+
         # handle received announces based on aspect
         RNS.Transport.register_announce_handler(AnnounceHandler("call.audio", self.on_audio_call_announce_received))
         RNS.Transport.register_announce_handler(AnnounceHandler("lxmf.delivery", self.on_lxmf_announce_received))
@@ -243,6 +247,17 @@ class ReticulumMeshChat:
         # for now, the user can just manually cancel syncing in the ui if they think it's stuck...
         self.stop_propagation_node_sync()
         self.message_router.outbound_propagation_node = None
+
+    # enables or disables the local lxmf propagation node
+    def enable_local_propagation_node(self, enabled: bool = True):
+        try:
+            if enabled:
+                self.message_router.enable_propagation()
+            else:
+                self.message_router.disable_propagation()
+        except:
+            print("failed to enable or disable propagation node")
+            pass
 
     # handle receiving a new audio call
     def on_incoming_audio_call(self, audio_call: AudioCall):
@@ -1301,6 +1316,10 @@ class ReticulumMeshChat:
         self.local_lxmf_destination.display_name = self.config.display_name.get()
         self.message_router.announce(destination_hash=self.local_lxmf_destination.hash)
 
+        # send announce for local propagation node (if enabled)
+        if self.config.lxmf_local_propagation_node_enabled.get():
+            self.message_router.announce_propagation_node()
+
         # send announce for audio call
         self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
 
@@ -1367,6 +1386,15 @@ class ReticulumMeshChat:
         if "lxmf_preferred_propagation_node_auto_sync_interval_seconds" in data:
             value = int(data["lxmf_preferred_propagation_node_auto_sync_interval_seconds"])
             self.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds.set(value)
+
+        if "lxmf_local_propagation_node_enabled" in data:
+
+            # update config value
+            value = bool(data["lxmf_local_propagation_node_enabled"])
+            self.config.lxmf_local_propagation_node_enabled.set(value)
+
+            # enable or disable local propagation node
+            self.enable_local_propagation_node(value)
 
         # send config to websocket clients
         await self.send_config_to_websocket_clients()
@@ -1531,6 +1559,8 @@ class ReticulumMeshChat:
             "allow_auto_resending_failed_messages_with_attachments": self.config.allow_auto_resending_failed_messages_with_attachments.get(),
             "auto_send_failed_messages_to_propagation_node": self.config.auto_send_failed_messages_to_propagation_node.get(),
             "show_suggested_community_interfaces": self.config.show_suggested_community_interfaces.get(),
+            "lxmf_local_propagation_node_enabled": self.config.lxmf_local_propagation_node_enabled.get(),
+            "lxmf_local_propagation_node_address_hash": self.message_router.propagation_destination.hexhash,
             "lxmf_preferred_propagation_node_destination_hash": self.config.lxmf_preferred_propagation_node_destination_hash.get(),
             "lxmf_preferred_propagation_node_auto_sync_interval_seconds": self.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds.get(),
             "lxmf_preferred_propagation_node_last_synced_at": self.config.lxmf_preferred_propagation_node_last_synced_at.get(),
@@ -2353,6 +2383,7 @@ class Config:
     lxmf_preferred_propagation_node_destination_hash = StringConfig("lxmf_preferred_propagation_node_destination_hash", None)
     lxmf_preferred_propagation_node_auto_sync_interval_seconds = IntConfig("lxmf_preferred_propagation_node_auto_sync_interval_seconds", 0)
     lxmf_preferred_propagation_node_last_synced_at = IntConfig("lxmf_preferred_propagation_node_last_synced_at", None)
+    lxmf_local_propagation_node_enabled = BoolConfig("lxmf_local_propagation_node_enabled", False)
 
 
 class NomadnetDownloader:

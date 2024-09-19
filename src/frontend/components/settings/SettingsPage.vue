@@ -83,6 +83,16 @@
                     </div>
 
                     <div class="p-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input v-model="config.lxmf_local_propagation_node_enabled" @change="onLxmfLocalPropagationNodeEnabledChange" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300">
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900">Local Propagation Node</label>
+                        </div>
+                        <div class="text-sm text-gray-700">When enabled, MeshChat will run a Propagation Node and announce it for other clients to use.</div>
+                    </div>
+
+                    <div class="p-2">
                         <div class="text-sm font-medium text-gray-900">Preferred Propagation Node</div>
                         <div class="flex">
                             <input v-model="config.lxmf_preferred_propagation_node_destination_hash" @input="onLxmfPreferredPropagationNodeDestinationHashChange" type="text" placeholder="Destination Hash. e.g: a39610c89d18bb48c73e429582423c24" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -130,6 +140,7 @@ export default {
                 allow_auto_resending_failed_messages_with_attachments: null,
                 auto_send_failed_messages_to_propagation_node: null,
                 show_suggested_community_interfaces: null,
+                lxmf_local_propagation_node_enabled: null,
                 lxmf_preferred_propagation_node_destination_hash: null,
             },
         };
@@ -199,6 +210,11 @@ export default {
         async onLxmfPreferredPropagationNodeDestinationHashChange() {
             await this.updateConfig({
                 "lxmf_preferred_propagation_node_destination_hash": this.config.lxmf_preferred_propagation_node_destination_hash,
+            });
+        },
+        async onLxmfLocalPropagationNodeEnabledChange() {
+            await this.updateConfig({
+                "lxmf_local_propagation_node_enabled": this.config.lxmf_local_propagation_node_enabled,
             });
         },
         async onLxmfPreferredPropagationNodeAutoSyncIntervalSecondsChange() {
