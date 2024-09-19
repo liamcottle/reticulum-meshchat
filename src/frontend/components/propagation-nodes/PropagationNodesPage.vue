@@ -27,6 +27,9 @@
                     <div class="bg-gray-50 p-1">
                         <div class="text-gray-500 text-sm">
                             <span>Announced {{ formatTimeAgo(propagationNode.updated_at) }}</span>
+                            <span v-if="!propagationNode.is_propagation_enabled">
+                                <span> • <span class="text-red-500">Disabled by Operator</span></span>
+                            </span>
                             <span v-if="config.lxmf_preferred_propagation_node_destination_hash === propagationNode.destination_hash">
                                 <span> • <span class="text-green-500">Preferred</span></span>
                             </span>

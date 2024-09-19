@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from typing import Callable, List
 
 import RNS
+import RNS.vendor.umsgpack as msgpack
 import LXMF
 from LXMF import LXMRouter
 from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
@@ -968,12 +969,20 @@ class ReticulumMeshChat:
                 elif nomadnetwork_node_announce is not None and nomadnetwork_node_announce.app_data is not None:
                     operator_display_name = self.parse_nomadnetwork_node_display_name(nomadnetwork_node_announce.app_data, None)
 
-                # todo: parse app_data so we can see if propagation is enabled or disabled for this node
+                # parse app_data so we can see if propagation is enabled or disabled for this node
+                is_propagation_enabled = False
+                per_transfer_limit = None
+                propagation_node_data = self.parse_lxmf_propagation_node_app_data(announce.app_data)
+                if propagation_node_data is not None:
+                    is_propagation_enabled = propagation_node_data["enabled"]
+                    per_transfer_limit = propagation_node_data["per_transfer_limit"]
 
                 lxmf_propagation_nodes.append({
                     "destination_hash": announce.destination_hash,
                     "identity_hash": announce.identity_hash,
                     "operator_display_name": operator_display_name,
+                    "is_propagation_enabled": is_propagation_enabled,
+                    "per_transfer_limit": per_transfer_limit,
                     "created_at": announce.created_at,
                     "updated_at": announce.updated_at,
                 })
@@ -2232,6 +2241,19 @@ class ReticulumMeshChat:
             return app_data_bytes.decode("utf-8")
         except:
             return default_value
+
+    # parses lxmf propagation node app data
+    def parse_lxmf_propagation_node_app_data(self, app_data_base64: str):
+        try:
+            app_data_bytes = base64.b64decode(app_data_base64)
+            data = msgpack.unpackb(app_data_bytes)
+            return {
+                "enabled": bool(data[0]),
+                "timebase": int(data[1]),
+                "per_transfer_limit": int(data[2]),
+            }
+        except:
+            return None
 
     # returns true if the conversation has messages newer than the last read at timestamp
     def is_lxmf_conversation_unread(self, destination_hash):
