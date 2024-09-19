@@ -28,8 +28,8 @@
                         <div class="text-gray-500 text-sm">
                             <span>Announced {{ formatTimeAgo(propagationNode.updated_at) }}</span>
                             <span v-if="config.lxmf_preferred_propagation_node_destination_hash === propagationNode.destination_hash">
-                            <span> • <span class="text-green-500">Preferred</span></span>
-                        </span>
+                                <span> • <span class="text-green-500">Preferred</span></span>
+                            </span>
                         </div>
                     </div>
                 </div>
