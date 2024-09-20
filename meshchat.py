@@ -2027,8 +2027,17 @@ class ReticulumMeshChat:
         # create destination for recipients lxmf delivery address
         lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery")
 
+        # send messages over a direct link by default
+        desired_delivery_method = LXMF.LXMessage.DIRECT
+        if not self.message_router.delivery_link_available(destination_hash) and RNS.Identity.current_ratchet_id(destination_hash) != None:
+            # since there's no link established to the destination, it's faster to send opportunistically
+            # this is because it takes several packets to establish a link, and then we still have to send the message over it
+            # oppotunistic mode will send the message in a single packet (if the message is small enough, otherwise it falls back to a direct link)
+            # we will only do this if an encryption ratchet is available, so single packet delivery is more secure
+            desired_delivery_method = LXMF.LXMessage.OPPORTUNISTIC
+
         # create lxmf message
-        lxmf_message = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, content, desired_method=LXMF.LXMessage.DIRECT)
+        lxmf_message = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, content, desired_method=desired_delivery_method)
         lxmf_message.try_propagation_on_fail = self.config.auto_send_failed_messages_to_propagation_node.get()
 
         lxmf_message.fields = {}
