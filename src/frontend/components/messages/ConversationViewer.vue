@@ -1,7 +1,7 @@
 <template>
 
     <!-- peer selected -->
-    <div v-if="selectedPeer" class="m-2 flex flex-col h-full border rounded-xl bg-white shadow overflow-hidden">
+    <div v-if="selectedPeer" class="flex flex-col h-full bg-white overflow-hidden sm:m-2 sm:border sm:rounded-xl sm:shadow">
 
         <!-- header -->
         <div class="flex p-2 border-b border-gray-300">

@@ -9,7 +9,7 @@
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
 
         <!-- node -->
-        <div v-if="selectedNode" class="m-2 flex flex-col h-full border rounded-xl bg-white shadow overflow-hidden">
+        <div v-if="selectedNode" class="flex flex-col h-full bg-white overflow-hidden sm:m-2 sm:border sm:rounded-xl sm:shadow">
 
             <!-- header -->
             <div class="flex p-2 border-b border-gray-300">
