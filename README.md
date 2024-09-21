@@ -145,6 +145,7 @@ cd reticulum-meshchat
 
 # install nodejs deps
 # if you want to build electron binaries, remove "--omit=dev"
+# if you're using termux, add "--ignore-scripts" to fix error with esbuild
 npm install --omit=dev
 
 # build frontend vue components
@@ -195,9 +196,11 @@ options:
 It is possible to run on Android from source, using Termux. You will need to install a few extra dependencies and make a change to `requirements.txt`.
 
 ```
+pkg upgrade
 pkg install git
-pkg install rust
+pkg install nodejs-lts
 pkg install python-pip
+pkg install rust
 pkg install binutils
 pkg install build-essential
 ```
