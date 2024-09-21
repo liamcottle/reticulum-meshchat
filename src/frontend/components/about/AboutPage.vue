@@ -13,7 +13,7 @@
                             <div>Versions</div>
                             <div class="text-sm text-gray-700">MeshChat v{{ appInfo.version }} • RNS v{{ appInfo.rns_version }} • LXMF v{{ appInfo.lxmf_version }}</div>
                         </div>
-                        <div class="mx-2 my-auto">
+                        <div class="hidden sm:block mx-2 my-auto">
                             <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat/releases" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                                 Check for Updates
                             </a>
@@ -24,7 +24,7 @@
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Reticulum Config Path</div>
-                            <div class="text-sm text-gray-700">{{ appInfo.reticulum_config_path }}</div>
+                            <div class="text-sm text-gray-700 break-all">{{ appInfo.reticulum_config_path }}</div>
                         </div>
                         <div v-if="isElectron" class="mx-2 my-auto">
                             <button @click="showReticulumConfigFile" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
@@ -37,7 +37,7 @@
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Database Path</div>
-                            <div class="text-sm text-gray-700">{{ appInfo.database_path }}</div>
+                            <div class="text-sm text-gray-700 break-all">{{ appInfo.database_path }}</div>
                         </div>
                         <div v-if="isElectron" class="mx-2 my-auto">
                             <button @click="showDatabaseFile" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
