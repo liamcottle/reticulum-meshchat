@@ -319,9 +319,13 @@ export default {
                     return;
                 }
 
+                // check if page url ends with .mu but remove page data first
+                // address:/page/index.mu`Data=123
+                const [ pagePathWithoutData, pageData ] = pagePath.split("`");
+
                 // convert micron to html if page ends with .mu extension
                 // otherwise, we will just serve the content as is
-                if(pagePath.endsWith(".mu")){
+                if(pagePathWithoutData.endsWith(".mu")){
                     this.nodePageContent = MicronParser.convertMicronToHtml(pageContent);
                 } else {
                     this.nodePageContent = pageContent;
