@@ -74,7 +74,8 @@ class MicronParser {
 
             // parse micron links
             // `[ ◈  The Future of RNode: A New Model`:/page/posts/2022_06_27.mu]
-            line = line.replaceAll(/`\[(.*?)`(.*?)\]/g, function(match, linkText, linkUrl) {
+            // `[Hangman`:/page/Games/Hangman.mu]`
+            line = line.replaceAll(/`\[(.*?)`(.*?)\](?:`)?/g, function(match, linkText, linkUrl) {
                 const url = MicronParser.formatNomadnetworkUrl(linkUrl);
                 return `<a href="${url}" onclick="event.preventDefault(); onNodePageUrlClick('${linkUrl}')">${linkText}</a>`
             });
