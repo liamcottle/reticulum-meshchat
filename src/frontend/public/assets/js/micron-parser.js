@@ -152,7 +152,7 @@ class MicronParser {
 
             // align right
             if(line.startsWith("`r")){
-                line = line.replace("`l", "");
+                line = line.replace("`r", "");
                 line = `<span style="text-align:right;">${line}</span>`;
             }
 
