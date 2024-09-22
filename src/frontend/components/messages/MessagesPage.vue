@@ -78,12 +78,14 @@ export default {
 
     },
     methods: {
-        async onComposeNewMessage() {
+        async onComposeNewMessage(destinationHash) {
 
-            // ask for destination address
-            const destinationHash = await DialogUtils.prompt("Enter LXMF Address");
-            if(!destinationHash){
-                return;
+            // ask for destination address if not provided
+            if(destinationHash == null){
+                const destinationHash = await DialogUtils.prompt("Enter LXMF Address");
+                if(!destinationHash){
+                    return;
+                }
             }
 
             // attempt to find existing peer so we can show their name

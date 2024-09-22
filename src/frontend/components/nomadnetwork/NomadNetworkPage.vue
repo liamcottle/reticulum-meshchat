@@ -107,9 +107,9 @@
 <script>
 
 import DialogUtils from "../../js/DialogUtils";
-import Utils from "../../js/Utils";
 import WebSocketConnection from "../../js/WebSocketConnection";
 import NomadNetworkSidebar from "./NomadNetworkSidebar.vue";
+import GlobalEmitter from "../../js/GlobalEmitter";
 
 export default {
     name: 'NomadNetworkPage',
@@ -433,7 +433,8 @@ export default {
             if(url.startsWith("lxmf@")){
                 const destinationHash = url.replace("lxmf@", "");
                 if(destinationHash.length === 32){
-                    this.openLXMFConversation(destinationHash);
+                    await this.$router.push({ name: "messages" });
+                    GlobalEmitter.emit("compose-new-message", destinationHash);
                     return;
                 }
             }
