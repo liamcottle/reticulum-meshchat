@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="manifest" href="/manifest.json">
     <title>Reticulum MeshChat</title>
 
     <!-- scripts -->
@@ -24,5 +25,11 @@
 <body class="bg-gray-100">
 <div id="app"></div>
 <script type="module" src="main.js"></script>
+<script>
+    // install service worker
+    if('serviceWorker' in navigator){
+        navigator.serviceWorker.register('/service-worker.js');
+    }
+</script>
 </body>
 </html>
