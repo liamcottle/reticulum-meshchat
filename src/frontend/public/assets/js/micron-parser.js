@@ -87,8 +87,9 @@ class MicronParser {
             });
 
             // parse bold
+            // `!Bold Text
             // `!Bold Text`!
-            line = line.replaceAll(/`!(.*?)`!/g, function(match, text) {
+            line = line.replaceAll(/`!(.*?)(?:`!)?/g, function(match, text) {
                 return `<span style="font-weight:bold;">${text}</span>`
             });
 
