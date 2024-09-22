@@ -421,7 +421,7 @@ export default {
             return null;
 
         },
-        onNodePageUrlClick: function(url, addToHistory = true, useCache = true) {
+        async onNodePageUrlClick(url, addToHistory = true, useCache = true) {
 
             // open http urls in new tab
             if(url.startsWith("http://") || url.startsWith("https://")){
