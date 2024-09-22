@@ -81,7 +81,6 @@ class MicronParser {
             // `[Liam`lxmf@7b746057a7294469799cd8d7d429676a]
             line = line.replaceAll(/`\[(.*?)\]/g, function(match, linkContent) {
                 const linkParts = linkContent.split("`");
-                console.log(linkParts);
                 if(linkParts.length === 1){
                     const url = linkParts[0];
                     const formattedUrl = MicronParser.formatNomadnetworkUrl(url);
