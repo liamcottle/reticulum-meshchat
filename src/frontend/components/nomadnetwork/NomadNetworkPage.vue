@@ -391,10 +391,20 @@ export default {
 
             // parse relative urls
             if(url.startsWith(":")){
+
+                // remove leading ":"
+                var path = url.substring(1);
+
+                // if page path is empty we should load "/page/index.mu"
+                if(path === ""){
+                    path = "/page/index.mu";
+                }
+
                 return {
                     destination_hash: null, // node hash was not in provided url
-                    path: url.substring(1), // remove leading ":"
+                    path: path,
                 };
+
             }
 
             // parse absolute urls such as 00000000000000000000000000000000:/page/index.mu
