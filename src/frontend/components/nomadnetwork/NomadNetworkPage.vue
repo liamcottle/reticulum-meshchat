@@ -411,13 +411,13 @@ export default {
             if(url.includes(":")){
 
                 // parse destination hash and url
-                const [destinationHash, relativeUrl] = url.split(":");
+                const [destinationHash, ...relativeUrl] = url.split(":");
 
                 // ensure destination is expected length
                 if(destinationHash.length === 32){
                     return {
                         destination_hash: destinationHash,
-                        path: relativeUrl,
+                        path: relativeUrl.join(":"),
                     };
                 }
 
