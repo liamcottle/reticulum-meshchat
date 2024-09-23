@@ -82,7 +82,7 @@ export default {
 
             // ask for destination address if not provided
             if(destinationHash == null){
-                const destinationHash = await DialogUtils.prompt("Enter LXMF Address");
+                destinationHash = await DialogUtils.prompt("Enter LXMF Address");
                 if(!destinationHash){
                     return;
                 }
