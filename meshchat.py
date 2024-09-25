@@ -1120,7 +1120,7 @@ class ReticulumMeshChat:
                 if "short_name" in interface:
                     interface["interface_name"] = interface["short_name"]
 
-                if "parent_interface_name" in interface and interface["parent_interface_name"] != None:
+                if "parent_interface_name" in interface and interface["parent_interface_name"] is not None:
                     interface["parent_interface_hash"] = interface["parent_interface_hash"].hex()
 
                 if "ifac_signature" in interface and interface["ifac_signature"]:
