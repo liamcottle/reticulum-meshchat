@@ -1082,6 +1082,23 @@ class ReticulumMeshChat:
                     "message": "Custom display name has been removed",
                 })
 
+        # get lxmf stamp cost for the provided lxmf.delivery destination hash
+        @routes.get("/api/v1/destination/{destination_hash}/lxmf-stamp-cost")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # get lxmf stamp cost from announce in database
+            lxmf_stamp_cost = None
+            announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash)
+            if announce is not None:
+                lxmf_stamp_cost = self.parse_lxmf_stamp_cost(announce.app_data)
+
+            return web.json_response({
+                "lxmf_stamp_cost": lxmf_stamp_cost,
+            })
+
         # get interface stats
         @routes.get("/api/v1/interface-stats")
         async def index(request):
@@ -2331,6 +2348,14 @@ class ReticulumMeshChat:
             return LXMF.display_name_from_app_data(app_data_bytes)
         except:
             return default_value
+
+    # reads the lxmf stamp cost from the provided base64 app data
+    def parse_lxmf_stamp_cost(self, app_data_base64: str):
+        try:
+            app_data_bytes = base64.b64decode(app_data_base64)
+            return LXMF.stamp_cost_from_app_data(app_data_bytes)
+        except:
+            return None
 
     # reads the nomadnetwork node display name from the provided base64 app data
     def parse_nomadnetwork_node_display_name(self, app_data_base64: str, default_value: str | None = "Anonymous Node"):

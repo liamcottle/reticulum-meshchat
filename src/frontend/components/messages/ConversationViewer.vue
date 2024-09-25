@@ -17,7 +17,11 @@
                     </div>
                     <div class="my-auto font-semibold" :title="selectedPeer.display_name">{{ selectedPeer.custom_display_name ?? selectedPeer.display_name }}</div>
                 </div>
-                <div class="text-sm"><{{ selectedPeer.destination_hash }}> <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span></div>
+                <div class="text-sm">
+                    <{{ selectedPeer.destination_hash }}>
+                    <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span>
+                    <span v-if="selectedPeerLxmfStampCost"> • Stamp Cost {{ selectedPeerLxmfStampCost }}</span>
+                </div>
             </div>
 
             <!-- call button -->
@@ -380,6 +384,7 @@ export default {
         return {
 
             selectedPeerPath: null,
+            selectedPeerLxmfStampCost: null,
 
             lxmfMessagesRequestSequence: 0,
             chatItems: [],
@@ -455,6 +460,7 @@ export default {
             }
 
             this.getPeerPath();
+            this.getPeerLxmfStampCost();
 
             // load 1 page of previous messages
             await this.loadPrevious();
@@ -523,6 +529,13 @@ export default {
         async onWebsocketMessage(message) {
             const json = JSON.parse(message.data);
             switch(json.type){
+                case 'announce': {
+                    // update stamp cost if an announce is received from the selected peer
+                    if(json.announce.destination_hash === this.selectedPeer?.destination_hash){
+                        await this.getPeerLxmfStampCost();
+                    }
+                    break;
+                }
                 case 'lxmf.delivery': {
                     this.onLxmfMessageReceived(json.lxmf_message);
                     await this.getPeerPath();
@@ -621,6 +634,26 @@ export default {
 
                     // update ui
                     this.selectedPeerPath = response.data.path;
+
+                } catch(e) {
+                    console.log(e);
+                }
+            }
+
+        },
+        async getPeerLxmfStampCost() {
+
+            // clear previous stamp cost
+            this.selectedPeerLxmfStampCost = null;
+
+            if(this.selectedPeer){
+                try {
+
+                    // get lxmf stamp cost
+                    const response = await window.axios.get(`/api/v1/destination/${this.selectedPeer.destination_hash}/lxmf-stamp-cost`);
+
+                    // update ui
+                    this.selectedPeerLxmfStampCost = response.data.lxmf_stamp_cost;
 
                 } catch(e) {
                     console.log(e);
