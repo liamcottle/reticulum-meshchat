@@ -20,7 +20,7 @@
                 <div class="text-sm">
                     <{{ selectedPeer.destination_hash }}>
                     <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span>
-                    <span v-if="selectedPeerLxmfStampCost"> • Stamp Cost {{ selectedPeerLxmfStampCost }}</span>
+                    <span v-if="selectedPeerLxmfStampCost"> • <span @click="onStampCostClick(selectedPeerLxmfStampCost)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampCost }}</span></span>
                 </div>
             </div>
 
@@ -664,6 +664,31 @@ export default {
         onDestinationPathClick(path) {
             DialogUtils.alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
         },
+        onStampCostClick(stampCost) {
+
+            // determine estimated time to generate a stamp
+            var estimatedTimeForStamp = "";
+            if(stampCost >= 20){
+                estimatedTimeForStamp = "more than an hour";
+            } else if(stampCost >= 18) {
+                estimatedTimeForStamp = "~5 minutes";
+            } else if(stampCost >= 17) {
+                estimatedTimeForStamp = "a few minutes";
+            } else if(stampCost >= 16) {
+                estimatedTimeForStamp = "~1 minute";
+            } else if(stampCost >= 13) {
+                estimatedTimeForStamp = "~30 seconds";
+            } else if(stampCost >= 9) {
+                estimatedTimeForStamp = "~10 seconds";
+            } else if(stampCost >= 1) {
+                estimatedTimeForStamp = "a few seconds";
+            } else {
+                estimatedTimeForStamp = "0 seconds";
+            }
+
+            DialogUtils.alert(`This peer has enabled stamp security.\n\nYour device must solve an automated proof of work task each time you send them a message.\n\nTime per message: ${estimatedTimeForStamp}`);
+
+            },
         scrollMessagesToBottom: function() {
             // next tick waits for the ui to have the new elements added
             this.$nextTick(() => {
