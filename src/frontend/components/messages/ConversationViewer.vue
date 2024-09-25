@@ -668,7 +668,9 @@ export default {
 
             // determine estimated time to generate a stamp
             var estimatedTimeForStamp = "";
-            if(stampCost >= 20){
+            if(stampCost >= 24){
+                estimatedTimeForStamp = "several hours";
+            } else if(stampCost >= 20){
                 estimatedTimeForStamp = "more than an hour";
             } else if(stampCost >= 18) {
                 estimatedTimeForStamp = "~5 minutes";
