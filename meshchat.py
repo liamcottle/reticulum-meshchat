@@ -1110,21 +1110,22 @@ class ReticulumMeshChat:
             if "transport_id" in interface_stats:
                 interface_stats["transport_id"] = interface_stats["transport_id"].hex()
 
+            # ensure probe_responder is hex as json_response can't serialize bytes
+            if "probe_responder" in interface_stats:
+                interface_stats["probe_responder"] = interface_stats["probe_responder"].hex()
+            
             # ensure ifac_signature is hex as json_response can't serialize bytes
             for interface in interface_stats["interfaces"]:
+                interface["interface_name"] = interface["short_name"]
 
-                # add interface hashes
-                interface_instance = self.find_interface_by_name(interface["name"])
-                if interface_instance is not None:
-                    interface["type"] = type(interface_instance).__name__
-                    interface["hash"] = interface_instance.get_hash().hex()
-                    interface["interface_name"] = interface_instance.name
-                    if hasattr(interface_instance, "parent_interface") and interface_instance.parent_interface is not None:
-                        interface["parent_interface_name"] = str(interface_instance.parent_interface)
-                        interface["parent_interface_hash"] = interface_instance.parent_interface.get_hash().hex()
+                if "parent_interface_name" in interface and interface["parent_interface_name"] != None:
+                    interface["parent_interface_hash"] = interface["parent_interface_hash"].hex()
 
                 if "ifac_signature" in interface and interface["ifac_signature"]:
                     interface["ifac_signature"] = interface["ifac_signature"].hex()
+
+                if "hash" in interface and interface["hash"]:
+                    interface["hash"] = interface["hash"].hex()
 
             return web.json_response({
                 "interface_stats": interface_stats,
