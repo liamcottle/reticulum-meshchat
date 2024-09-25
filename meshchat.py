@@ -1111,12 +1111,14 @@ class ReticulumMeshChat:
                 interface_stats["transport_id"] = interface_stats["transport_id"].hex()
 
             # ensure probe_responder is hex as json_response can't serialize bytes
-            if "probe_responder" in interface_stats:
+            if "probe_responder" in interface_stats and interface_stats["probe_responder"] is not None:
                 interface_stats["probe_responder"] = interface_stats["probe_responder"].hex()
             
             # ensure ifac_signature is hex as json_response can't serialize bytes
             for interface in interface_stats["interfaces"]:
-                interface["interface_name"] = interface["short_name"]
+
+                if "short_name" in interface:
+                    interface["interface_name"] = interface["short_name"]
 
                 if "parent_interface_name" in interface and interface["parent_interface_name"] != None:
                     interface["parent_interface_hash"] = interface["parent_interface_hash"].hex()
