@@ -322,13 +322,14 @@ export default {
 
                     node.label = name;
                     node.title = [
-                        `Name: ${name}`,
+                        `Name: ${announce.display_name}`,
+                        announce.custom_display_name != null ? `Custom Name: ${announce.custom_display_name}` : null,
                         `Aspect: ${announce.aspect}`,
                         `Identity: ${announce.identity_hash}`,
                         `Destination: ${announce.destination_hash}`,
                         `Path: ${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'} via ${entry.interface}`,
                         `Announced At: ${announce.updated_at}`,
-                    ].join("\n");
+                    ].filter((line) => line != null).join("\n");
 
                 }
 
@@ -341,13 +342,14 @@ export default {
 
                     node.label = name;
                     node.title = [
-                        `Name: ${name}`,
+                        `Name: ${announce.display_name}`,
+                        announce.custom_display_name != null ? `Custom Name: ${announce.custom_display_name}` : null,
                         `Aspect: ${announce.aspect}`,
                         `Identity: ${announce.identity_hash}`,
                         `Destination: ${announce.destination_hash}`,
                         `Path: ${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'} via ${entry.interface}`,
                         `Announced At: ${announce.updated_at}`,
-                    ].join("\n");
+                    ].filter((line) => line != null).join("\n");
 
                 }
 
