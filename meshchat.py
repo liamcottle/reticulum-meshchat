@@ -1083,20 +1083,29 @@ class ReticulumMeshChat:
                 })
 
         # get lxmf stamp cost for the provided lxmf.delivery destination hash
-        @routes.get("/api/v1/destination/{destination_hash}/lxmf-stamp-cost")
+        @routes.get("/api/v1/destination/{destination_hash}/lxmf-stamp-info")
         async def index(request):
 
             # get path params
             destination_hash = request.match_info.get("destination_hash", "")
 
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
             # get lxmf stamp cost from announce in database
             lxmf_stamp_cost = None
-            announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash)
+            announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
             if announce is not None:
                 lxmf_stamp_cost = self.parse_lxmf_stamp_cost(announce.app_data)
 
+            # get outbound ticket expiry for this lxmf destination
+            lxmf_outbound_ticket_expiry = self.message_router.get_outbound_ticket_expiry(destination_hash)
+
             return web.json_response({
-                "lxmf_stamp_cost": lxmf_stamp_cost,
+                "lxmf_stamp_info": {
+                    "stamp_cost": lxmf_stamp_cost,
+                    "outbound_ticket_expiry": lxmf_outbound_ticket_expiry,
+                },
             })
 
         # get interface stats

@@ -20,7 +20,7 @@
                 <div class="text-sm">
                     <{{ selectedPeer.destination_hash }}>
                     <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span>
-                    <span v-if="selectedPeerLxmfStampCost"> • <span @click="onStampCostClick(selectedPeerLxmfStampCost)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampCost }}</span></span>
+                    <span v-if="selectedPeerLxmfStampInfo && selectedPeerLxmfStampInfo.stamp_cost"> • <span @click="onStampInfoClick(selectedPeerLxmfStampInfo)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampInfo.stamp_cost }}</span></span>
                 </div>
             </div>
 
@@ -369,6 +369,7 @@ import DialogUtils from "../../js/DialogUtils";
 import NotificationUtils from "../../js/NotificationUtils";
 import WebSocketConnection from "../../js/WebSocketConnection";
 import AddAudioButton from "./AddAudioButton.vue";
+import moment from "moment";
 
 export default {
     name: 'ConversationViewer',
@@ -384,7 +385,7 @@ export default {
         return {
 
             selectedPeerPath: null,
-            selectedPeerLxmfStampCost: null,
+            selectedPeerLxmfStampInfo: null,
 
             lxmfMessagesRequestSequence: 0,
             chatItems: [],
@@ -460,7 +461,7 @@ export default {
             }
 
             this.getPeerPath();
-            this.getPeerLxmfStampCost();
+            this.getPeerLxmfStampInfo();
 
             // load 1 page of previous messages
             await this.loadPrevious();
@@ -530,9 +531,9 @@ export default {
             const json = JSON.parse(message.data);
             switch(json.type){
                 case 'announce': {
-                    // update stamp cost if an announce is received from the selected peer
+                    // update stamp info if an announce is received from the selected peer
                     if(json.announce.destination_hash === this.selectedPeer?.destination_hash){
-                        await this.getPeerLxmfStampCost();
+                        await this.getPeerLxmfStampInfo();
                     }
                     break;
                 }
@@ -641,19 +642,19 @@ export default {
             }
 
         },
-        async getPeerLxmfStampCost() {
+        async getPeerLxmfStampInfo() {
 
-            // clear previous stamp cost
-            this.selectedPeerLxmfStampCost = null;
+            // clear previous stamp info
+            this.selectedPeerLxmfStampInfo = null;
 
             if(this.selectedPeer){
                 try {
 
-                    // get lxmf stamp cost
-                    const response = await window.axios.get(`/api/v1/destination/${this.selectedPeer.destination_hash}/lxmf-stamp-cost`);
+                    // get lxmf stamp info
+                    const response = await window.axios.get(`/api/v1/destination/${this.selectedPeer.destination_hash}/lxmf-stamp-info`);
 
                     // update ui
-                    this.selectedPeerLxmfStampCost = response.data.lxmf_stamp_cost;
+                    this.selectedPeerLxmfStampInfo = response.data.lxmf_stamp_info;
 
                 } catch(e) {
                     console.log(e);
@@ -664,7 +665,10 @@ export default {
         onDestinationPathClick(path) {
             DialogUtils.alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
         },
-        onStampCostClick(stampCost) {
+        onStampInfoClick(stampInfo) {
+
+            const stampCost = stampInfo.stamp_cost;
+            const outboundTicketExpiry = stampInfo.outbound_ticket_expiry;
 
             // determine estimated time to generate a stamp
             var estimatedTimeForStamp = "";
@@ -688,9 +692,14 @@ export default {
                 estimatedTimeForStamp = "0 seconds";
             }
 
-            DialogUtils.alert(`This peer has enabled stamp security.\n\nYour device must solve an automated proof of work task each time you send them a message.\n\nTime per message: ${estimatedTimeForStamp}`);
+            // check if we have an outbound ticket available
+            if(outboundTicketExpiry != null){
+                estimatedTimeForStamp = `instant (ticket expires ${moment(outboundTicketExpiry * 1000).fromNow()})`;
+            }
 
-            },
+            DialogUtils.alert(`This peer has enabled stamp security.\n\nYour device must have a ticket, or solve an automated proof of work task each time you send them a message.\n\nTime per message: ${estimatedTimeForStamp}`);
+
+        },
         scrollMessagesToBottom: function() {
             // next tick waits for the ui to have the new elements added
             this.$nextTick(() => {
