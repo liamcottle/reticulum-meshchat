@@ -111,6 +111,33 @@ class GroupChatDataProvider(GroupDataProviderInterface):
             (database.GroupMember.group_destination_hash == group.destination_hash)
             & (database.GroupMember.member_identity_hash == identity_hash.hex())).execute()
 
+    # gets members of a group
+    def get_members(self, group_destination_hash: bytes, page: int | None, limit: int | None):
+
+        # find group
+        group = self.find_group(group_destination_hash)
+        if group is None:
+            raise Exception("Group not found")
+
+        # build group members database query
+        query = database.GroupMember.select()
+
+        # paginate results
+        if page is not None and limit is not None:
+            query = query.paginate(page, limit)
+
+        # order announces latest to oldest
+        query_results = query.order_by(database.GroupMember.member_display_name.asc())
+
+        # process members
+        members = []
+        for member in query_results:
+            members.append({
+                "member_identity_hash": member.member_identity_hash,
+                "member_display_name": member.member_display_name,
+            })
+
+        return members
 
 class ReticulumMeshChat:
 

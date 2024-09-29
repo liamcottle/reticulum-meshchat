@@ -95,3 +95,10 @@ class GroupChatClient:
     # leave group
     async def leave(self):
         return await self.request("/api/v1/leave")
+
+    # get group members
+    async def get_members(self, page: int, limit: int):
+        return await self.request("/api/v1/members", data=json.dumps({
+            "page": page,
+            "limit": limit,
+        }).encode("utf-8"))

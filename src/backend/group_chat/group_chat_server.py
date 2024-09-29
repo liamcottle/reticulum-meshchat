@@ -23,6 +23,9 @@ class GroupDataProviderInterface:
     def remove_member(self, group_destination_hash: bytes, identity_hash: bytes):
         raise Exception("Not Implemented")
 
+    # gets members of a group
+    def get_members(self, group_destination_hash: bytes, page: int | None, limit: int | None):
+        raise Exception("Not Implemented")
 
 # a group chat server than can handle membership management
 class GroupChatServer:
@@ -49,6 +52,7 @@ class GroupChatServer:
         self.group_destination.register_request_handler(path="/api/v1/info", response_generator=self.on_received_api_v1_info_request, allow=RNS.Destination.ALLOW_ALL)
         self.group_destination.register_request_handler(path="/api/v1/join", response_generator=self.on_received_api_v1_join_request, allow=RNS.Destination.ALLOW_ALL)
         self.group_destination.register_request_handler(path="/api/v1/leave", response_generator=self.on_received_api_v1_leave_request, allow=RNS.Destination.ALLOW_ALL)
+        self.group_destination.register_request_handler(path="/api/v1/members", response_generator=self.on_received_api_v1_members_request, allow=RNS.Destination.ALLOW_ALL)
 
     # announce group destination
     def announce(self):
@@ -120,3 +124,41 @@ class GroupChatServer:
         # remove member from group
         self.data_provider.remove_member(self.group_destination.hash, remote_identity.hash)
         return self.success_response("You are no longer a member of this group")
+
+    # /api/v1/members
+    def on_received_api_v1_members_request(self, path, data: bytes | None, request_id, remote_identity: RNS.Identity | None, requested_at):
+
+        # ensure user has identified
+        if remote_identity is None:
+            return self.identity_not_provided_error_response()
+
+        # attempt to parse data as json
+        page = None
+        limit = None
+        if data is not None:
+            try:
+                json_data = json.loads(data.decode("utf-8"))
+                page = json_data["page"]
+                limit = json_data["limit"]
+            except:
+                print("failed to parse request data as json")
+                pass
+
+        # ensure user is a member
+        if not self.data_provider.is_member(self.group_destination.hash, remote_identity.hash):
+            return self.error_response("You are not a member of this group")
+
+        # get group members
+        database_group_members = self.data_provider.get_members(self.group_destination.hash, page, limit)
+
+        # process group members
+        group_members = []
+        for database_group_member in database_group_members:
+            group_members.append({
+                "identity_hash": database_group_member["member_identity_hash"],
+                "display_name": database_group_member["member_display_name"],
+            })
+
+        return json.dumps({
+            "members": group_members,
+        }).encode("utf-8")
