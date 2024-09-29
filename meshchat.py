@@ -139,6 +139,52 @@ class GroupChatDataProvider(GroupDataProviderInterface):
 
         return members
 
+    # gets messages of a group
+    def get_messages(self, group_destination_hash: bytes, order: str | None, limit: int | None, after_id: int | None):
+
+        # find group
+        group = self.find_group(group_destination_hash)
+        if group is None:
+            raise Exception("Group not found")
+
+        # build group messages database query
+        query = database.GroupMessage.select().where(database.GroupMessage.group_destination_hash == group.destination_hash)
+
+        # limit results
+        if limit is not None:
+            query = query.limit(limit)
+
+        # order results
+        if order == "asc":
+
+            # order asc
+            query = query.order_by(database.GroupMessage.id.asc())
+
+            # only results after provided id
+            if after_id is not None:
+                query = query.where(database.GroupMessage.id > int(after_id))
+
+        elif order == "desc":
+
+            # order desc
+            query = query.order_by(database.GroupMessage.id.desc())
+
+            # only results before provided id
+            if after_id is not None:
+                query = query.where(database.GroupMessage.id < int(after_id))
+
+        # process messages
+        messages = []
+        for message in query:
+            messages.append({
+                "id": message.id,
+                "member_identity_hash": message.member_identity_hash,
+                "content": message.content,
+                "created_at": message.created_at,
+            })
+
+        return messages
+
     # save a message sent to the group by the provided identity
     def on_message_received(self, group_destination_hash: bytes, identity_hash: bytes, data: dict):
 

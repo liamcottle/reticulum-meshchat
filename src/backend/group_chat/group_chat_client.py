@@ -103,6 +103,14 @@ class GroupChatClient:
             "limit": limit,
         }).encode("utf-8"))
 
+    # get group messages
+    async def get_messages(self, order: str, limit: int, after_id: int | None):
+        return await self.request("/api/v1/messages", data=json.dumps({
+            "order": order,
+            "limit": limit,
+            "after_id": after_id,
+        }).encode("utf-8"))
+
     # send message
     async def send_message(self, content: str):
         return await self.request("/api/v1/messages/send", data=json.dumps({
@@ -128,6 +136,7 @@ async def main():
     print(await group_chat_client.get_info())
     print(await group_chat_client.get_members(page=1, limit=10))
     print(await group_chat_client.send_message("hello world!"))
+    print(await group_chat_client.get_messages(order="desc", limit=1, after_id=None))
     print(await group_chat_client.leave())
     print(await group_chat_client.get_info())
 

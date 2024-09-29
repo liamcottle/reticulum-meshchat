@@ -27,6 +27,10 @@ class GroupDataProviderInterface:
     def get_members(self, group_destination_hash: bytes, page: int | None, limit: int | None):
         raise Exception("Not Implemented")
 
+    # gets messages of a group
+    def get_messages(self, group_destination_hash: bytes, order: str | None, limit: int | None, after_id: int | None):
+        raise Exception("Not Implemented")
+
     # save a message sent to the group by the provided identity
     def on_message_received(self, group_destination_hash: bytes, identity_hash: bytes, data: dict):
         raise Exception("Not Implemented")
@@ -58,6 +62,7 @@ class GroupChatServer:
         self.group_destination.register_request_handler(path="/api/v1/join", response_generator=self.on_received_api_v1_join_request, allow=RNS.Destination.ALLOW_ALL)
         self.group_destination.register_request_handler(path="/api/v1/leave", response_generator=self.on_received_api_v1_leave_request, allow=RNS.Destination.ALLOW_ALL)
         self.group_destination.register_request_handler(path="/api/v1/members", response_generator=self.on_received_api_v1_members_request, allow=RNS.Destination.ALLOW_ALL)
+        self.group_destination.register_request_handler(path="/api/v1/messages", response_generator=self.on_received_api_v1_messages_request, allow=RNS.Destination.ALLOW_ALL)
         self.group_destination.register_request_handler(path="/api/v1/messages/send", response_generator=self.on_received_api_v1_messages_send_request, allow=RNS.Destination.ALLOW_ALL)
 
     # announce group destination
@@ -169,6 +174,47 @@ class GroupChatServer:
 
         return json.dumps({
             "members": group_members,
+        }).encode("utf-8")
+
+    # /api/v1/messages
+    def on_received_api_v1_messages_request(self, path, data: bytes | None, request_id, remote_identity: RNS.Identity | None, requested_at):
+
+        # ensure user has identified
+        if remote_identity is None:
+            return self.identity_not_provided_error_response()
+
+        # ensure user is a member
+        if not self.data_provider.is_member(self.group_destination.hash, remote_identity.hash):
+            return self.error_response("You are not a member of this group")
+
+        # attempt to parse data as json
+        order = None
+        limit = None
+        after_id = None
+        if data is not None:
+            try:
+                json_data = json.loads(data.decode("utf-8"))
+                order = json_data["order"]
+                limit = json_data["limit"]
+                after_id = json_data["after_id"]
+            except:
+                return self.request_json_parsing_error_response()
+
+        # get group messages
+        database_group_messages = self.data_provider.get_messages(self.group_destination.hash, order, limit, after_id)
+
+        # process group messages
+        group_messages = []
+        for database_group_message in database_group_messages:
+            group_messages.append({
+                "id": database_group_message["id"],
+                "member_identity_hash": database_group_message["member_identity_hash"],
+                "content": database_group_message["content"],
+                "created_at": database_group_message["created_at"],
+            })
+
+        return json.dumps({
+            "messages": group_messages,
         }).encode("utf-8")
 
     # /api/v1/messages/send
