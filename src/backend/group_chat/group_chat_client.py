@@ -102,3 +102,26 @@ class GroupChatClient:
             "page": page,
             "limit": limit,
         }).encode("utf-8"))
+
+
+# python3 group_chat_client.py
+# used for testing group chat client
+async def main():
+
+    # init rns and create random identity
+    RNS.Reticulum()
+    identity = RNS.Identity()
+
+    # create group chat client
+    group_chat_client = GroupChatClient(bytes.fromhex("9862f823bf77a450c44e3a2edccf1dc0"), identity)
+
+    # test requests
+    print(await group_chat_client.get_info())
+    print(await group_chat_client.join("Test Display Name"))
+    print(await group_chat_client.get_info())
+    print(await group_chat_client.get_members(page=1, limit=10))
+    print(await group_chat_client.leave())
+    print(await group_chat_client.get_info())
+
+if __name__ == "__main__":
+    asyncio.run(main())
