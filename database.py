@@ -158,3 +158,19 @@ class GroupMember(BaseModel):
             # only allow a single row per group_destination_hash/member_identity_hash pair
             SQL('UNIQUE (group_destination_hash, member_identity_hash)'),
         ]
+
+
+class GroupMessage(BaseModel):
+
+    id = BigAutoField()
+    hash = CharField(unique=True)
+    group_destination_hash = CharField(index=True)
+    member_identity_hash = CharField()
+    content = TextField()
+
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+
+    # define table name
+    class Meta:
+        table_name = "group_messages"

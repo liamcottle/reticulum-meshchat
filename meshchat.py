@@ -139,6 +139,39 @@ class GroupChatDataProvider(GroupDataProviderInterface):
 
         return members
 
+    # save a message sent to the group by the provided identity
+    def on_message_received(self, group_destination_hash: bytes, identity_hash: bytes, data: dict):
+
+        # find group
+        group = self.find_group(group_destination_hash)
+        if group is None:
+            raise Exception("Group not found")
+
+        # generate a message hash similar to lxmf
+        message_data_to_hash = b""
+        message_data_to_hash += group_destination_hash
+        message_data_to_hash += identity_hash
+        message_data_to_hash += msgpack.packb(data)
+        message_hash = RNS.Identity.full_hash(message_data_to_hash).hex()
+
+        # get content as string
+        content = None
+        if "content" in data:
+            content = str(data["content"])
+
+        # prepare data to insert or update
+        data = {
+            "hash": message_hash,
+            "group_destination_hash": group.destination_hash,
+            "member_identity_hash": identity_hash.hex(),
+            "content": content,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+        # upsert message to database
+        database.GroupMessage.insert(data).on_conflict(conflict_target=[database.GroupMessage.hash], update=data).execute()
+
+
 class ReticulumMeshChat:
 
     def __init__(self, identity: RNS.Identity, storage_dir, reticulum_config_dir):
@@ -175,6 +208,7 @@ class ReticulumMeshChat:
             database.CustomDestinationDisplayName,
             database.Group,
             database.GroupMember,
+            database.GroupMessage,
             database.LxmfMessage,
             database.LxmfConversationReadState,
         ])

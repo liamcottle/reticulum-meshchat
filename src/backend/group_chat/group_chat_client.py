@@ -103,6 +103,13 @@ class GroupChatClient:
             "limit": limit,
         }).encode("utf-8"))
 
+    # send message
+    async def send_message(self, content: str):
+        return await self.request("/api/v1/messages/send", data=json.dumps({
+            "timestamp": time.time(),
+            "content": content,
+        }).encode("utf-8"))
+
 
 # python3 group_chat_client.py
 # used for testing group chat client
@@ -120,6 +127,7 @@ async def main():
     print(await group_chat_client.join("Test Display Name"))
     print(await group_chat_client.get_info())
     print(await group_chat_client.get_members(page=1, limit=10))
+    print(await group_chat_client.send_message("hello world!"))
     print(await group_chat_client.leave())
     print(await group_chat_client.get_info())
 

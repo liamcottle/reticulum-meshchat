@@ -27,6 +27,11 @@ class GroupDataProviderInterface:
     def get_members(self, group_destination_hash: bytes, page: int | None, limit: int | None):
         raise Exception("Not Implemented")
 
+    # save a message sent to the group by the provided identity
+    def on_message_received(self, group_destination_hash: bytes, identity_hash: bytes, data: dict):
+        raise Exception("Not Implemented")
+
+
 # a group chat server than can handle membership management
 class GroupChatServer:
 
@@ -53,6 +58,7 @@ class GroupChatServer:
         self.group_destination.register_request_handler(path="/api/v1/join", response_generator=self.on_received_api_v1_join_request, allow=RNS.Destination.ALLOW_ALL)
         self.group_destination.register_request_handler(path="/api/v1/leave", response_generator=self.on_received_api_v1_leave_request, allow=RNS.Destination.ALLOW_ALL)
         self.group_destination.register_request_handler(path="/api/v1/members", response_generator=self.on_received_api_v1_members_request, allow=RNS.Destination.ALLOW_ALL)
+        self.group_destination.register_request_handler(path="/api/v1/messages/send", response_generator=self.on_received_api_v1_messages_send_request, allow=RNS.Destination.ALLOW_ALL)
 
     # announce group destination
     def announce(self):
@@ -79,6 +85,10 @@ class GroupChatServer:
     def identity_not_provided_error_response(self):
         return self.error_response("You must identity to to access this endpoint.")
 
+    # error response for failing to parse request data as json
+    def request_json_parsing_error_response(self):
+        return self.error_response("Failed to parse request data as JSON.")
+
     # /api/v1/info
     def on_received_api_v1_info_request(self, path, data, request_id, remote_identity, requested_at):
         return json.dumps({
@@ -101,8 +111,7 @@ class GroupChatServer:
                 json_data = json.loads(data.decode("utf-8"))
                 display_name = json_data["display_name"] or "Anonymous Peer"
             except:
-                print("failed to parse request data as json")
-                pass
+                return self.request_json_parsing_error_response()
 
         # ensure user is not already a member
         if self.data_provider.is_member(self.group_destination.hash, remote_identity.hash):
@@ -141,8 +150,7 @@ class GroupChatServer:
                 page = json_data["page"]
                 limit = json_data["limit"]
             except:
-                print("failed to parse request data as json")
-                pass
+                return self.request_json_parsing_error_response()
 
         # ensure user is a member
         if not self.data_provider.is_member(self.group_destination.hash, remote_identity.hash):
@@ -161,4 +169,33 @@ class GroupChatServer:
 
         return json.dumps({
             "members": group_members,
+        }).encode("utf-8")
+
+    # /api/v1/messages/send
+    def on_received_api_v1_messages_send_request(self, path, data: bytes | None, request_id, remote_identity: RNS.Identity | None, requested_at):
+
+        # ensure user has identified
+        if remote_identity is None:
+            return self.identity_not_provided_error_response()
+
+        # ensure user is a member
+        if not self.data_provider.is_member(self.group_destination.hash, remote_identity.hash):
+            return self.error_response("You are not a member of this group")
+
+        # attempt to parse data as json
+        json_data = None
+        if data is not None:
+            try:
+                json_data = json.loads(data.decode("utf-8"))
+            except:
+                return self.request_json_parsing_error_response()
+
+        # todo ensure only expected content is received
+        # todo ensure timestamp
+
+        # handle received message
+        self.data_provider.on_message_received(self.group_destination.hash, remote_identity.hash, json_data)
+
+        return json.dumps({
+            "success": "Message received",
         }).encode("utf-8")
