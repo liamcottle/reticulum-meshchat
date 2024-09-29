@@ -52,8 +52,11 @@ class GroupChatServer:
 
     # announce group destination
     def announce(self):
-        # todo add app data about group: public_display_name, members_count, group_type
-        self.group_destination.announce()
+        self.group_destination.announce(app_data=json.dumps({
+            "group_type": self.group_type,
+            "public_display_name": self.public_display_name,
+            "members_count": self.data_provider.get_member_count(self.group_destination.hash),
+        }).encode("utf-8"))
         print("[GroupChatServer] announced destination: " + RNS.prettyhexrep(self.group_destination.hash))
 
     # error response format
