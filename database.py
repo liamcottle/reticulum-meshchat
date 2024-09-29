@@ -123,3 +123,38 @@ class LxmfConversationReadState(BaseModel):
     # define table name
     class Meta:
         table_name = "lxmf_conversation_read_state"
+
+
+class Group(BaseModel):
+
+    id = BigAutoField()
+    destination_hash = CharField(unique=True)  # unique destination hash
+    identity_private_key = TextField(null=True)  # identity private key if we created and control this group
+    type = CharField()
+    public_display_name = CharField()
+
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+
+    # define table name
+    class Meta:
+        table_name = "groups"
+
+
+class GroupMember(BaseModel):
+
+    id = BigAutoField()
+    group_destination_hash = CharField()
+    member_identity_hash = CharField()
+    member_display_name = CharField()
+
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+
+    # define table name
+    class Meta:
+        table_name = "group_members"
+        constraints = [
+            # only allow a single row per group_destination_hash/member_identity_hash pair
+            SQL('UNIQUE (group_destination_hash, member_identity_hash)'),
+        ]

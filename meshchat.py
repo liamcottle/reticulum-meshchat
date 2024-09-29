@@ -23,6 +23,7 @@ from serial.tools import list_ports
 
 import database
 from src.backend.announce_handler import AnnounceHandler
+from src.backend.group_chat.group_chat_server import GroupChatServer, GroupDataProviderInterface
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.backend.audio_call_manager import AudioCall, AudioCallManager
 
@@ -36,6 +37,79 @@ def get_file_path(filename):
     else:
         datadir = os.path.dirname(__file__)
     return os.path.join(datadir, filename)
+
+
+class GroupChatDataProvider(GroupDataProviderInterface):
+
+    def __init__(self):
+        pass
+
+    # finds a group in the database for the provided destination hash
+    def find_group(self, group_destination_hash: bytes):
+        return database.Group.get_or_none(database.Group.destination_hash == group_destination_hash.hex())
+
+    # gets member count of a group
+    def get_member_count(self, group_destination_hash: bytes) -> int:
+
+        # find group
+        group = self.find_group(group_destination_hash)
+        if group is None:
+            raise Exception("Group not found")
+
+        # get group members count
+        group_members_count = database.GroupMember.select().where(database.GroupMember.group_destination_hash == group.destination_hash).count()
+        return group_members_count
+
+    # check if a user is a member of a group
+    def is_member(self, group_destination_hash: bytes, identity_hash: bytes) -> bool:
+
+        # find group
+        group = self.find_group(group_destination_hash)
+        if group is None:
+            raise Exception("Group not found")
+
+        # find group member
+        group_member = database.GroupMember.get_or_none(
+            (database.GroupMember.group_destination_hash == group.destination_hash)
+            & (database.GroupMember.member_identity_hash == identity_hash.hex()))
+
+        return group_member is not None
+
+    # adds a member to a group
+    def add_member(self, group_destination_hash: bytes, identity_hash: bytes, display_name: str):
+
+        # find group
+        group = self.find_group(group_destination_hash)
+        if group is None:
+            raise Exception("Group not found")
+
+        # prepare data to insert or update
+        data = {
+            "group_destination_hash": group.destination_hash,
+            "member_identity_hash": identity_hash.hex(),
+            "member_display_name": display_name,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+        # upsert group member to database
+        database.GroupMember.insert(data).on_conflict(conflict_target=[
+            # one unique row per group_destination_hash/member_identity_hash pair
+            database.GroupMember.group_destination_hash,
+            database.GroupMember.member_identity_hash,
+        ], update=data).execute()
+
+    # removes a member from a group
+    def remove_member(self, group_destination_hash: bytes, identity_hash: bytes):
+
+        # find group
+        group = self.find_group(group_destination_hash)
+        if group is None:
+            raise Exception("Group not found")
+
+        # remove group member from database
+        database.GroupMember.delete().where(
+            (database.GroupMember.group_destination_hash == group.destination_hash)
+            & (database.GroupMember.member_identity_hash == identity_hash.hex())).execute()
 
 
 class ReticulumMeshChat:
@@ -72,6 +146,8 @@ class ReticulumMeshChat:
             database.Config,
             database.Announce,
             database.CustomDestinationDisplayName,
+            database.Group,
+            database.GroupMember,
             database.LxmfMessage,
             database.LxmfConversationReadState,
         ])
@@ -141,6 +217,22 @@ class ReticulumMeshChat:
         # register audio call identity
         self.audio_call_manager = AudioCallManager(identity=self.identity)
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
+
+        # start group servers we control
+        self.group_chat_servers = []
+        for group in database.Group.get(database.Group.identity_private_key.is_null(False)).select():
+
+            # load group identity private key from database
+            group_identity = RNS.Identity(create_keys=False)
+            group_identity.load_private_key(base64.b64decode(group.identity_private_key))
+
+            # init group chat server
+            self.group_chat_servers.append(GroupChatServer(
+                identity=group_identity,
+                data_provider=GroupChatDataProvider(),
+                group_type=group.type,
+                public_display_name=group.public_display_name,
+            ))
 
         # start background thread for auto announce loop
         thread = threading.Thread(target=asyncio.run, args=(self.announce_loop(),))
@@ -892,6 +984,95 @@ class ReticulumMeshChat:
                 "announces": announces,
             })
 
+        # serve groups
+        @routes.get("/api/v1/groups")
+        async def index(request):
+
+            # build groups database query
+            query = database.Group.select()
+
+            # order groups by name asc
+            query_results = query.order_by(database.Group.public_display_name.asc())
+
+            # process groups
+            groups = []
+            for group in query_results:
+                groups.append(self.convert_db_group_to_dict(group))
+
+            return web.json_response({
+                "groups": groups,
+            })
+
+        # create group
+        @routes.post("/api/v1/groups/create")
+        async def index(request):
+
+            # get request data
+            data = await request.json()
+            group_type = data.get('group_type')
+            public_display_name = data.get('public_display_name')
+
+            # group type is required
+            # todo check group type is allowed
+            if group_type is None:
+                return web.json_response({
+                    "message": "group type is required",
+                }, status=422)
+
+            # public display name is required
+            if public_display_name is None or public_display_name == "":
+                return web.json_response({
+                    "message": "public display name is required",
+                }, status=422)
+
+            # create a new rns identity to manage this group
+            group_identity = RNS.Identity()
+
+            # determine the destination hash for this new group
+            destination_hash = RNS.Destination.hash(group_identity, "meshchat", "group").hex()
+
+            # create group in database
+            database.Group.insert({
+                "destination_hash": destination_hash,
+                "identity_private_key": base64.b64encode(group_identity.get_private_key()).decode("utf-8"),
+                "type": group_type,
+                "public_display_name": public_display_name,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
+            }).execute()
+
+            # find new group in database
+            database_group = database.Group.get_or_none(database.Group.destination_hash == destination_hash)
+            if database_group is None:
+                return web.json_response({
+                    "message": "failed to find group after creating it",
+                }, status=500)
+
+            return web.json_response({
+                "group": self.convert_db_group_to_dict(database_group),
+            })
+
+        # delete group
+        @routes.delete("/api/v1/groups/{destination_hash}")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", None)
+
+            # destination hash is required
+            if destination_hash is None:
+                return web.json_response({
+                    "message": "destination hash is required",
+                }, status=422)
+
+            # delete all database records for the group
+            database.Group.delete().where((database.Group.destination_hash == destination_hash)).execute()
+            database.GroupMember.delete().where((database.GroupMember.group_destination_hash == destination_hash)).execute()
+
+            return web.json_response({
+                "message": "Group has been deleted",
+            })
+
         # propagation node status
         @routes.get("/api/v1/lxmf/propagation-node/status")
         async def index(request):
@@ -1401,6 +1582,11 @@ class ReticulumMeshChat:
         # send announce for audio call
         self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
 
+        # send announce for group chat servers
+        # todo allow groups to have independent announce schedules?
+        for group_chat_server in self.group_chat_servers:
+            group_chat_server.announce()
+
         # tell websocket clients we just announced
         await self.send_announced_to_websocket_clients()
 
@@ -1877,6 +2063,17 @@ class ReticulumMeshChat:
             "custom_display_name": self.get_custom_destination_display_name(announce.destination_hash),
             "created_at": announce.created_at,
             "updated_at": announce.updated_at,
+        }
+
+    # convert database group to a dictionary
+    def convert_db_group_to_dict(self, group: database.Group):
+        return {
+            "id": group.id,
+            "destination_hash": group.destination_hash,
+            "type": group.type,
+            "public_display_name": group.public_display_name,
+            "created_at": group.created_at,
+            "updated_at": group.updated_at,
         }
 
     # convert database lxmf message to a dictionary
