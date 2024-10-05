@@ -34,10 +34,10 @@
                     <div class="flex px-2 py-1">
                         <div class="my-auto mr-auto">
                             <div>RNS Testnet BetweenTheBorders</div>
-                            <div class="text-xs">betweentheborders.com:4242</div>
+                            <div class="text-xs">reticulum.betweentheborders.com:4242</div>
                         </div>
                         <div class="ml-2 my-auto">
-                            <button @click="newInterfaceName='RNS Testnet BetweenTheBorders';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='betweentheborders.com';newInterfaceTargetPort='4242'" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            <button @click="newInterfaceName='RNS Testnet BetweenTheBorders';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='reticulum.betweentheborders.com';newInterfaceTargetPort='4242'" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                                 <span>Use Interface</span>
                             </button>
                         </div>
