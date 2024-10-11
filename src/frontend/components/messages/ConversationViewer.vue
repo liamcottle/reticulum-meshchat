@@ -220,7 +220,7 @@
                         <div class="w-32 h-32 rounded shadow border relative overflow-hidden">
 
                             <!-- image preview -->
-                            <img v-if="newMessageImageUrl" :src="newMessageImageUrl" class="w-full h-full"/>
+                            <img v-if="newMessageImageUrl" :src="newMessageImageUrl" class="w-full h-full object-cover"/>
 
                             <!-- remove button (top right) -->
                             <div class="absolute top-0 right-0 p-1">
