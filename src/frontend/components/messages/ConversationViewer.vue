@@ -251,7 +251,7 @@
                                     <!-- audio preview -->
                                     <div>
                                         <audio controls class="h-10">
-                                            <source :src="newMessageAudio.audio_wav_url" type="audio/wav"/>
+                                            <source :src="newMessageAudio.audio_preview_url" type="audio/wav"/>
                                         </audio>
                                     </div>
 
@@ -366,6 +366,7 @@
 <script>
 import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
+import MicrophoneRecorder from "../../js/MicrophoneRecorder";
 import NotificationUtils from "../../js/NotificationUtils";
 import WebSocketConnection from "../../js/WebSocketConnection";
 import AddAudioButton from "./AddAudioButton.vue";
@@ -403,6 +404,7 @@ export default {
 
             isRecordingAudioAttachment: false,
             audioAttachmentMicrophoneRecorder: null,
+            audioAttachmentMicrophoneRecorderCodec: null,
             audioAttachmentRecordingStartedAt: null,
             audioAttachmentRecordingDuration: null,
             audioAttachmentRecordingTimer: null,
@@ -1156,8 +1158,33 @@ export default {
                 case "codec2": {
 
                     // start recording microphone
+                    this.audioAttachmentMicrophoneRecorderCodec = "codec2";
                     this.audioAttachmentMicrophoneRecorder = new Codec2MicrophoneRecorder();
                     this.audioAttachmentMicrophoneRecorder.codec2Mode = args.mode;
+                    this.audioAttachmentRecordingStartedAt = Date.now();
+                    this.isRecordingAudioAttachment = await this.audioAttachmentMicrophoneRecorder.start();
+
+                    // update recording time in ui every second
+                    this.audioAttachmentRecordingDuration = Utils.formatMinutesSeconds(0);
+                    this.audioAttachmentRecordingTimer = setInterval(() => {
+                        const recordingDurationMillis = Date.now() - this.audioAttachmentRecordingStartedAt;
+                        const recordingDurationSeconds = recordingDurationMillis / 1000;
+                        this.audioAttachmentRecordingDuration = Utils.formatMinutesSeconds(recordingDurationSeconds);
+                    }, 1000);
+
+                    // alert if failed to start recording
+                    if(!this.isRecordingAudioAttachment){
+                        DialogUtils.alert("failed to start recording");
+                    }
+
+                    break;
+
+                }
+                case "opus": {
+
+                    // start recording microphone
+                    this.audioAttachmentMicrophoneRecorderCodec = "opus";
+                    this.audioAttachmentMicrophoneRecorder = new MicrophoneRecorder();
                     this.audioAttachmentRecordingStartedAt = Date.now();
                     this.isRecordingAudioAttachment = await this.audioAttachmentMicrophoneRecorder.start();
 
@@ -1198,44 +1225,70 @@ export default {
             this.isRecordingAudioAttachment = false;
             const audio = await this.audioAttachmentMicrophoneRecorder.stop();
 
-            // do nothing if no audio was provided
-            if(audio.length === 0){
-                return;
-            }
+            // handle audio based on codec
+            switch(this.audioAttachmentMicrophoneRecorderCodec){
+                case "codec2": {
 
-            // decode codec2 audio back to wav so we can show a preview audio player before user sends it
-            const codec2Mode = this.audioAttachmentMicrophoneRecorder.codec2Mode;
-            const decoded = await Codec2Lib.runDecode(codec2Mode, new Uint8Array(audio));
+                    // do nothing if no audio was provided
+                    if(audio.length === 0){
+                        return;
+                    }
 
-            // convert decoded codec2 to wav audio and create a blob
-            const wavAudio = await Codec2Lib.rawToWav(decoded);
-            const wavBlob = new Blob([wavAudio], {
-                type: "audio/wav",
-            });
+                    // decode codec2 audio back to wav so we can show a preview audio player before user sends it
+                    const codec2Mode = this.audioAttachmentMicrophoneRecorder.codec2Mode;
+                    const decoded = await Codec2Lib.runDecode(codec2Mode, new Uint8Array(audio));
 
-            // determine audio mode
-            var audioMode = null;
-            switch(codec2Mode){
-                case "1200": {
-                    audioMode = 0x04; // LXMF.AM_CODEC2_1200
+                    // convert decoded codec2 to wav audio and create a blob
+                    const wavAudio = await Codec2Lib.rawToWav(decoded);
+                    const wavBlob = new Blob([wavAudio], {
+                        type: "audio/wav",
+                    });
+
+                    // determine audio mode
+                    var audioMode = null;
+                    switch(codec2Mode){
+                        case "1200": {
+                            audioMode = 0x04; // LXMF.AM_CODEC2_1200
+                            break;
+                        }
+                        case "3200": {
+                            audioMode = 0x09; // LXMF.AM_CODEC2_3200
+                            break;
+                        }
+                        default: {
+                            DialogUtils.alert(`Unhandled microphone recorder codec2Mode: ${codec2Mode}`);
+                            return;
+                        }
+                    }
+
+                    // update message audio attachment
+                    this.newMessageAudio = {
+                        audio_mode: audioMode,
+                        audio_blob: new Blob([audio]),
+                        audio_preview_url: URL.createObjectURL(wavBlob),
+                    };
+
                     break;
+
                 }
-                case "3200": {
-                    audioMode = 0x09; // LXMF.AM_CODEC2_3200
+                case "opus": {
+
+                    // do nothing if no audio was provided
+                    if(audio.size === 0){
+                        return;
+                    }
+
+                    // update message audio attachment
+                    this.newMessageAudio = {
+                        audio_mode: 0x10, // LXMF.AM_OPUS_OGG
+                        audio_blob: audio, // opus microphone recorder returns a blob
+                        audio_preview_url: URL.createObjectURL(audio),
+                    };
+
                     break;
-                }
-                default: {
-                    DialogUtils.alert(`Unhandled microphone recorder codec2Mode: ${codec2Mode}`);
-                    return;
+
                 }
             }
-
-            // update message audio attachment
-            this.newMessageAudio = {
-                audio_mode: audioMode,
-                audio_blob: new Blob([audio]),
-                audio_wav_url: URL.createObjectURL(wavBlob),
-            };
 
         },
         removeAudioAttachment: function() {

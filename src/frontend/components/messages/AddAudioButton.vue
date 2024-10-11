@@ -27,10 +27,11 @@
                 leave-active-class="transition ease-in duration-75"
                 leave-from-class="transform opacity-100 scale-100"
                 leave-to-class="transform opacity-0 scale-95">
-                <div v-if="isShowingMenu" v-click-outside="hideMenu" class="absolute bottom-0 -ml-11 sm:right-0 sm:ml-0 z-10 mb-10 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div v-if="isShowingMenu" v-click-outside="hideMenu" class="absolute bottom-0 -ml-11 sm:right-0 sm:ml-0 z-10 mb-10 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div class="py-1">
-                        <button @click="startRecordingCodec2('1200')" type="button" class="w-full block text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Codec2 (Low Quality)</button>
-                        <button @click="startRecordingCodec2('3200')" type="button" class="w-full block text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Codec2 (Medium Quality)</button>
+                        <button @click="startRecordingCodec2('1200')" type="button" class="w-full block text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap">Low Quality - Codec2 (1200)</button>
+                        <button @click="startRecordingCodec2('3200')" type="button" class="w-full block text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap">Medium Quality - Codec2 (3200)</button>
+                        <button @click="startRecordingOpus()" type="button" class="w-full block text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap">High Quality - OPUS</button>
                     </div>
                 </div>
             </Transition>
@@ -65,6 +66,11 @@ export default {
             this.startRecordingAudioAttachment({
                 codec: "codec2",
                 mode: mode,
+            });
+        },
+        startRecordingOpus() {
+            this.startRecordingAudioAttachment({
+                codec: "opus",
             });
         },
         stopRecordingAudioAttachment() {
