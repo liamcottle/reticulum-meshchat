@@ -49,7 +49,9 @@ class MicrophoneRecorder {
                     }
 
                     // create blob from audio chunks
-                    const blob = new Blob(this.audioChunks, { type: "audio/ogg; codecs=opus" });
+                    const blob = new Blob(this.audioChunks, {
+                        type: this.mediaRecorder.mimeType, // likely to be "audio/webm;codecs=opus" in chromium
+                    });
 
                     // resolve promise
                     resolve(blob);
