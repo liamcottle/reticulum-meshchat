@@ -1354,10 +1354,38 @@ export default {
 
         },
         showSentMessageInfo: function(lxmfMessage) {
-            DialogUtils.alert([
+
+            // basic info
+            const info = [
                 `Created: ${Utils.convertUnixMillisToLocalDateTimeString(lxmfMessage.timestamp * 1000)}`,
                 `Method: ${lxmfMessage.method ?? "unknown"}`,
-            ].join("\n"));
+            ];
+
+            // add audio attachment size
+            if(lxmfMessage.fields?.audio?.audio_bytes){
+                const audioBytesLength = atob(lxmfMessage.fields?.audio?.audio_bytes).length;
+                info.push(`Audio Attachment: ${this.formatBytes(audioBytesLength)}`);
+            }
+
+            // add image attachment size
+            if(lxmfMessage.fields?.image?.image_bytes){
+                const imageBytesLength = atob(lxmfMessage.fields?.image?.image_bytes).length;
+                info.push(`Image Attachment: ${this.formatBytes(imageBytesLength)}`);
+            }
+
+            // add file attachments size
+            if(lxmfMessage.fields?.file_attachments){
+                var filesLength = 0;
+                for(const fileAttachment of lxmfMessage.fields?.file_attachments){
+                    const fileBytesLength = atob(fileAttachment.file_bytes).length;
+                    filesLength += fileBytesLength;
+                }
+                info.push(`File Attachments: ${this.formatBytes(filesLength)}`);
+            }
+
+            // show message info
+            DialogUtils.alert(info.join("\n"));
+
         },
         showReceivedMessageInfo: function(lxmfMessage) {
 
@@ -1367,6 +1395,28 @@ export default {
                 `Received: ${Utils.convertDateTimeToLocalDateTimeString(new Date(lxmfMessage.created_at))}`,
                 `Method: ${lxmfMessage.method ?? "unknown"}`,
             ];
+
+            // add audio attachment size
+            if(lxmfMessage.fields?.audio?.audio_bytes){
+                const audioBytesLength = atob(lxmfMessage.fields?.audio?.audio_bytes).length;
+                info.push(`Audio Attachment: ${this.formatBytes(audioBytesLength)}`);
+            }
+
+            // add image attachment size
+            if(lxmfMessage.fields?.image?.image_bytes){
+                const imageBytesLength = atob(lxmfMessage.fields?.image?.image_bytes).length;
+                info.push(`Image Attachment: ${this.formatBytes(imageBytesLength)}`);
+            }
+
+            // add file attachments size
+            if(lxmfMessage.fields?.file_attachments){
+                var filesLength = 0;
+                for(const fileAttachment of lxmfMessage.fields?.file_attachments){
+                    const fileBytesLength = atob(fileAttachment.file_bytes).length;
+                    filesLength += fileBytesLength;
+                }
+                info.push(`File Attachments: ${this.formatBytes(filesLength)}`);
+            }
 
             // add signal quality if available
             if(lxmfMessage.quality != null){
