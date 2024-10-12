@@ -2355,11 +2355,16 @@ class ReticulumMeshChat:
 
     # reads the lxmf display name from the provided base64 app data
     def parse_lxmf_display_name(self, app_data_base64: str, default_value: str | None = "Anonymous Peer"):
+
         try:
             app_data_bytes = base64.b64decode(app_data_base64)
-            return LXMF.display_name_from_app_data(app_data_bytes)
+            display_name = LXMF.display_name_from_app_data(app_data_bytes)
+            if display_name is not None:
+                return display_name
         except:
-            return default_value
+            pass
+
+        return default_value
 
     # reads the lxmf stamp cost from the provided base64 app data
     def parse_lxmf_stamp_cost(self, app_data_base64: str):
