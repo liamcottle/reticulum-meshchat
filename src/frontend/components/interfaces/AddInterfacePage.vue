@@ -217,6 +217,8 @@ export default {
                     125000, // 125 kHz
                     250000, // 250 kHz
                     500000, // 500 kHz
+                    1625000, // 1625000 kHz for 2.4 GHz Sx1280
+                    
                 ],
                 codingrates: [
                     5, // 4:5
@@ -225,6 +227,8 @@ export default {
                     8, // 4:8
                 ],
                 spreadingfactors: [
+                    5,
+                    6,
                     7,
                     8,
                     9,
