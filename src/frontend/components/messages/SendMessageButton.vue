@@ -4,11 +4,11 @@
         <!-- send button -->
         <button @click="send" :disabled="!canSendMessage" type="button" class="my-auto inline-flex items-center rounded-l-md px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" :class="[ canSendMessage ? 'bg-blue-500 hover:bg-blue-400 focus-visible:outline-blue-500' : 'bg-gray-400 focus-visible:outline-gray-500 cursor-not-allowed']">
             <span v-if="isSendingMessage">Sending...</span>
-            <span v-else>
+            <span v-else class="space-x-1">
                 <span>Send</span>
-                <span v-if="deliveryMethod === 'direct'"> (Direct Link)</span>
-                <span v-if="deliveryMethod === 'opportunistic'"> (Opportunistic)</span>
-                <span v-if="deliveryMethod === 'propagated'"> (Propagated)</span>
+                <span v-if="deliveryMethod === 'direct'">(Direct Link)</span>
+                <span v-if="deliveryMethod === 'opportunistic'">(Opportunistic)</span>
+                <span v-if="deliveryMethod === 'propagated'">(Propagated)</span>
             </span>
         </button>
 
