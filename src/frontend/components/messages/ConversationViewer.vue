@@ -332,10 +332,14 @@
                         </div>
 
                         <!-- send message -->
-                        <button @click="sendMessage" :disabled="!canSendMessage" type="button" class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" :class="[ canSendMessage ? 'bg-blue-500 hover:bg-blue-400 focus-visible:outline-blue-500' : 'bg-gray-400 focus-visible:outline-gray-500 cursor-not-allowed']">
-                            <span v-if="isSendingMessage">Sending...</span>
-                            <span v-else>Send</span>
-                        </button>
+                        <div class="ml-auto my-auto">
+                            <SendMessageButton
+                                @send="sendMessage"
+                                @delivery-method-changed="this.newMessageDeliveryMethod = $event"
+                                :is-sending-message="isSendingMessage"
+                                :can-send-message="canSendMessage"
+                                :delivery-method="newMessageDeliveryMethod"/>
+                        </div>
 
                     </div>
 
@@ -371,10 +375,12 @@ import NotificationUtils from "../../js/NotificationUtils";
 import WebSocketConnection from "../../js/WebSocketConnection";
 import AddAudioButton from "./AddAudioButton.vue";
 import moment from "moment";
+import SendMessageButton from "./SendMessageButton.vue";
 
 export default {
     name: 'ConversationViewer',
     components: {
+        SendMessageButton,
         AddAudioButton,
     },
     props: {
@@ -394,6 +400,7 @@ export default {
             isLoadingPrevious: false,
             hasMorePrevious: true,
 
+            newMessageDeliveryMethod: null,
             newMessageText: "",
             newMessageImage: null,
             newMessageImageUrl: null,
@@ -1022,6 +1029,7 @@ export default {
 
                 // send message to reticulum
                 const response = await window.axios.post(`/api/v1/lxmf-messages/send`, {
+                    "delivery_method": this.newMessageDeliveryMethod,
                     "lxmf_message": {
                         "destination_hash": this.selectedPeer.destination_hash,
                         "content": this.newMessageText,

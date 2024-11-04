@@ -1254,6 +1254,11 @@ class ReticulumMeshChat:
             # get request body as json
             data = await request.json()
 
+            # get delivery method
+            delivery_method = None
+            if "delivery_method" in data:
+                delivery_method = data["delivery_method"]
+
             # get data from json
             destination_hash = data["lxmf_message"]["destination_hash"]
             content = data["lxmf_message"]["content"]
@@ -1295,7 +1300,8 @@ class ReticulumMeshChat:
                     content=content,
                     image_field=image_field,
                     audio_field=audio_field,
-                    file_attachments_field=file_attachments_field
+                    file_attachments_field=file_attachments_field,
+                    delivery_method=delivery_method
                 )
 
                 return web.json_response({
@@ -2143,7 +2149,8 @@ class ReticulumMeshChat:
     async def send_message(self, destination_hash: str, content: str,
                            image_field: LxmfImageField = None,
                            audio_field: LxmfAudioField = None,
-                           file_attachments_field: LxmfFileAttachmentsField = None) -> LXMF.LXMessage:
+                           file_attachments_field: LxmfFileAttachmentsField = None,
+                           delivery_method: str = None) -> LXMF.LXMessage:
 
         # convert destination hash to bytes
         destination_hash = bytes.fromhex(destination_hash)
@@ -2171,14 +2178,27 @@ class ReticulumMeshChat:
         # create destination for recipients lxmf delivery address
         lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery")
 
-        # send messages over a direct link by default
-        desired_delivery_method = LXMF.LXMessage.DIRECT
-        if not self.message_router.delivery_link_available(destination_hash) and RNS.Identity.current_ratchet_id(destination_hash) != None:
-            # since there's no link established to the destination, it's faster to send opportunistically
-            # this is because it takes several packets to establish a link, and then we still have to send the message over it
-            # oppotunistic mode will send the message in a single packet (if the message is small enough, otherwise it falls back to a direct link)
-            # we will only do this if an encryption ratchet is available, so single packet delivery is more secure
+        # determine how the user wants to send the message
+        desired_delivery_method = None
+        if delivery_method == "direct":
+            desired_delivery_method = LXMF.LXMessage.DIRECT
+        elif delivery_method == "opportunistic":
             desired_delivery_method = LXMF.LXMessage.OPPORTUNISTIC
+        elif delivery_method == "propagated":
+            desired_delivery_method = LXMF.LXMessage.PROPAGATED
+
+        # determine how to send the message if the user didn't provide a method
+        if desired_delivery_method is None:
+
+            # send messages over a direct link by default
+            desired_delivery_method = LXMF.LXMessage.DIRECT
+            if not self.message_router.delivery_link_available(destination_hash) and RNS.Identity.current_ratchet_id(destination_hash) != None:
+
+                # since there's no link established to the destination, it's faster to send opportunistically
+                # this is because it takes several packets to establish a link, and then we still have to send the message over it
+                # oppotunistic mode will send the message in a single packet (if the message is small enough, otherwise it falls back to a direct link)
+                # we will only do this if an encryption ratchet is available, so single packet delivery is more secure
+                desired_delivery_method = LXMF.LXMessage.OPPORTUNISTIC
 
         # create lxmf message
         lxmf_message = LXMF.LXMessage(lxmf_destination, self.local_lxmf_destination, content, desired_method=desired_delivery_method)
