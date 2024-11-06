@@ -39,6 +39,8 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 - Supports setting a custom display name to send in your announce.
 - Supports viewing and searching peers discovered from announces.
 - Supports auto resending undelivered messages when an announce is received from the recipient.
+- Supports sending messages to and syncing messages from [LXMF Propagation Nodes](https://github.com/markqvist/lxmf?tab=readme-ov-file#propagation-nodes).
+- Supports running a local LXMF Propagation Node so other users can use your device for message storage and retrieval.
 
 ## Beta Features
 
