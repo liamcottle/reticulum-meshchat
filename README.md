@@ -22,7 +22,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 
 - It can send and receive messages, files and audio calls with peers;
     - Over your local network through Ethernet and WiFi, completely automatically.
-    - Over the internet by connecting through a server hosted by yourself or the community.
+    - Over the internet by connecting through a server [hosted by yourself](https://reticulum.network/manual/interfaces.html#tcp-server-interface) or [the community](https://reticulum.network/connect.html).
     - Over low-powered, license-free, ISM band LoRa Radio, with an [RNode](https://github.com/markqvist/RNode_Firmware).
     - ...and via any other interface supported by the Reticulum Network Stack.
 - It communicates securely. Messages can only be decrypted by the intended destination.
