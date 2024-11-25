@@ -2,5 +2,5 @@ aiohttp>=3.9.5
 cx_freeze>=7.0.0
 lxmf>=0.5.6
 peewee>=3.17.3
-rns>=0.8.4
+rns>=0.8.6
 websockets>=12.0
