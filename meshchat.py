@@ -2040,7 +2040,7 @@ class ReticulumMeshChat:
             # upsert lxmf message to database
             self.db_upsert_lxmf_message(lxmf_message)
 
-            # get icon appearance if available
+            # update lxmf user icon if icon appearance field is available
             try:
                 message_fields = lxmf_message.get_fields()
                 if LXMF.FIELD_ICON_APPEARANCE in message_fields:
