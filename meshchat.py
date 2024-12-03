@@ -74,6 +74,7 @@ class ReticulumMeshChat:
             database.CustomDestinationDisplayName,
             database.LxmfMessage,
             database.LxmfConversationReadState,
+            database.LxmfUserIcon,
         ])
 
         # init config
@@ -1432,6 +1433,16 @@ class ReticulumMeshChat:
                 else:
                     other_user_hash = source_hash
 
+                # find lxmf user icon from database
+                lxmf_user_icon = None
+                db_lxmf_user_icon = database.LxmfUserIcon.get_or_none(database.LxmfUserIcon.destination_hash == other_user_hash)
+                if db_lxmf_user_icon is not None:
+                    lxmf_user_icon = {
+                        "icon_name": db_lxmf_user_icon.icon_name,
+                        "foreground_colour": db_lxmf_user_icon.foreground_colour,
+                        "background_colour": db_lxmf_user_icon.background_colour,
+                    }
+
                 # add to conversations
                 conversations.append({
                     "display_name": self.get_lxmf_conversation_name(other_user_hash),
@@ -1439,6 +1450,7 @@ class ReticulumMeshChat:
                     "destination_hash": other_user_hash,
                     "is_unread": self.is_lxmf_conversation_unread(other_user_hash),
                     "failed_messages_count": self.lxmf_conversation_failed_messages_count(other_user_hash),
+                    "lxmf_user_icon": lxmf_user_icon,
                     # we say the conversation was updated when the latest message was created
                     # otherwise this will go crazy when sending a message, as the updated_at on the latest message changes very frequently
                     "updated_at": created_at,
@@ -2000,6 +2012,26 @@ class ReticulumMeshChat:
             "updated_at": db_lxmf_message.updated_at,
         }
 
+    # updates the lxmf user icon for the provided destination hash
+    def update_lxmf_user_icon(self, destination_hash: str, icon_name: str, foreground_colour: str, background_colour: str):
+
+        # log
+        print(f"updating lxmf user icon for {destination_hash} to icon_name={icon_name}, foreground_colour={foreground_colour}, background_colour={background_colour}")
+
+        # prepare data to insert or update
+        data = {
+            "destination_hash": destination_hash,
+            "icon_name": icon_name,
+            "foreground_colour": foreground_colour,
+            "background_colour": background_colour,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+        # upsert to database
+        query = database.LxmfUserIcon.insert(data)
+        query = query.on_conflict(conflict_target=[database.LxmfUserIcon.destination_hash], update=data)
+        query.execute()
+
     # handle an lxmf delivery from reticulum
     # NOTE: cant be async, as Reticulum doesn't await it
     def on_lxmf_delivery(self, lxmf_message: LXMF.LXMessage):
@@ -2007,6 +2039,20 @@ class ReticulumMeshChat:
 
             # upsert lxmf message to database
             self.db_upsert_lxmf_message(lxmf_message)
+
+            # get icon appearance if available
+            try:
+                message_fields = lxmf_message.get_fields()
+                if LXMF.FIELD_ICON_APPEARANCE in message_fields:
+                    icon_appearance = message_fields[LXMF.FIELD_ICON_APPEARANCE]
+                    icon_name = icon_appearance[0]
+                    foreground_colour = "#" + icon_appearance[1].hex()
+                    background_colour = "#" + icon_appearance[2].hex()
+                    self.update_lxmf_user_icon(lxmf_message.source_hash.hex(), icon_name, foreground_colour, background_colour)
+            except Exception as e:
+                print("failed to update lxmf user icon from lxmf message")
+                print(e)
+                pass
 
             # find message from database
             db_lxmf_message = database.LxmfMessage.get_or_none(database.LxmfMessage.hash == lxmf_message.hash.hex())

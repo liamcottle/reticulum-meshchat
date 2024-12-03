@@ -22,7 +22,10 @@
                 <div v-if="searchedConversations.length > 0" class="w-full">
                     <div @click="onConversationClick(conversation)" v-for="conversation of searchedConversations" class="flex cursor-pointer p-2 border-l-2" :class="[ conversation.destination_hash === selectedDestinationHash ? 'bg-gray-100 border-blue-500' : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-200' ]">
                         <div class="my-auto mr-2">
-                            <div class="bg-gray-200 text-gray-500 p-2 rounded">
+                            <div v-if="conversation.lxmf_user_icon" class="p-2 rounded" :style="{ 'color': conversation.lxmf_user_icon.foreground_colour, 'background-color': conversation.lxmf_user_icon.background_colour }">
+                                <MaterialDesignIcon :icon-name="conversation.lxmf_user_icon.icon_name" class="w-6 h-6"/>
+                            </div>
+                            <div v-else class="bg-gray-200 text-gray-500 p-2 rounded">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                 </svg>
@@ -130,9 +133,11 @@
 
 <script>
 import Utils from "../../js/Utils";
+import MaterialDesignIcon from "../MaterialDesignIcon.vue";
 
 export default {
     name: 'MessagesSidebar',
+    components: {MaterialDesignIcon},
     props: {
         peers: Object,
         conversations: Array,

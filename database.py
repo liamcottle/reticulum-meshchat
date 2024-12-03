@@ -123,3 +123,19 @@ class LxmfConversationReadState(BaseModel):
     # define table name
     class Meta:
         table_name = "lxmf_conversation_read_state"
+
+
+class LxmfUserIcon(BaseModel):
+
+    id = BigAutoField()
+    destination_hash = CharField(unique=True)  # unique destination hash
+    icon_name = CharField()  # material design icon name for the destination hash
+    foreground_colour = CharField()  # hex colour to use for foreground (icon colour)
+    background_colour = CharField()  # hex colour to use for background (background colour)
+
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+
+    # define table name
+    class Meta:
+        table_name = "lxmf_user_icons"

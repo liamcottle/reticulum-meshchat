@@ -93,6 +93,7 @@
     }
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@vitejs/plugin-vue": "^5.1.2",
     "click-outside-vue3": "^4.0.1",
     "electron-prompt": "^1.7.0",
