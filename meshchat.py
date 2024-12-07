@@ -1600,6 +1600,23 @@ class ReticulumMeshChat:
                 else:
                     print(f"unhandled field: {field}")
         return data
+    def convert_nomadnet_field_data_to_map(self, field_data):
+        data = {}
+        if field_data is not None or "{}":
+            try:
+                json_data = field_data 
+                if isinstance(json_data, dict):
+                    # add the prefixed keys to the result dictionary
+                    data = {f"field_{key}": value for key, value in json_data.items()}
+                else:
+                    return None
+            except Exception as e:
+                print(f"skipping invalid field data: {e}")
+        
+        return data
+
+
+
 
     # handle data received from websocket client
     async def on_websocket_data_received(self, client, data):
@@ -1675,7 +1692,9 @@ class ReticulumMeshChat:
             # get data from websocket client
             destination_hash = data["nomadnet_page_download"]["destination_hash"]
             page_path = data["nomadnet_page_download"]["page_path"]
-
+            field_data = data["nomadnet_page_download"]["field_data"]
+       
+            combined_data = {}
             # parse data from page path
             # example: hash:/page/index.mu`field1=123|field2=456
             page_data = None
@@ -1685,8 +1704,19 @@ class ReticulumMeshChat:
                 page_path_to_download = page_path_parts[0]
                 page_data = self.convert_nomadnet_string_data_to_map(page_path_parts[1])
 
+            # Field data
+            field_data = self.convert_nomadnet_field_data_to_map(field_data)
+
+            # Combine page data and field data
+            if page_data is not None:
+                combined_data.update(page_data)
+            if field_data is not None:
+                combined_data.update(field_data)
+
+
             # convert destination hash to bytes
             destination_hash = bytes.fromhex(destination_hash)
+
 
             # handle successful page download
             def on_page_download_success(page_content):
@@ -1727,7 +1757,7 @@ class ReticulumMeshChat:
             # todo: handle page download progress
 
             # download the page
-            downloader = NomadnetPageDownloader(destination_hash, page_path_to_download, page_data, on_page_download_success, on_page_download_failure, on_page_download_progress)
+            downloader = NomadnetPageDownloader(destination_hash, page_path_to_download, combined_data, on_page_download_success, on_page_download_failure, on_page_download_progress)
             await downloader.download()
 
         # unhandled type

@@ -1,13 +1,13 @@
 <template>
-    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
+    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
         <div class="overflow-y-auto p-2 space-y-2">
 
             <!-- community interfaces -->
-            <div v-if="!isEditingInterface && config != null && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200">
+            <div v-if="!isEditingInterface && config != null && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200 dark:bg-zinc-900">
                 <div class="flex p-2">
                     <div class="my-auto mr-auto">
-                        <div class="font-bold">Community Interfaces</div>
-                        <div class="text-sm">These TCP interfaces serve as a quick way to test Reticulum. We suggest running your own as these may not always be available.</div>
+                        <div class="font-bold dark:text-white">Community Interfaces</div>
+                        <div class="text-sm  dark:text-gray-100">These TCP interfaces serve as a quick way to test Reticulum. We suggest running your own as these may not always be available.</div>
                     </div>
                     <div class="my-auto ml-2">
                         <button @click="updateConfig({'show_suggested_community_interfaces': false})" type="button" class="text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
@@ -17,7 +17,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="divide-y divide-gray-200">
+                <div class="divide-y divide-gray-200 dark:text-white">
 
                     <div class="flex px-2 py-1">
                         <div class="my-auto mr-auto">
@@ -64,7 +64,7 @@
                     <!-- interface type -->
                     <div class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Type</label>
-                        <select v-model="newInterfaceType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <select v-model="newInterfaceType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                             <option disabled selected>--</option>
                             <option value="AutoInterface">AutoInterface</option>
                             <option value="RNodeInterface">RNodeInterface</option>
@@ -80,43 +80,43 @@
                     <!-- interface target host -->
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Target Host</label>
-                        <input type="text" placeholder="example.com" v-model="newInterfaceTargetHost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <input type="text" placeholder="example.com" v-model="newInterfaceTargetHost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface target port -->
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Target Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface listen ip -->
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Listen IP</label>
-                        <input type="text" placeholder="0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <input type="text" placeholder="0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface listen port -->
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Listen Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <input type="text" placeholder="1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface forward ip -->
                     <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Forward IP</label>
-                        <input type="text" placeholder="255.255.255.255" v-model="newInterfaceForwardIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <input type="text" placeholder="255.255.255.255" v-model="newInterfaceForwardIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface listen port -->
                     <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Forward Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceForwardPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <input type="text" placeholder="1234" v-model="newInterfaceForwardPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface port -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Port</label>
-                        <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                         </select>
                     </div>
@@ -124,14 +124,14 @@
                     <!-- interface frequency -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Frequency (Hz)</label>
-                        <input type="number" v-model="newInterfaceFrequency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <input type="number" v-model="newInterfaceFrequency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                         <div class="text-xs text-gray-600">{{ formatFrequency(newInterfaceFrequency) }}</div>
                     </div>
 
                     <!-- interface bandwidth -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Bandwidth</label>
-                        <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
                         </select>
                     </div>
@@ -145,7 +145,7 @@
                     <!-- interface spreading factor -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Spreading Factor</label>
-                        <select v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <select v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
                         </select>
                     </div>
@@ -153,13 +153,13 @@
                     <!-- interface coding rate -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
                         <label class="block mb-2 text-sm font-medium text-gray-900">Coding Rate</label>
-                        <select v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <select v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">4:{{ codingrate }}</option>
                         </select>
                     </div>
 
                     <!-- add button -->
-                    <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                    <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-zinc-900dark:border-zinc-600dark:text-whitedark:focus:ring-blue-600 dark:focus:border-blue-600">
                         <span v-if="isEditingInterface">Save Interface</span>
                         <span v-else>Add Interface</span>
                     </button>
