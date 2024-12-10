@@ -338,7 +338,7 @@ class MicronParser {
                         // append request variables directly to the directURL as query parameters
                         const varEntries = Object.entries(requestVars);
                         if (varEntries.length > 0) {
-                            const queryString = varEntries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+                            const queryString = varEntries.map(([k, v]) => `${k}=${v}`).join('|');
                    
                             directURL += directURL.includes('`') ? `|${queryString}` : `\`${queryString}`;
                         }

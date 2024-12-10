@@ -46,7 +46,7 @@
 
             <!-- sidebar -->
             <div class="bg-white flex w-72 min-w-72 flex-col dark:bg-zinc-950">
-                <div class="flex grow flex-col overflow-y-auto border-r border-gray-200 bg-white dark:bg-zinc-950">
+                <div class="flex grow flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-zinc-900 dark:bg-zinc-950">
 
                     <!-- navigation -->
                     <div class="flex-1">
@@ -134,7 +134,7 @@
                     <div>
 
                         <!-- my identity -->
-                        <div v-if="config" class="bg-white border-t dark:bg-zinc-950">
+                        <div v-if="config" class="bg-white border-t dark:border-zinc-900 dark:bg-zinc-950">
                             <div @click="isShowingMyIdentitySection = !isShowingMyIdentitySection" class="flex text-gray-700 p-2 cursor-pointer">
                                 <div class="my-auto mr-2 dark:text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -149,7 +149,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div v-if="isShowingMyIdentitySection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-700">
+                            <div v-if="isShowingMyIdentitySection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-900">
                                 <div class="p-1">
                                     <input 
                                         v-model="displayName" 
@@ -159,11 +159,11 @@
                                                dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     >
                                 </div>
-                                <div class="p-1">
+                                <div class="p-1 dark:border-zinc-900">
                                     <div>Identity Hash</div>
                                     <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.identity_hash }}</div>
                                 </div>
-                                <div class="p-1">
+                                <div class="p-1 dark:border-zinc-900">
                                     <div>LXMF Address</div>
                                     <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.lxmf_address_hash }}</div>
                                 </div>
@@ -171,7 +171,7 @@
                         </div>
 
                         <!-- auto announce -->
-                        <div v-if="config" class="bg-white border-t dark:bg-zinc-950 dark:border-zinc-700">
+                        <div v-if="config" class="bg-white border-t dark:bg-zinc-950 dark:border-zinc-900">
                             <div @click="isShowingAnnounceSection = !isShowingAnnounceSection" class="flex text-gray-700 p-2 cursor-pointer dark:text-white">
                                 <div class="my-auto mr-2">
                                     <svg 
@@ -201,8 +201,8 @@
                                     </button>
                                 </div>
                             </div>
-                            <div v-if="isShowingAnnounceSection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-700">
-                                <div class="p-1">
+                            <div v-if="isShowingAnnounceSection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-900">
+                                <div class="p-1 dark:border-zinc-900">
                                     <select 
                                         v-model="config.auto_announce_interval_seconds" 
                                         @change="onAnnounceIntervalSecondsChange" 
@@ -227,10 +227,10 @@
                         </div>
 
                         <!-- audio calls -->
-                        <div v-if="config" class="bg-white border-t dark:bg-zinc-950">
+                        <div v-if="config" class="bg-white border-t dark:bg-zinc-950 dark:border-zinc-900">
                             <div @click="isShowingCallsSection = !isShowingCallsSection" class="flex text-gray-700 p-2 cursor-pointer">
                                 <div class="my-auto mr-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="dark:text-white w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                                     </svg>
                                 </div>
@@ -247,11 +247,11 @@ dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outli
                                     </a>
                                 </div>
                             </div>
-                            <div v-if="isShowingCallsSection" class="divide-y text-gray-900 border-t border-gray-300">
-                                <div class="p-1 flex">
+                            <div v-if="isShowingCallsSection" class="divide-y text-gray-900 border-t border-gray-300 dark:border-zinc-900">
+                                <div class="p-1 flex dark:border-zinc-900 dark:text-white">
                                     <div>
                                         <div>Status</div>
-                                        <div class="text-sm text-gray-700">
+                                        <div class="text-sm text-gray-700 dark:text-white">
                                             <div v-if="activeAudioCalls.length > 0" class="flex space-x-2">
                                                 <span v-if="activeInboundAudioCalls.length > 0">{{ activeInboundAudioCalls.length }} Incoming {{ activeInboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
                                                 <span v-else>{{ activeOutboundAudioCalls.length }} Outgoing {{ activeOutboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
