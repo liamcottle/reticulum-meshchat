@@ -1,20 +1,25 @@
 <template>
-    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
+    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
         <div class="overflow-y-auto space-y-2 p-2">
 
             <!-- app info -->
-            <div v-if="appInfo" class="bg-white rounded shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">App Info</div>
-                <div class="divide-y text-gray-900">
+            <div v-if="appInfo" class="bg-white dark:bg-zinc-900 rounded shadow">
+                <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 p-2 font-semibold">App Info</div>
+                <div class="divide-y divide-gray-200 dark:divide-zinc-800 text-gray-900 dark:text-zinc-200">
 
                     <!-- version -->
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Versions</div>
-                            <div class="text-sm text-gray-700">MeshChat v{{ appInfo.version }} • RNS v{{ appInfo.rns_version }} • LXMF v{{ appInfo.lxmf_version }}</div>
+                            <div class="text-sm text-gray-700 dark:text-zinc-400">
+                                MeshChat v{{ appInfo.version }} • RNS v{{ appInfo.rns_version }} • LXMF v{{ appInfo.lxmf_version }}
+                            </div>
                         </div>
                         <div class="hidden sm:block mx-2 my-auto">
-                            <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat/releases" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            <a target="_blank" 
+                                href="https://github.com/liamcottle/reticulum-meshchat/releases" 
+                                type="button" 
+                                class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-700 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-600">
                                 Check for Updates
                             </a>
                         </div>
@@ -24,10 +29,12 @@
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Reticulum Config Path</div>
-                            <div class="text-sm text-gray-700 break-all">{{ appInfo.reticulum_config_path }}</div>
+                            <div class="text-sm text-gray-700 dark:text-zinc-400 break-all">{{ appInfo.reticulum_config_path }}</div>
                         </div>
                         <div v-if="isElectron" class="mx-2 my-auto">
-                            <button @click="showReticulumConfigFile" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            <button @click="showReticulumConfigFile" 
+                                type="button" 
+                                class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-700 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-600">
                                 Show in Folder
                             </button>
                         </div>
@@ -37,10 +44,12 @@
                     <div class="flex p-1">
                         <div class="mr-auto">
                             <div>Database Path</div>
-                            <div class="text-sm text-gray-700 break-all">{{ appInfo.database_path }}</div>
+                            <div class="text-sm text-gray-700 dark:text-zinc-400 break-all">{{ appInfo.database_path }}</div>
                         </div>
                         <div v-if="isElectron" class="mx-2 my-auto">
-                            <button @click="showDatabaseFile" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            <button @click="showDatabaseFile" 
+                                type="button" 
+                                class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-700 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-600">
                                 Show in Folder
                             </button>
                         </div>
@@ -49,32 +58,32 @@
                     <!-- database file size -->
                     <div class="p-1">
                         <div>Database File Size</div>
-                        <div class="text-sm text-gray-700">{{ formatBytes(appInfo.database_file_size) }}</div>
+                        <div class="text-sm text-gray-700 dark:text-zinc-400">{{ formatBytes(appInfo.database_file_size) }}</div>
                     </div>
 
                 </div>
             </div>
 
             <!-- reticulum status -->
-            <div v-if="appInfo" class="bg-white rounded shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">Reticulum Status</div>
-                <div class="divide-y text-gray-900">
+            <div v-if="appInfo" class="bg-white dark:bg-zinc-900 rounded shadow">
+                <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 p-2 font-semibold">Reticulum Status</div>
+                <div class="divide-y divide-gray-200 dark:divide-zinc-800 text-gray-900 dark:text-zinc-200">
 
                     <!-- instance mode -->
                     <div class="p-1">
                         <div>Instance Mode</div>
-                        <div class="text-sm text-gray-700">
-                            <span v-if="appInfo.is_connected_to_shared_instance" class="text-orange-600">Connected to Shared Instance</span>
-                            <span v-else class="text-green-600">Running as Standalone Instance</span>
+                        <div class="text-sm text-gray-700 dark:text-zinc-400">
+                            <span v-if="appInfo.is_connected_to_shared_instance" class="text-orange-600 dark:text-orange-400">Connected to Shared Instance</span>
+                            <span v-else class="text-green-600 dark:text-green-400">Running as Standalone Instance</span>
                         </div>
                     </div>
 
                     <!-- transport mode -->
                     <div class="p-1">
                         <div>Transport Mode</div>
-                        <div class="text-sm text-gray-700">
-                            <span v-if="appInfo.is_transport_enabled" class="text-green-600">Transport Enabled</span>
-                            <span v-else class="text-orange-600">Transport Disabled</span>
+                        <div class="text-sm text-gray-700 dark:text-zinc-400">
+                            <span v-if="appInfo.is_transport_enabled" class="text-green-600 dark:text-green-400">Transport Enabled</span>
+                            <span v-else class="text-orange-600 dark:text-orange-400">Transport Disabled</span>
                         </div>
                     </div>
 
@@ -82,24 +91,24 @@
             </div>
 
             <!-- my addresses -->
-            <div v-if="config" class="bg-white rounded shadow">
-                <div class="flex border-b border-gray-300 text-gray-700 p-2 font-semibold">My Addresses</div>
-                <div class="divide-y text-gray-900">
+            <div v-if="config" class="bg-white dark:bg-zinc-900 rounded shadow">
+                <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 p-2 font-semibold">My Addresses</div>
+                <div class="divide-y divide-gray-200 dark:divide-zinc-800 text-gray-900 dark:text-zinc-200">
                     <div class="p-1">
                         <div>Identity Hash</div>
-                        <div class="text-sm text-gray-700">{{ config.identity_hash }}</div>
+                        <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.identity_hash }}</div>
                     </div>
                     <div class="p-1">
                         <div>LXMF Address</div>
-                        <div class="text-sm text-gray-700">{{ config.lxmf_address_hash }}</div>
+                        <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.lxmf_address_hash }}</div>
                     </div>
                     <div class="p-1">
                         <div>LXMF Propagation Node Address</div>
-                        <div class="text-sm text-gray-700">{{ config.lxmf_local_propagation_node_address_hash }}</div>
+                        <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.lxmf_local_propagation_node_address_hash }}</div>
                     </div>
                     <div class="p-1">
                         <div>Audio Call Address</div>
-                        <div class="text-sm text-gray-700">{{ config.audio_call_address_hash }}</div>
+                        <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.audio_call_address_hash }}</div>
                     </div>
                 </div>
             </div>
