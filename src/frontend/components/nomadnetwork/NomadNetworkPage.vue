@@ -442,20 +442,20 @@ export default {
 
                 const inputValues = {};
 
-                inputs.forEach(input => {
-                    if (input.type === 'radio' || input.type === 'checkbox') {
+                for(const input of inputs){
+                    if(input.type === 'radio' || input.type === 'checkbox'){
                         // Only add if the input is checked
-                        if (input.checked) {
+                        if(input.checked){
                             inputValues[input.name] = input.value;
                         }
                     } else {
                         // For other input types, just get the value
                         inputValues[input.name || input.id || input.type] = input.value;
                     }
-                });
+                }
 
                 fieldData = inputValues;
-            } else if (options !== null && options !== "") {
+            } else if(options !== null && options !== "") {
                 useCache = false; 
                 // split options into an array of names
                 const validNames = options.split('|');
@@ -466,11 +466,11 @@ export default {
                 const inputValues = {};
 
                 // Filter inputs by name and handle their values
-                inputs.forEach(input => {
-                    if (validNames.includes(input.name)) {
-                        if (input.type === 'radio' || input.type === 'checkbox') {
+                for(const input of inputs){
+                    if(validNames.includes(input.name)){
+                        if(input.type === 'radio' || input.type === 'checkbox'){
                             // Only add if the input is checked
-                            if (input.checked) {
+                            if(input.checked){
                                 inputValues[input.name] = input.value;
                             }
                         } else {
@@ -478,7 +478,7 @@ export default {
                             inputValues[input.name] = input.value;
                         }
                     }
-                });
+                }
 
                 fieldData = inputValues;
             }
