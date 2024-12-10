@@ -1,21 +1,24 @@
 <template>
-    <div class="h-screen w-full flex flex-col">
+    <div :class="{'dark': config?.dark_mode}" class="h-screen w-full flex flex-col">
 
         <!-- header -->
-        <div class="flex bg-white p-2 border-gray-300 border-b">
+        <div class="flex bg-white dark:bg-zinc-950 p-2 border-gray-300 dark:border-zinc-900 border-b">
             <div class="flex w-full">
-                <div class="hidden sm:flex my-auto border border-gray-300 rounded-md w-10 h-10 mr-3 shadow bg-gray-50">
+                <div class="hidden sm:flex my-auto border border-gray-300 dark:border-zinc-900 rounded-md w-10 h-10 mr-3 shadow bg-gray-50 dark:bg-zinc-900">
                     <div class="flex mx-auto my-auto">
-                        <img class="w-9 h-9" src="/assets/images/logo.png "/>
+                        <img class="w-9 h-9" src="/assets/images/logo.png" />
                     </div>
                 </div>
                 <div class="my-auto">
-                    <div @click="onAppNameClick" class="font-bold cursor-pointer">Reticulum MeshChat</div>
-                    <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500">Liam Cottle</a></div>
+                    <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">Reticulum MeshChat</div>
+                    <div class="text-sm text-gray-700 dark:text-white">
+                        Developed by
+                        <a target="_blank" href="https://liamcottle.com" class="text-blue-500 dark:text-blue-400">Liam Cottle</a>
+                    </div>
                 </div>
                 <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
                     <button @click="syncPropagationNode" type="button" class="rounded-full">
-                        <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
+                        <span class="flex text-gray-700 dark:text-white bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-600 px-2 py-1 rounded-full">
                             <span :class="{ 'animate-spin': isSyncingPropagationNode }">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -25,7 +28,7 @@
                         </span>
                     </button>
                     <button @click="composeNewMessage" type="button" class="rounded-full">
-                        <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
+                        <span class="flex text-gray-700 dark:text-white bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-600 px-2 py-1 rounded-full">
                             <span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
@@ -42,8 +45,8 @@
         <div ref="middle" class="flex h-full w-full overflow-auto">
 
             <!-- sidebar -->
-            <div class="bg-white flex w-72 min-w-72 flex-col">
-                <div class="flex grow flex-col overflow-y-auto border-r border-gray-200 bg-white">
+            <div class="bg-white flex w-72 min-w-72 flex-col dark:bg-zinc-950">
+                <div class="flex grow flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-zinc-900 dark:bg-zinc-950">
 
                     <!-- navigation -->
                     <div class="flex-1">
@@ -53,7 +56,7 @@
                             <li>
                                 <SidebarLink :to="{ name: 'messages' }">
                                     <template v-slot:icon>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 dark:texwhite">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
                                         </svg>
                                     </template>
@@ -131,53 +134,81 @@
                     <div>
 
                         <!-- my identity -->
-                        <div v-if="config" class="bg-white border-t">
+                        <div v-if="config" class="bg-white border-t dark:border-zinc-900 dark:bg-zinc-950">
                             <div @click="isShowingMyIdentitySection = !isShowingMyIdentitySection" class="flex text-gray-700 p-2 cursor-pointer">
-                                <div class="my-auto mr-2">
+                                <div class="my-auto mr-2 dark:text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                     </svg>
                                 </div>
-                                <div class="my-auto">My Identity</div>
+                                <div class="my-auto dark:text-white">My Identity</div>
                                 <div class="ml-auto">
-                                    <button @click.stop="saveIdentitySettings" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                    <button @click.stop="saveIdentitySettings" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 
+           dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
                                         Save
                                     </button>
                                 </div>
                             </div>
-                            <div v-if="isShowingMyIdentitySection" class="divide-y text-gray-900 border-t border-gray-300">
+                            <div v-if="isShowingMyIdentitySection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-900">
                                 <div class="p-1">
-                                    <input v-model="displayName" type="text" placeholder="Display Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                    <input 
+                                        v-model="displayName" 
+                                        type="text" 
+                                        placeholder="Display Name" 
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 
+                                               dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                                    >
                                 </div>
-                                <div class="p-1">
+                                <div class="p-1 dark:border-zinc-900">
                                     <div>Identity Hash</div>
-                                    <div class="text-sm text-gray-700">{{ config.identity_hash }}</div>
+                                    <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.identity_hash }}</div>
                                 </div>
-                                <div class="p-1">
+                                <div class="p-1 dark:border-zinc-900">
                                     <div>LXMF Address</div>
-                                    <div class="text-sm text-gray-700">{{ config.lxmf_address_hash }}</div>
+                                    <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.lxmf_address_hash }}</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- auto announce -->
-                        <div v-if="config" class="bg-white border-t">
-                            <div @click="isShowingAnnounceSection = !isShowingAnnounceSection" class="flex text-gray-700 p-2 cursor-pointer">
+                        <div v-if="config" class="bg-white border-t dark:bg-zinc-950 dark:border-zinc-900">
+                            <div @click="isShowingAnnounceSection = !isShowingAnnounceSection" class="flex text-gray-700 p-2 cursor-pointer dark:text-white">
                                 <div class="my-auto mr-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.348 14.652a3.75 3.75 0 0 1 0-5.304m5.304 0a3.75 3.75 0 0 1 0 5.304m-7.425 2.121a6.75 6.75 0 0 1 0-9.546m9.546 0a6.75 6.75 0 0 1 0 9.546M5.106 18.894c-3.808-3.807-3.808-9.98 0-13.788m13.788 0c3.808 3.807 3.808 9.98 0 13.788M12 12h.008v.008H12V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke-width="1.5" 
+                                        stroke="currentColor" 
+                                        class="size-6"
+                                    >
+                                        <path 
+                                            stroke-linecap="round" 
+                                            stroke-linejoin="round" 
+                                            d="M9.348 14.652a3.75 3.75 0 0 1 0-5.304m5.304 0a3.75 3.75 0 0 1 0 5.304m-7.425 2.121a6.75 6.75 0 0 1 0-9.546m9.546 0a6.75 6.75 0 0 1 0 9.546M5.106 18.894c-3.808-3.807-3.808-9.98 0-13.788m13.788 0c3.808 3.807 3.808 9.98 0 13.788M12 12h.008v.008H12V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" 
+                                        />
                                     </svg>
                                 </div>
                                 <div class="my-auto">Announce</div>
                                 <div class="ml-auto">
-                                    <button @click.stop="sendAnnounce" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                    <button 
+                                        @click.stop="sendAnnounce" 
+                                        type="button" 
+                                        class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 
+                                               dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500"
+                                    >
                                         Announce Now
                                     </button>
                                 </div>
                             </div>
-                            <div v-if="isShowingAnnounceSection" class="divide-y text-gray-900 border-t border-gray-300">
-                                <div class="p-1">
-                                    <select v-model="config.auto_announce_interval_seconds" @change="onAnnounceIntervalSecondsChange" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <div v-if="isShowingAnnounceSection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-900">
+                                <div class="p-1 dark:border-zinc-900">
+                                    <select 
+                                        v-model="config.auto_announce_interval_seconds" 
+                                        @change="onAnnounceIntervalSecondsChange" 
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 
+                                               dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                                    >
                                         <option value="0">Disabled</option>
                                         <option value="900">Every 15 Minutes</option>
                                         <option value="1800">Every 30 Minutes</option>
@@ -187,7 +218,7 @@
                                         <option value="43200">Every 12 Hours</option>
                                         <option value="86400">Every 24 Hours</option>
                                     </select>
-                                    <div class="text-sm text-gray-700">
+                                    <div class="text-sm text-gray-700 dark:text-zinc-100">
                                         <span v-if="config.last_announced_at">Last announced: {{ formatSecondsAgo(config.last_announced_at) }}</span>
                                         <span v-else>Last announced: Never</span>
                                     </div>
@@ -196,16 +227,18 @@
                         </div>
 
                         <!-- audio calls -->
-                        <div v-if="config" class="bg-white border-t">
+                        <div v-if="config" class="bg-white border-t dark:bg-zinc-950 dark:border-zinc-900">
                             <div @click="isShowingCallsSection = !isShowingCallsSection" class="flex text-gray-700 p-2 cursor-pointer">
                                 <div class="my-auto mr-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="dark:text-white w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                                     </svg>
                                 </div>
-                                <div class="my-auto">Calls</div>
+                                <div class="my-auto dark:text-white">Calls</div>
                                 <div class="ml-auto">
-                                    <a @click.stop href="../call.html" target="_blank" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                    <a @click.stop href="../call.html" target="_blank" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 
+dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500
+">
                                         <span>Open Phone</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                             <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
@@ -214,11 +247,11 @@
                                     </a>
                                 </div>
                             </div>
-                            <div v-if="isShowingCallsSection" class="divide-y text-gray-900 border-t border-gray-300">
-                                <div class="p-1 flex">
+                            <div v-if="isShowingCallsSection" class="divide-y text-gray-900 border-t border-gray-300 dark:border-zinc-900">
+                                <div class="p-1 flex dark:border-zinc-900 dark:text-white">
                                     <div>
                                         <div>Status</div>
-                                        <div class="text-sm text-gray-700">
+                                        <div class="text-sm text-gray-700 dark:text-white">
                                             <div v-if="activeAudioCalls.length > 0" class="flex space-x-2">
                                                 <span v-if="activeInboundAudioCalls.length > 0">{{ activeInboundAudioCalls.length }} Incoming {{ activeInboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
                                                 <span v-else>{{ activeOutboundAudioCalls.length }} Outgoing {{ activeOutboundAudioCalls.length === 1 ? 'Call' : 'Calls' }}</span>
@@ -256,9 +289,9 @@
             <RouterView/>
 
         </div>
-
     </div>
 </template>
+
 
 <script>
 import SidebarLink from "./SidebarLink.vue";

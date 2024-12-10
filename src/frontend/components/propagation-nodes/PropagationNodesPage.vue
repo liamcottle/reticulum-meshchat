@@ -1,44 +1,44 @@
 <template>
-    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
+    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
 
         <!-- search -->
-        <div v-if="propagationNodes.length > 0" class="flex bg-white p-1 border-b border-gray-300">
-            <input v-model="searchTerm" type="text" :placeholder="`Search ${propagationNodes.length} Propagation Nodes...`" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+        <div v-if="propagationNodes.length > 0" class="flex bg-white dark:bg-zinc-800 p-1 border-b border-gray-300 dark:border-zinc-700">
+            <input v-model="searchTerm" type="text" :placeholder="`Search ${propagationNodes.length} Propagation Nodes...`" class="w-full bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
         </div>
 
         <!-- propagation nodes -->
         <div class="h-full overflow-y-auto">
             <div v-if="searchedPropagationNodes.length > 0" class="p-2 space-y-2 w-full">
-                <div v-for="propagationNode of searchedPropagationNodes" class="border rounded bg-white shadow">
+                <div v-for="propagationNode of searchedPropagationNodes" class="border dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 shadow">
                     <div class="p-1 flex">
                         <div class="my-auto">
-                            <div class="font-semibold">{{ propagationNode.operator_display_name ?? "Unknown Operator" }}</div>
-                            <div class="text-sm"><{{ propagationNode.destination_hash }}></div>
+                            <div class="font-semibold text-gray-900 dark:text-gray-100">{{ propagationNode.operator_display_name ?? "Unknown Operator" }}</div>
+                            <div class="text-sm text-gray-700 dark:text-gray-300"><{{ propagationNode.destination_hash }}></div>
                         </div>
                         <div class="ml-auto my-auto">
-                            <button v-if="config.lxmf_preferred_propagation_node_destination_hash === propagationNode.destination_hash" @click="stopUsingPropagationNode" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-red-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                            <button v-if="config.lxmf_preferred_propagation_node_destination_hash === propagationNode.destination_hash" @click="stopUsingPropagationNode" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-red-500 dark:bg-red-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-red-400 dark:hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 dark:focus-visible:outline-red-600">
                                 Stop Using Node
                             </button>
-                            <button v-else @click="usePropagationNode(propagationNode.destination_hash)" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            <button v-else @click="usePropagationNode(propagationNode.destination_hash)" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-600">
                                 Set as Preferred
                             </button>
                         </div>
                     </div>
-                    <div class="bg-gray-50 p-1">
-                        <div class="text-gray-500 text-sm">
+                    <div class="bg-gray-50 dark:bg-zinc-900 p-1">
+                        <div class="text-gray-500 dark:text-gray-400 text-sm">
                             <span>Announced {{ formatTimeAgo(propagationNode.updated_at) }}</span>
                             <span v-if="propagationNode.is_propagation_enabled === false">
-                                <span> • <span class="text-red-500">Disabled by Operator</span></span>
+                                <span> • <span class="text-red-500 dark:text-red-400">Disabled by Operator</span></span>
                             </span>
                             <span v-if="config.lxmf_preferred_propagation_node_destination_hash === propagationNode.destination_hash">
-                                <span> • <span class="text-green-500">Preferred</span></span>
+                                <span> • <span class="text-green-500 dark:text-green-400">Preferred</span></span>
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
             <div v-else class="flex h-full">
-                <div class="mx-auto my-auto text-center leading-5">
+                <div class="mx-auto my-auto text-center leading-5 text-gray-900 dark:text-gray-100">
 
                     <!-- no propagation nodes at all -->
                     <div v-if="propagationNodes.length === 0" class="flex flex-col">
@@ -50,7 +50,7 @@
                         <div class="font-semibold">No Propagation Nodes</div>
                         <div>Check back later, once someone has announced.</div>
                         <div class="mt-2">
-                            <button @click="loadPropagationNodes" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                            <button @click="loadPropagationNodes" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-600">
                                 Reload
                             </button>
                         </div>

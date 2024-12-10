@@ -1,8 +1,7 @@
 <template>
-    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px]">
+    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
         <div class="overflow-y-auto p-2 space-y-2">
-
-            <!-- warning -->
+            <!-- warning - keeping orange-500 for warning visibility in both modes -->
             <div class="flex bg-orange-500 p-2 text-sm font-semibold leading-6 text-white rounded shadow">
                 <div class="my-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -10,14 +9,18 @@
                     </svg>
                 </div>
                 <div class="ml-2 my-auto">Reticulum MeshChat must be restarted for any interface changes to take effect.</div>
-                <button v-if="isElectron" @click="relaunch" type="button" class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md bg-white px-2 py-1 text-sm font-semibold text-black shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                <button v-if="isElectron" 
+                    @click="relaunch" 
+                    type="button" 
+                    class="ml-auto my-auto inline-flex items-center gap-x-1 rounded-md bg-white dark:bg-zinc-800 px-2 py-1 text-sm font-semibold text-black dark:text-zinc-200 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:focus-visible:outline-zinc-700">
                     <span>Restart Now</span>
                 </button>
             </div>
 
             <div>
                 <RouterLink :to="{ name: 'interfaces.add' }">
-                    <button type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                    <button type="button" 
+                        class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-700 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-700">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
@@ -36,7 +39,7 @@
                 @delete="deleteInterface(iface._name)"/>
 
             <!-- disabled interfaces -->
-            <div v-if="disabledInterfaces.length > 0" class="font-semibold">Disabled Interfaces</div>
+            <div v-if="disabledInterfaces.length > 0" class="font-semibold dark:text-zinc-200">Disabled Interfaces</div>
             <Interface
                 v-for="iface of disabledInterfaces"
                 :iface="iface"
@@ -44,7 +47,6 @@
                 @disable="disableInterface(iface._name)"
                 @edit="editInterface(iface._name)"
                 @delete="deleteInterface(iface._name)"/>
-
         </div>
     </div>
 </template>
