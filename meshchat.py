@@ -2735,7 +2735,8 @@ class Config:
     lxmf_preferred_propagation_node_last_synced_at = IntConfig("lxmf_preferred_propagation_node_last_synced_at", None)
     lxmf_local_propagation_node_enabled = BoolConfig("lxmf_local_propagation_node_enabled", False)
 
-
+# FIXME: we should probably set this as an instance variable of ReticulumMeshChat so it has a proper home, and pass it in to the constructor?
+nomadnet_cached_links = {}
 class NomadnetDownloader:
 
     def __init__(self, destination_hash: bytes, path: str, data: str|None, on_download_success: Callable[[bytes], None], on_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None], timeout: int|None = None):
@@ -2751,6 +2752,14 @@ class NomadnetDownloader:
 
     # setup link to destination and request download
     async def download(self, path_lookup_timeout: int = 15, link_establishment_timeout: int = 15):
+
+        # use existing established link if it's active
+        if self.destination_hash in nomadnet_cached_links:
+            link = nomadnet_cached_links[self.destination_hash]
+            if link.status is RNS.Link.ACTIVE:
+                print("[NomadnetDownloader] using existing link for request")
+                self.link_established(link)
+                return
 
         # determine when to timeout
         timeout_after_seconds = time.time() + path_lookup_timeout
@@ -2781,6 +2790,7 @@ class NomadnetDownloader:
         )
 
         # create link to destination
+        print("[NomadnetDownloader] establishing new link for request")
         link = RNS.Link(destination, established_callback=self.link_established)
 
         # determine when to timeout
@@ -2796,6 +2806,9 @@ class NomadnetDownloader:
 
     # link to destination was established, we should now request the download
     def link_established(self, link):
+
+        # cache link for using in future requests
+        nomadnet_cached_links[self.destination_hash] = link
 
         # request download over link
         link.request(
