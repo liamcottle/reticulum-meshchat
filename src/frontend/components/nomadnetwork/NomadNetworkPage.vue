@@ -514,7 +514,7 @@ export default {
 
                     // prevent simultaneous downloads
                     if(this.isDownloadingNodeFile){
-                        DialogUtils.alert("An existing download is in progress. Please wait for it to finish beforing starting another download.");
+                        DialogUtils.alert("An existing download is in progress. Please wait for it to finish before starting another download.");
                         return;
                     }
 
