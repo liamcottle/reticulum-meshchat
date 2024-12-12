@@ -115,6 +115,10 @@ pre.text-wrap > div > :last-child {
     white-space: pre-wrap;
 }
 
+pre a:hover {
+    text-decoration: underline;
+}
+
 </style>
 
 <script>
