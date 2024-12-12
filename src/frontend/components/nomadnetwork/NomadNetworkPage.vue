@@ -400,7 +400,7 @@ export default {
             }
 
             // load the page
-            this.onNodePageUrlClick(previousNodePagePath, null, null, false);
+            this.onNodePageUrlClick(previousNodePagePath, null, null, true);
 
         },
         parseNomadnetworkUrl: function(url) {
@@ -451,7 +451,7 @@ export default {
             return null;
 
         },
-        async onNodePageUrlClick(url, options = null, addToHistory = true, useCache = true) {
+        async onNodePageUrlClick(url, options = null, addToHistory = true, useCache = false) {
 
             let fieldData = [];
 
