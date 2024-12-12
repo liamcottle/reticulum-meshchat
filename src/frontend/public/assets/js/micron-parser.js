@@ -1,8 +1,12 @@
-/*
-Micron Parser JavaScript implementation
-micron-parser.js is based on MicronParser.py from NomadNet:  https://raw.githubusercontent.com/markqvist/NomadNet/refs/heads/master/nomadnet/ui/textui/MicronParser.py
-Documentation for the Micron markdown format can be found here: https://raw.githubusercontent.com/markqvist/NomadNet/refs/heads/master/nomadnet/ui/textui/Guide.py
-*/
+/**
+ * Micron Parser JavaScript implementation
+ *
+ * micron-parser.js is based on MicronParser.py from NomadNet:
+ * https://raw.githubusercontent.com/markqvist/NomadNet/refs/heads/master/nomadnet/ui/textui/MicronParser.py
+ *
+ * Documentation for the Micron markdown format can be found here:
+ * https://raw.githubusercontent.com/markqvist/NomadNet/refs/heads/master/nomadnet/ui/textui/Guide.py
+ */
 class MicronParser {
     constructor(darkTheme = true) {
         this.darkTheme = darkTheme;
