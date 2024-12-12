@@ -98,6 +98,20 @@
 
 </template>
 
+<style>
+
+pre.text-wrap > div {
+    display: flex;
+    white-space: pre;
+}
+
+pre.text-wrap > div > :last-child {
+    width: 100%;
+    white-space: pre-wrap;
+}
+
+</style>
+
 <script>
 
 import DialogUtils from "../../js/DialogUtils";
