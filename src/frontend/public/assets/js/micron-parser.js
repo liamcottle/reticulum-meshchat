@@ -306,6 +306,7 @@ class MicronParser {
 
                     let a = document.createElement("a");
                     a.href = formattedUrl;
+                    a.title = formattedUrl;
 
                     let fieldsToSubmit = [];
                     let requestVars = {};
