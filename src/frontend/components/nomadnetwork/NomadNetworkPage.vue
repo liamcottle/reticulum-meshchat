@@ -388,7 +388,7 @@ export default {
         async reloadNodePage() {
 
             // reload current node page without adding to history and without using cache
-            this.onNodePageUrlClick(this.nodePagePath, null, null, false, false);
+            this.onNodePageUrlClick(this.nodePagePath, null, false, false);
 
         },
         async loadPreviousNodePage() {
