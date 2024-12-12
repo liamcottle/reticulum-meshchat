@@ -100,6 +100,11 @@
 
 <style>
 
+pre {
+    font-family: Roboto Mono Nerd Font, monospace;
+    line-height: normal;
+}
+
 pre.text-wrap > div {
     display: flex;
     white-space: pre;
