@@ -120,7 +120,7 @@
                             <option disabled>Serial Devices ({{ comports.length }})</option>
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                             <option disabled>Bluetooth Devices ({{ rnodes.length }})</option>
-                            <option v-for="rnode of rnodes" :value="rnode.port">{{ rnode.port }}</option>
+                            <option v-for="rnode of rnodes" :value="rnode.port">{{ rnode.port }} ({{ rnode.ble_address }})</option>
                         </select>
                         <div class="text-xs text-gray-600">
                             <span v-if="isLoadingRnodes" class="text-gray-500">Discovering Bluetooth RNodes...</span>
