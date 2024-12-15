@@ -1,5 +1,5 @@
 <template>
-    <div :class="{'dark': config?.dark_mode}" class="h-screen w-full flex flex-col">
+    <div :class="{'dark': config?.theme === 'dark'}" class="h-screen w-full flex flex-col">
 
         <!-- header -->
         <div class="flex bg-white dark:bg-zinc-950 p-2 border-gray-300 dark:border-zinc-900 border-b">

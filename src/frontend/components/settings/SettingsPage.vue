@@ -2,6 +2,23 @@
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
         <div class="overflow-y-auto space-y-2 p-2">
 
+            <!-- appearance -->
+            <div class="bg-white dark:bg-zinc-800 rounded shadow">
+                <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Appearance</div>
+                <div class="divide-y divide-gray-300 dark:divide-zinc-700 text-gray-900 dark:text-gray-100">
+
+                    <div class="p-2">
+                        <div class="flex">
+                            <select v-model="config.theme" @change="onThemeChange" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
+                                <option value="light">Light Mode</option>
+                                <option value="dark">Dark Mode</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- interfaces -->
             <div class="bg-white dark:bg-zinc-800 rounded shadow">
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Interfaces</div>
@@ -189,6 +206,11 @@ export default {
                 alert("Failed to save config!");
                 console.log(e);
             }
+        },
+        async onThemeChange() {
+            await this.updateConfig({
+                "theme": this.config.theme,
+            });
         },
         async onAutoResendFailedMessagesWhenAnnounceReceivedChange() {
             await this.updateConfig({
