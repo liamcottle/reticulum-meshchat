@@ -118,7 +118,12 @@
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-zinc-100">Port</label>
                         <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
+                            <option v-for="rnode of rnodes" :value="rnode.port">{{ rnode.port }}</option>
                         </select>
+                        <div class="text-xs text-gray-600">
+                            <span v-if="isLoadingRnodes" class="text-gray-500">Discovering Bluetooth RNodes...</span>
+                            <span v-else @click="loadRnodes" class="text-blue-500 underline cursor-pointer">Discover Bluetooth RNodes</span>
+                        </div>
                     </div>
 
                     <!-- interface frequency -->
@@ -184,6 +189,9 @@ export default {
             config: null,
 
             comports: [],
+            rnodes: [],
+
+            isLoadingRnodes: false,
 
             newInterfaceName: null,
             newInterfaceType: null,
@@ -243,6 +251,7 @@ export default {
 
         this.getConfig();
         this.loadComports();
+        this.loadRnodes();
 
         // check if we are editing an interface
         const interfaceName = this.$route.query.interface_name;
@@ -276,8 +285,29 @@ export default {
                 const response = await window.axios.get(`/api/v1/comports`);
                 this.comports = response.data.comports;
             } catch(e) {
-                // do nothing if failed to load interfaces
+                // do nothing if failed to load comports
             }
+        },
+        async loadRnodes() {
+
+            // do nothing if already loading
+            if(this.isLoadingRnodes){
+                return;
+            }
+
+            // show loading
+            this.isLoadingRnodes = true;
+
+            try {
+                const response = await window.axios.get(`/api/v1/rnodes/ble-scan`);
+                this.rnodes = response.data.rnodes;
+            } catch(e) {
+                // do nothing if failed to load rnodes
+            } finally {
+                // no longer loading
+                this.isLoadingRnodes = false;
+            }
+
         },
         async loadInterfaceToEdit(interfaceName) {
             try {
