@@ -1,4 +1,5 @@
 aiohttp>=3.9.5
+bleak>=0.22.3
 cx_freeze>=7.0.0
 lxmf>=0.5.8
 peewee>=3.17.3
