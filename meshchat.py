@@ -13,11 +13,13 @@ import RNS
 import RNS.vendor.umsgpack as msgpack
 import LXMF
 from LXMF import LXMRouter
+from RNS.Interfaces.RNodeInterface import BLEConnection
 from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
 import asyncio
 import base64
 import webbrowser
 
+from bleak import BleakScanner
 from peewee import SqliteDatabase
 from serial.tools import list_ports
 
@@ -315,6 +317,45 @@ class ReticulumMeshChat:
 
             return web.json_response({
                 "comports": comports,
+            })
+
+        # scan for rnodes available via ble
+        @routes.get("/api/v1/rnodes/ble-scan")
+        async def index(request):
+
+            # determine how long we should scan for
+            scan_duration_seconds = int(request.query.get("scan_duration_seconds", 3))
+
+            # discover ble devices
+            ble_scan_results = await BleakScanner.discover(
+                timeout=scan_duration_seconds,
+                return_adv=True,
+                cb=dict(use_bdaddr=True),
+                service_uuids=[
+                    BLEConnection.UART_SERVICE_UUID,
+                ],
+            )
+
+            # format scan results
+            rnodes = []
+            for ble_address in ble_scan_results:
+
+                # get device and advertisement data from scan result
+                device, advertisement_data = ble_scan_results[ble_address]
+
+                # skip this result if advertisement data is unavailable
+                if advertisement_data is None:
+                    continue
+
+                rnodes.append({
+                    "name": device.name,
+                    "local_name": advertisement_data.local_name,
+                    "ble_address": device.address,
+                    "port": "ble://" + advertisement_data.local_name,
+                })
+
+            return web.json_response({
+                "rnodes": rnodes,
             })
 
         # fetch reticulum interfaces
