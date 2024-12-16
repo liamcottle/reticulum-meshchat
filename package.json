@@ -4,6 +4,7 @@
   "description": "",
   "main": "electron/main.js",
   "scripts": {
+    "watch": "npm run build-frontend -- --watch",
     "build-frontend": "vite build",
     "build-backend": "python setup.py build",
     "build": "npm run build-frontend && npm run build-backend",
