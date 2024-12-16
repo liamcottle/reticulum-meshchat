@@ -4,7 +4,7 @@
         <!-- header -->
         <div class="flex bg-white dark:bg-zinc-950 p-2 border-gray-300 dark:border-zinc-900 border-b">
             <div class="flex w-full">
-                <div class="hidden sm:flex my-auto border border-gray-300 dark:border-zinc-900 rounded-md w-10 h-10 mr-3 shadow bg-gray-50 dark:bg-zinc-900">
+                <div class="hidden sm:flex my-auto border border-gray-300 rounded-md w-10 h-10 mr-3 shadow bg-gray-50">
                     <div class="flex mx-auto my-auto">
                         <img class="w-9 h-9" src="/assets/images/logo.png" />
                     </div>
