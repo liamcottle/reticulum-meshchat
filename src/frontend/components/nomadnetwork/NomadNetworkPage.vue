@@ -123,6 +123,7 @@ pre a:hover {
 
 <script>
 
+import MicronParser from "../../js/MicronParser";
 import DialogUtils from "../../js/DialogUtils";
 import WebSocketConnection from "../../js/WebSocketConnection";
 import NomadNetworkSidebar from "./NomadNetworkSidebar.vue";
@@ -331,7 +332,7 @@ export default {
 
             this.downloadNomadNetPage(destinationHash, pagePath, fieldData, (pageContent) => {
 
-                const muParser = new MicronParser;
+                const muParser = new MicronParser();
                 
                 // do nothing if callback is for a previous request
                 if(seq !== this.nodePageRequestSequence){

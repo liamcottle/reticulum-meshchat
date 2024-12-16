@@ -8,6 +8,7 @@
  * https://raw.githubusercontent.com/markqvist/NomadNet/refs/heads/master/nomadnet/ui/textui/Guide.py
  */
 class MicronParser {
+
     constructor(darkTheme = true) {
         this.darkTheme = darkTheme;
         this.DEFAULT_FG_DARK  = "ddd";
@@ -36,10 +37,11 @@ class MicronParser {
             this.SELECTED_STYLES = this.STYLES_LIGHT;
         }
     }
+
     static formatNomadnetworkUrl(url) {
         return `nomadnetwork://${url}`;
     }
-    /// String
+
     convertMicronToHtml(markup) {
         let html = ""; 
 
@@ -74,7 +76,7 @@ class MicronParser {
 
         return html; 
     }
-    /// DOM Fragment
+
     parseToHtml(markup) {
         // Create a fragment to hold all the Micron output
         const fragment = document.createDocumentFragment();
@@ -662,9 +664,6 @@ class MicronParser {
         return { obj: obj, skip: skip };
     }
 
-
-
-
     parseLink(line, startIndex, state) {
         let endpos = line.indexOf(']', startIndex);
         if (endpos === -1) return null;
@@ -711,7 +710,6 @@ class MicronParser {
         return { obj: obj, skip: skip };
     }
 
-
 }
 
-
+export default MicronParser;
