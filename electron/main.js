@@ -100,12 +100,6 @@ app.whenReady().then(async () => {
         // determine path for storage
         const storageDir = path.join(app.getPath('home'), '.reticulum-meshchat'); // ~/.reticulum-meshchat
 
-        // migrate old storage dir to new storage dir
-        const oldStorageDir = path.join(app.getPath('home'), '.reticulum-webchat'); // ~/.reticulum-webchat
-        if(fs.existsSync(oldStorageDir) && !fs.existsSync(storageDir)){
-            fs.renameSync(oldStorageDir, storageDir);
-        }
-
         // get arguments passed to application, and remove the provided application path
         const userProvidedArguments = process.argv.slice(1);
 
