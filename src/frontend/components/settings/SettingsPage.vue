@@ -10,8 +10,8 @@
                     <div class="p-2">
                         <div class="flex">
                             <select v-model="config.theme" @change="onThemeChange" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
-                                <option value="light">Light Mode</option>
-                                <option value="dark">Dark Mode</option>
+                                <option value="light">Light Theme</option>
+                                <option value="dark">Dark Theme</option>
                             </select>
                         </div>
                     </div>
