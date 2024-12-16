@@ -66,6 +66,21 @@ function log(message) {
 
 }
 
+function getDefaultStorageDir() {
+
+    // if we are running a windows portable exe, we want to use .reticulum-meshchat in the portable exe dir
+    // e.g if we launch "E:\Some\Path\MeshChat.exe" we want to use "E:\Some\Path\.reticulum-meshchat"
+    const portableExecutableDir = process.env.PORTABLE_EXECUTABLE_DIR;
+    if(process.platform === "win32" && portableExecutableDir != null){
+        return path.join(portableExecutableDir, '.reticulum-meshchat');
+    }
+
+    // otherwise, we will fall back to putting the storage dir in the users home directory
+    // e.g: ~/.reticulum-meshchat
+    return path.join(app.getPath('home'), '.reticulum-meshchat');
+
+}
+
 app.whenReady().then(async () => {
 
     // create browser window
@@ -97,9 +112,6 @@ app.whenReady().then(async () => {
 
     try {
 
-        // determine path for storage
-        const storageDir = path.join(app.getPath('home'), '.reticulum-meshchat'); // ~/.reticulum-meshchat
-
         // get arguments passed to application, and remove the provided application path
         const userProvidedArguments = process.argv.slice(1);
 
@@ -112,7 +124,7 @@ app.whenReady().then(async () => {
 
         // if user didn't provide storage dir, we should provide it
         if(!userProvidedArguments.includes("--storage-dir")){
-            requiredArguments.push("--storage-dir", storageDir);
+            requiredArguments.push("--storage-dir", getDefaultStorageDir());
         }
 
         // spawn executable
