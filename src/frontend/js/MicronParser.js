@@ -323,7 +323,6 @@ class MicronParser {
                             if (f === '*') {
                                 // submit all fields
                                 foundAll = true;
-                                break;
                             } else if (f.includes('=')) {
                                 // this is a request variable (key=value)
                                 const [k, v] = f.split('=');
