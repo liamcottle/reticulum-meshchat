@@ -81,6 +81,21 @@ function getDefaultStorageDir() {
 
 }
 
+function getDefaultReticulumConfigDir() {
+
+    // if we are running a windows portable exe, we want to use .reticulum in the portable exe dir
+    // e.g if we launch "E:\Some\Path\MeshChat.exe" we want to use "E:\Some\Path\.reticulum"
+    const portableExecutableDir = process.env.PORTABLE_EXECUTABLE_DIR;
+    if(process.platform === "win32" && portableExecutableDir != null){
+        return path.join(portableExecutableDir, '.reticulum');
+    }
+
+    // otherwise, we will fall back to using the .reticulum folder in the users home directory
+    // e.g: ~/.reticulum
+    return path.join(app.getPath('home'), '.reticulum');
+
+}
+
 app.whenReady().then(async () => {
 
     // create browser window
@@ -121,6 +136,11 @@ app.whenReady().then(async () => {
             '--port', '9337', // FIXME: let system pick a random unused port?
             // '--test-exception-message', 'Test Exception Message', // uncomment to test the crash dialog
         ];
+
+        // if user didn't provide reticulum config dir, we should provide it
+        if(!userProvidedArguments.includes("--reticulum-config-dir")){
+            requiredArguments.push("--reticulum-config-dir", getDefaultReticulumConfigDir());
+        }
 
         // if user didn't provide storage dir, we should provide it
         if(!userProvidedArguments.includes("--storage-dir")){
