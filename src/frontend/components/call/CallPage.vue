@@ -1,36 +1,4 @@
-<html>
-<head>
-
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Phone | Reticulum MeshChat</title>
-
-    <!-- scripts -->
-    <script src="assets/js/tailwindcss/tailwind-v3.4.3-forms-v0.5.7.js"></script>
-    <script src="assets/js/axios@1.6.8/dist/axios.min.js"></script>
-    <script src="assets/js/vue@3.4.26/dist/vue.global.js"></script>
-
-    <!-- protobuf -->
-    <script src="assets/js/protobuf.js@6.11.0/dist/protobuf.min.js"></script>
-
-    <!-- codec2 -->
-    <script src="assets/js/codec2-emscripten/c2enc.js"></script>
-    <script src="assets/js/codec2-emscripten/c2dec.js"></script>
-    <script src="assets/js/codec2-emscripten/sox.js"></script>
-    <script src="assets/js/codec2-emscripten/codec2-lib.js"></script>
-
-    <!-- tailwind config since we are not using vite compiling for this page -->
-    <!-- fixme: call.html should be refactored to be a proper vue component, instead of standalone html file -->
-    <script>
-        window.tailwind.config = {
-            darkMode: 'selector',
-        };
-    </script>
-
-</head>
-<body>
-<div id="app" class="flex h-full">
+<template>
     <div class="flex w-full h-full bg-gray-100 dark:bg-zinc-950" :class="{'dark': config?.theme === 'dark'}">
         <div class="mx-auto my-auto w-full max-w-xl p-4">
 
@@ -287,489 +255,489 @@
 
         </div>
     </div>
-</div>
+</template>
 
 <script>
-    Vue.createApp({
-        data() {
-            return {
 
-                config: null,
+export default {
+    name: 'CallPage',
+    data() {
+        return {
 
-                audioCall: null,
-                audioCalls: [],
+            config: null,
 
-                myAudioCallAddressHash: null,
+            audioCall: null,
+            audioCalls: [],
 
-                destinationHash: null,
-                isInitiatingCall: false,
+            myAudioCallAddressHash: null,
 
-                isWebsocketConnected: false,
-                callHash: null,
-                txBytes: 0,
-                rxBytes: 0,
+            destinationHash: null,
+            isInitiatingCall: false,
 
-                isMicMuted: false,
-                isSoundMuted: false,
-                codecMode: "MODE_1200", // seems to be the smallest size with the best quality from my testing
-                sampleRate: 8000,
+            isWebsocketConnected: false,
+            callHash: null,
+            txBytes: 0,
+            rxBytes: 0,
 
-                remoteAudioCodec: null,
+            isMicMuted: false,
+            isSoundMuted: false,
+            codecMode: "MODE_1200", // seems to be the smallest size with the best quality from my testing
+            sampleRate: 8000,
 
-                audioContext: null,
-                mediaStreamSource: null,
-                audioWorkletNode: null,
-                microphoneMediaStream: null,
+            remoteAudioCodec: null,
 
-            };
-        },
-        mounted: function() {
+            audioContext: null,
+            mediaStreamSource: null,
+            audioWorkletNode: null,
+            microphoneMediaStream: null,
 
-            // update config
-            this.getConfig();
+        };
+    },
+    mounted: function() {
 
-            // update calls list
+        // update config
+        this.getConfig();
+
+        // update calls list
+        this.updateCallsList();
+
+        // update calls list every 3 seconds
+        setInterval(() => {
             this.updateCallsList();
+        }, 3000);
 
-            // update calls list every 3 seconds
-            setInterval(() => {
-                this.updateCallsList();
-            }, 3000);
+        // parse url params
+        var queryParams = new URLSearchParams(location.search);
+        var queryDestinationHash = queryParams.get('destination_hash');
 
-            // parse url params
-            var queryParams = new URLSearchParams(location.search);
-            var queryDestinationHash = queryParams.get('destination_hash');
+        // autofill destination hash to call when query param provided in url
+        if(queryDestinationHash){
+            this.destinationHash = queryDestinationHash;
+        }
 
-            // autofill destination hash to call when query param provided in url
-            if(queryDestinationHash){
-                this.destinationHash = queryDestinationHash;
+    },
+    methods: {
+        async initiateCall(destinationHash) {
+
+            // do nothing if already initiating call
+            // todo: support cancelling in progress call initiation
+            if(this.isInitiatingCall){
+                alert("Call is already initiating...");
+                return;
+            }
+
+            // make sure call hash provided
+            if(!destinationHash) {
+                alert("Enter destination hash to call.");
+                return;
+            }
+
+            // show loading
+            this.isInitiatingCall = true;
+
+            try {
+
+                // initiate call
+                const response = await axios.get(`/api/v1/calls/initiate/${destinationHash}`, {
+                    params: {
+                        timeout: 15, // how long to attempt to initiate call
+                    },
+                });
+
+                // get audio call from response
+                const audioCall = response.data.audio_call;
+
+                // join call
+                await this.joinCall(audioCall.hash);
+
+            } catch(e) {
+
+                console.log(e);
+
+                // show error message from response, or fallback to default
+                const message = e.response?.data?.message ?? "failed to initiate call";
+                alert(message);
+
+            } finally {
+                // hide loading
+                this.isInitiatingCall = false;
             }
 
         },
-        methods: {
-            async initiateCall(destinationHash) {
+        async joinCall(callHash) {
 
-                // do nothing if already initiating call
-                // todo: support cancelling in progress call initiation
-                if(this.isInitiatingCall){
-                    alert("Call is already initiating...");
-                    return;
-                }
+            // update ui
+            this.callHash = callHash;
+            this.remoteAudioCodec = null;
 
-                // make sure call hash provided
-                if(!destinationHash) {
-                    alert("Enter destination hash to call.");
-                    return;
-                }
+            // reset stats
+            this.txBytes = 0;
+            this.rxBytes = 0;
 
-                // show loading
-                this.isInitiatingCall = true;
+            // load protobufs
+            const root = await protobuf.load("assets/proto/audio_call.proto");
+            const AudioCallPayload = root.lookupType("AudioCallPayload");
+            const Codec2AudioMode = root.lookupEnum("Codec2Audio.Mode");
 
-                try {
+            // connect to websocket
+            this.ws = new WebSocket(location.origin.replace(/^http/, 'ws') + `/api/v1/calls/${callHash}/audio`);
 
-                    // initiate call
-                    const response = await axios.get(`/api/v1/calls/initiate/${destinationHash}`, {
-                        params: {
-                            timeout: 15, // how long to attempt to initiate call
-                        },
-                    });
+            this.ws.addEventListener('open', async () => {
 
-                    // get audio call from response
-                    const audioCall = response.data.audio_call;
+                // we are now connected
+                this.isWebsocketConnected = true;
 
-                    // join call
-                    await this.joinCall(audioCall.hash);
+                await this.updateCall(callHash);
 
-                } catch(e) {
+                // send mic audio over call
+                await this.startRecordingMicrophone((codec2Mode, encoded) => {
 
-                    console.log(e);
+                    // do nothing if websocket closed
+                    if(this.ws.readyState !== WebSocket.OPEN){
+                        return;
+                    }
 
-                    // show error message from response, or fallback to default
-                    const message = e.response?.data?.message ?? "failed to initiate call";
-                    alert(message);
+                    // do nothing when audio muted
+                    if(this.isMicMuted){
+                        return;
+                    }
 
-                } finally {
-                    // hide loading
-                    this.isInitiatingCall = false;
-                }
-
-            },
-            async joinCall(callHash) {
-
-                // update ui
-                this.callHash = callHash;
-                this.remoteAudioCodec = null;
-
-                // reset stats
-                this.txBytes = 0;
-                this.rxBytes = 0;
-
-                // load protobufs
-                const root = await protobuf.load("assets/proto/audio_call.proto");
-                const AudioCallPayload = root.lookupType("AudioCallPayload");
-                const Codec2AudioMode = root.lookupEnum("Codec2Audio.Mode");
-
-                // connect to websocket
-                this.ws = new WebSocket(location.origin.replace(/^http/, 'ws') + `/api/v1/calls/${callHash}/audio`);
-
-                this.ws.addEventListener('open', async () => {
-
-                    // we are now connected
-                    this.isWebsocketConnected = true;
-
-                    await this.updateCall(callHash);
-
-                    // send mic audio over call
-                    await this.startRecordingMicrophone((codec2Mode, encoded) => {
-
-                        // do nothing if websocket closed
-                        if(this.ws.readyState !== WebSocket.OPEN){
-                            return;
-                        }
-
-                        // do nothing when audio muted
-                        if(this.isMicMuted){
-                            return;
-                        }
-
-                        // encode audio call payload as protobuf
-                        const audioCallPayload = AudioCallPayload.encode(AudioCallPayload.fromObject({
-                            audioData: {
-                                codec2Audio: {
-                                    mode: "MODE_" + codec2Mode, // convert to value expected by protobuf
-                                    encoded: encoded, // must be passed in as a Uint8Array
-                                },
+                    // encode audio call payload as protobuf
+                    const audioCallPayload = AudioCallPayload.encode(AudioCallPayload.fromObject({
+                        audioData: {
+                            codec2Audio: {
+                                mode: "MODE_" + codec2Mode, // convert to value expected by protobuf
+                                encoded: encoded, // must be passed in as a Uint8Array
                             },
-                        })).finish();
+                        },
+                    })).finish();
 
-                        // send payload to websocket
-                        this.ws.send(audioCallPayload);
-
-                        // update stats
-                        this.txBytes += audioCallPayload.length;
-
-                    });
-
-                });
-
-                this.ws.addEventListener('close', () => {
-                    this.isWebsocketConnected = false;
-                    this.leaveCall();
-                    this.updateCallsList();
-                });
-
-                this.ws.addEventListener('error', (error) => {
-                    console.log(error);
-                });
-
-                // listen to audio from call
-                this.ws.onmessage = async (event) => {
-
-                    // get audio call payload bytes from websocket message
-                    const payload = new Uint8Array(await event.data.arrayBuffer());
+                    // send payload to websocket
+                    this.ws.send(audioCallPayload);
 
                     // update stats
-                    this.rxBytes += payload.length;
+                    this.txBytes += audioCallPayload.length;
 
-                    // decode audio call payload
-                    const audioCallPayload = AudioCallPayload.decode(payload);
+                });
 
-                    // handle audio data
-                    const audioData = audioCallPayload.audioData;
-                    if(audioData){
+            });
 
-                        // handle codec2 encoded audio
-                        const codec2Audio = audioData.codec2Audio;
-                        if(codec2Audio){
+            this.ws.addEventListener('close', () => {
+                this.isWebsocketConnected = false;
+                this.leaveCall();
+                this.updateCallsList();
+            });
 
-                            // get mode and encoded audio from protobuf
-                            const mode = Codec2AudioMode.valuesById[codec2Audio.mode].replace("MODE_", "");
-                            const encoded = new Uint8Array(codec2Audio.encoded);
+            this.ws.addEventListener('error', (error) => {
+                console.log(error);
+            });
 
-                            // update ui
-                            this.remoteAudioCodec = "Codec2 Mode " + mode;
+            // listen to audio from call
+            this.ws.onmessage = async (event) => {
 
-                            // do nothing if muted
-                            if(this.isSoundMuted){
-                                return;
-                            }
+                // get audio call payload bytes from websocket message
+                const payload = new Uint8Array(await event.data.arrayBuffer());
 
-                            // decode codec2 audio
-                            const decoded = await Codec2Lib.runDecode(mode, encoded);
+                // update stats
+                this.rxBytes += payload.length;
 
-                            // convert decoded codec2 to wav audio
-                            const wavAudio = await Codec2Lib.rawToWav(decoded);
+                // decode audio call payload
+                const audioCallPayload = AudioCallPayload.decode(payload);
 
-                            // play wav audio buffer
-                            let audioCtx = new AudioContext()
-                            const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
-                            const sampleSource = audioCtx.createBufferSource();
-                            sampleSource.buffer = audioBuffer;
-                            sampleSource.connect(audioCtx.destination)
-                            sampleSource.start(0);
+                // handle audio data
+                const audioData = audioCallPayload.audioData;
+                if(audioData){
 
+                    // handle codec2 encoded audio
+                    const codec2Audio = audioData.codec2Audio;
+                    if(codec2Audio){
+
+                        // get mode and encoded audio from protobuf
+                        const mode = Codec2AudioMode.valuesById[codec2Audio.mode].replace("MODE_", "");
+                        const encoded = new Uint8Array(codec2Audio.encoded);
+
+                        // update ui
+                        this.remoteAudioCodec = "Codec2 Mode " + mode;
+
+                        // do nothing if muted
+                        if(this.isSoundMuted){
+                            return;
                         }
+
+                        // decode codec2 audio
+                        const decoded = await Codec2Lib.runDecode(mode, encoded);
+
+                        // convert decoded codec2 to wav audio
+                        const wavAudio = await Codec2Lib.rawToWav(decoded);
+
+                        // play wav audio buffer
+                        let audioCtx = new AudioContext()
+                        const audioBuffer = await audioCtx.decodeAudioData(wavAudio.buffer);
+                        const sampleSource = audioCtx.createBufferSource();
+                        sampleSource.buffer = audioBuffer;
+                        sampleSource.connect(audioCtx.destination)
+                        sampleSource.start(0);
 
                     }
 
-                };
-
-            },
-            async hangupCall(callHash) {
-
-                // confirm user wants to hang up call
-                if(!confirm("Are you sure you want to hang up this call?")){
-                    return;
                 }
 
-                try {
+            };
 
-                    // hangup call
-                    await axios.get(`/api/v1/calls/${callHash}/hangup`);
+        },
+        async hangupCall(callHash) {
 
-                    // reload calls list
-                    await this.updateCallsList();
+            // confirm user wants to hang up call
+            if(!confirm("Are you sure you want to hang up this call?")){
+                return;
+            }
 
-                    // disconnect websocket
-                    this.ws.close();
+            try {
 
-                } catch(e) {
-                    // ignore error hanging up call
-                }
+                // hangup call
+                await axios.get(`/api/v1/calls/${callHash}/hangup`);
 
-            },
-            leaveCall: function() {
+                // reload calls list
+                await this.updateCallsList();
 
                 // disconnect websocket
-                if(this.ws){
-                    this.ws.close();
-                }
+                this.ws.close();
 
-                // disconnect media stream source
-                if(this.mediaStreamSource){
-                    this.mediaStreamSource.disconnect();
-                }
+            } catch(e) {
+                // ignore error hanging up call
+            }
 
-                // stop using microphone
-                if(this.microphoneMediaStream){
-                    this.microphoneMediaStream.getTracks().forEach(track => track.stop());
-                }
-
-                // disconnect the audio worklet node
-                if(this.audioWorkletNode){
-                    this.audioWorkletNode.disconnect();
-                }
-
-                // close audio context
-                if(this.audioContext && this.audioContext.state !== "closed"){
-                    this.audioContext.close();
-                }
-
-            },
-            async startRecordingMicrophone(onAudioAvailable) {
-                try {
-
-                    // load audio worklet module
-                    this.audioContext = new AudioContext({ sampleRate: this.sampleRate });
-                    await this.audioContext.audioWorklet.addModule('assets/js/codec2-emscripten/processor.js');
-                    this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
-
-                    // handle audio received from audio worklet
-                    this.audioWorkletNode.port.onmessage = async (event) => {
-
-                        // convert audio received from worklet processor to wav
-                        const buffer = this.encodeWAV(event.data, this.sampleRate);
-
-                        // convert codec mode string from ui, to expected mode
-                        const codecMode = this.codecMode.replace("MODE_", "");
-
-                        // convert wav audio to codec2
-                        const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
-                        const encoded = await Codec2Lib.runEncode(codecMode, rawBuffer);
-
-                        // pass encoded audio to callback
-                        onAudioAvailable(codecMode, new Uint8Array(encoded.buffer));
-
-                    };
-
-                    // request access to the microphone
-                    this.microphoneMediaStream = await navigator.mediaDevices.getUserMedia({
-                        audio: true,
-                    });
-
-                    // send mic audio to audio worklet
-                    this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.microphoneMediaStream);
-                    this.mediaStreamSource.connect(this.audioWorkletNode);
-
-                } catch(e) {
-                    alert(e);
-                    console.log(e);
-                }
-            },
-            encodeWAV: function(samples, sampleRate = 8000, numChannels = 1) {
-
-                const buffer = new ArrayBuffer(44 + samples.length * 2);
-                const view = new DataView(buffer);
-
-                // RIFF chunk descriptor
-                this.writeString(view, 0, 'RIFF');
-                view.setUint32(4, 36 + samples.length * 2, true); // file length
-                this.writeString(view, 8, 'WAVE');
-
-                // fmt sub-chunk
-                this.writeString(view, 12, 'fmt ');
-                view.setUint32(16, 16, true); // sub-chunk size
-                view.setUint16(20, 1, true); // audio format (1 = PCM)
-                view.setUint16(22, numChannels, true); // number of channels
-                view.setUint32(24, sampleRate, true); // sample rate
-                view.setUint32(28, sampleRate * numChannels * 2, true); // byte rate
-                view.setUint16(32, numChannels * 2, true); // block align
-                view.setUint16(34, 16, true); // bits per sample
-
-                // data sub-chunk
-                this.writeString(view, 36, 'data');
-                view.setUint32(40, samples.length * 2, true); // data chunk length
-
-                // write the PCM samples
-                this.floatTo16BitPCM(view, 44, samples);
-
-                return buffer;
-
-            },
-            writeString: function(view, offset, string) {
-                for(let i = 0; i < string.length; i++){
-                    view.setUint8(offset + i, string.charCodeAt(i));
-                }
-            },
-            floatTo16BitPCM: function(output, offset, input) {
-                for(let i = 0; i < input.length; i++, offset += 2){
-                    const s = Math.max(-1, Math.min(1, input[i]));
-                    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-                }
-            },
-            formatBytes: function(bytes) {
-
-                if(bytes === 0){
-                    return '0 Bytes';
-                }
-
-                const k = 1024;
-                const decimals = 0;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
-
-            },
-            async getConfig() {
-                try {
-
-                    // fetch calls
-                    const response = await axios.get("/api/v1/config");
-
-                    // update ui
-                    this.config = response.data.config;
-                    this.myAudioCallAddressHash = response.data.config.audio_call_address_hash;
-
-                } catch(e) {
-                    // do nothing on error
-                    console.error(e);
-                }
-            },
-            async updateCallsList() {
-                try {
-
-                    // fetch calls
-                    const response = await axios.get("/api/v1/calls");
-
-                    // update ui
-                    this.audioCalls = response.data.audio_calls;
-
-                } catch(e) {
-                    // do nothing on error
-                }
-            },
-            async updateCall(callHash) {
-
-                // clear previous call
-                this.audioCall = null;
-
-                try {
-
-                    // fetch call
-                    const response = await window.axios.get(`/api/v1/calls/${callHash}`);
-
-                    // update ui
-                    this.audioCall = response.data.audio_call;
-
-                } catch(e) {
-                    console.log(e);
-                }
-
-            },
-            async deleteCall(callHash) {
-
-                // confirm user wants to delete call
-                if(!confirm("Are you sure you want to delete this call?")){
-                    return;
-                }
-
-                try {
-
-                    // delete call
-                    await window.axios.delete(`/api/v1/calls/${callHash}`);
-
-                    // update ui
-                    await this.updateCallsList()
-
-                } catch(e) {
-                    // do nothing on error
-                }
-
-            },
-            async clearCallHistory() {
-
-                // confirm user wants to clear call history
-                if(!confirm("Are you sure you want to clear your call history?")){
-                    return;
-                }
-
-                try {
-
-                    // clear call history
-                    await window.axios.post(`/api/v1/calls/clear-call-history`);
-
-                    // update ui
-                    await this.updateCallsList()
-
-                } catch(e) {
-                    // do nothing on error
-                }
-
-            },
-            async announce() {
-                try {
-                    await window.axios.get(`/api/v1/announce`);
-                } catch(e) {
-                    alert("failed to announce");
-                    console.log(e);
-                }
-            },
         },
-        computed: {
-            activeAudioCalls: function() {
-                return this.audioCalls.filter((audioCall) => {
-                    return audioCall.is_active;
-                });
-            },
-            inactiveAudioCalls: function() {
-                return this.audioCalls.filter((audioCall) => {
-                   return !audioCall.is_active;
-                });
-            },
+        leaveCall: function() {
+
+            // disconnect websocket
+            if(this.ws){
+                this.ws.close();
+            }
+
+            // disconnect media stream source
+            if(this.mediaStreamSource){
+                this.mediaStreamSource.disconnect();
+            }
+
+            // stop using microphone
+            if(this.microphoneMediaStream){
+                this.microphoneMediaStream.getTracks().forEach(track => track.stop());
+            }
+
+            // disconnect the audio worklet node
+            if(this.audioWorkletNode){
+                this.audioWorkletNode.disconnect();
+            }
+
+            // close audio context
+            if(this.audioContext && this.audioContext.state !== "closed"){
+                this.audioContext.close();
+            }
+
         },
-    }).mount('#app');
+        async startRecordingMicrophone(onAudioAvailable) {
+            try {
+
+                // load audio worklet module
+                this.audioContext = new AudioContext({ sampleRate: this.sampleRate });
+                await this.audioContext.audioWorklet.addModule('assets/js/codec2-emscripten/processor.js');
+                this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
+
+                // handle audio received from audio worklet
+                this.audioWorkletNode.port.onmessage = async (event) => {
+
+                    // convert audio received from worklet processor to wav
+                    const buffer = this.encodeWAV(event.data, this.sampleRate);
+
+                    // convert codec mode string from ui, to expected mode
+                    const codecMode = this.codecMode.replace("MODE_", "");
+
+                    // convert wav audio to codec2
+                    const rawBuffer = await Codec2Lib.audioFileToRaw(buffer, "audio.wav");
+                    const encoded = await Codec2Lib.runEncode(codecMode, rawBuffer);
+
+                    // pass encoded audio to callback
+                    onAudioAvailable(codecMode, new Uint8Array(encoded.buffer));
+
+                };
+
+                // request access to the microphone
+                this.microphoneMediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                });
+
+                // send mic audio to audio worklet
+                this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.microphoneMediaStream);
+                this.mediaStreamSource.connect(this.audioWorkletNode);
+
+            } catch(e) {
+                alert(e);
+                console.log(e);
+            }
+        },
+        encodeWAV: function(samples, sampleRate = 8000, numChannels = 1) {
+
+            const buffer = new ArrayBuffer(44 + samples.length * 2);
+            const view = new DataView(buffer);
+
+            // RIFF chunk descriptor
+            this.writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true); // file length
+            this.writeString(view, 8, 'WAVE');
+
+            // fmt sub-chunk
+            this.writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true); // sub-chunk size
+            view.setUint16(20, 1, true); // audio format (1 = PCM)
+            view.setUint16(22, numChannels, true); // number of channels
+            view.setUint32(24, sampleRate, true); // sample rate
+            view.setUint32(28, sampleRate * numChannels * 2, true); // byte rate
+            view.setUint16(32, numChannels * 2, true); // block align
+            view.setUint16(34, 16, true); // bits per sample
+
+            // data sub-chunk
+            this.writeString(view, 36, 'data');
+            view.setUint32(40, samples.length * 2, true); // data chunk length
+
+            // write the PCM samples
+            this.floatTo16BitPCM(view, 44, samples);
+
+            return buffer;
+
+        },
+        writeString: function(view, offset, string) {
+            for(let i = 0; i < string.length; i++){
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        },
+        floatTo16BitPCM: function(output, offset, input) {
+            for(let i = 0; i < input.length; i++, offset += 2){
+                const s = Math.max(-1, Math.min(1, input[i]));
+                output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+        },
+        formatBytes: function(bytes) {
+
+            if(bytes === 0){
+                return '0 Bytes';
+            }
+
+            const k = 1024;
+            const decimals = 0;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+
+        },
+        async getConfig() {
+            try {
+
+                // fetch calls
+                const response = await axios.get("/api/v1/config");
+
+                // update ui
+                this.config = response.data.config;
+                this.myAudioCallAddressHash = response.data.config.audio_call_address_hash;
+
+            } catch(e) {
+                // do nothing on error
+                console.error(e);
+            }
+        },
+        async updateCallsList() {
+            try {
+
+                // fetch calls
+                const response = await axios.get("/api/v1/calls");
+
+                // update ui
+                this.audioCalls = response.data.audio_calls;
+
+            } catch(e) {
+                // do nothing on error
+            }
+        },
+        async updateCall(callHash) {
+
+            // clear previous call
+            this.audioCall = null;
+
+            try {
+
+                // fetch call
+                const response = await window.axios.get(`/api/v1/calls/${callHash}`);
+
+                // update ui
+                this.audioCall = response.data.audio_call;
+
+            } catch(e) {
+                console.log(e);
+            }
+
+        },
+        async deleteCall(callHash) {
+
+            // confirm user wants to delete call
+            if(!confirm("Are you sure you want to delete this call?")){
+                return;
+            }
+
+            try {
+
+                // delete call
+                await window.axios.delete(`/api/v1/calls/${callHash}`);
+
+                // update ui
+                await this.updateCallsList()
+
+            } catch(e) {
+                // do nothing on error
+            }
+
+        },
+        async clearCallHistory() {
+
+            // confirm user wants to clear call history
+            if(!confirm("Are you sure you want to clear your call history?")){
+                return;
+            }
+
+            try {
+
+                // clear call history
+                await window.axios.post(`/api/v1/calls/clear-call-history`);
+
+                // update ui
+                await this.updateCallsList()
+
+            } catch(e) {
+                // do nothing on error
+            }
+
+        },
+        async announce() {
+            try {
+                await window.axios.get(`/api/v1/announce`);
+            } catch(e) {
+                alert("failed to announce");
+                console.log(e);
+            }
+        },
+    },
+    computed: {
+        activeAudioCalls: function() {
+            return this.audioCalls.filter((audioCall) => {
+                return audioCall.is_active;
+            });
+        },
+        inactiveAudioCalls: function() {
+            return this.audioCalls.filter((audioCall) => {
+                return !audioCall.is_active;
+            });
+        },
+    },
+}
 </script>
-</body>
-</html>
