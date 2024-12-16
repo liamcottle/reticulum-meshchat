@@ -99,6 +99,7 @@
   "dependencies": {
     "@mdi/js": "^7.4.47",
     "@vitejs/plugin-vue": "^5.1.2",
+    "axios": "^1.7.9",
     "click-outside-vue3": "^4.0.1",
     "electron-prompt": "^1.7.0",
     "mitt": "^3.0.1",
