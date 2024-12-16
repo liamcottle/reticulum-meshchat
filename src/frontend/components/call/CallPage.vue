@@ -258,7 +258,7 @@
 </template>
 
 <script>
-
+import protobuf from "protobufjs";
 export default {
     name: 'CallPage',
     data() {
