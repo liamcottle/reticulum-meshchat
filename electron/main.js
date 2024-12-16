@@ -108,6 +108,25 @@ app.whenReady().then(async () => {
         },
     });
 
+    // open external links in default web browser instead of electron
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+
+        // open internal MeshChat urls starting with http://localhost in electron
+        // this is needed for pages such as call.html that open in a new window
+        if(url.startsWith("http://localhost")){
+            return {
+                action: "allow",
+            };
+        }
+
+        // fallback to opening any other url in external browser
+        shell.openExternal(url);
+        return {
+            action: "deny",
+        };
+
+    });
+
     // navigate to loading page
     await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
