@@ -278,6 +278,49 @@ npm run dist
 
 Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
+## Running via Docker
+
+A very simple example of a `docker-compose.yml` file, generating and storing conifg in a volume would look like this:
+
+```yaml
+services:
+  reticulum-meshchat:
+    container_name: reticulum-meshchat
+    image: ghcr.io/g7ufo/reticulum-meshchat:latest
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    volumes:
+      reticulum-config:/config
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+
+volumes:
+  reticulum-config:
+```
+
+By default the container will run `python meshchat.py --host=0.0.0.0 --reticulum-config-dir=/config/.reticulum --headless`. This can be overridden (for example to use an existing conifg) like:
+
+```yaml
+services:
+  reticulum-meshchat:
+    container_name: reticulum-meshchat
+    image: ghcr.io/g7ufo/reticulum-meshchat:latest
+    command:
+      - python
+      - meshchat.py
+      - --host=0.0.0.0
+      - --reticulum-config-dir=/a_different_path/.reticulum
+      - --headless
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    volumes:
+      .reticulum:/a_different_path/.reticulum
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+```
+
 ## Local Development
 
 I normally run the following commands to work on the project locally.
