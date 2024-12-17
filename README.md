@@ -258,25 +258,6 @@ python meshchat.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeG
 
 > NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
 
-## Build Electron Application
-
-Reticulum MeshChat can be run from source via a command line, as explained above, or as a standalone application.
-
-To run as a standalone application, we need to compile the python script and dependencies to an executable with [cxfreeze](https://github.com/marcelotduarte/cx_Freeze) and then build an [Electron](https://www.electronjs.org/) app which includes a bundled browser that can interact with the compiled python executable.
-
-This allows for the entire application to be run by double clicking a single file without the need for a user to manually install python, nor run any commands in a command line application.
-
-To build a `.exe` when running on Windows or a `.dmg` when running on a Mac, run the following;
-
-```
-pip install -r requirements.txt
-npm install
-npm run dist
-```
-
-> Note: cxfreeze only supports building an executable for the current platform. You will need a Mac to build for Mac, and a Windows PC to build for Windows.
-
-Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
 ## Running via Docker
 
@@ -314,7 +295,7 @@ services:
       - /dev/ttyUSB0:/dev/ttyUSB0
 ```
 
-By default the container will run `python meshchat.py --host=0.0.0.0 --reticulum-config-dir=/config/.reticulum --headless`. This can be overridden like:
+By default the container will run `python meshchat.py --host=0.0.0.0 --reticulum-config-dir=/config/.reticulum --storage-dir=/config/.reticulum/storage --headless`. This can be overridden like:
 
 ```yaml
 services:
@@ -326,7 +307,8 @@ services:
       - python
       - meshchat.py
       - --host=0.0.0.0
-      - --reticulum-config-dir=/maybe-a-different-path/.reticulum
+      - --reticulum-config-dir=/config/.reticulum
+      - --storage-dir=/config/storage
       - --headless
       - --some-other-argument
       - --and-another-argument
@@ -334,10 +316,30 @@ services:
     ports:
       - 8000:8000
     volumes:
-      .reticulum:/maybe-a-different-path/.reticulum
+      .my-different-storage-dir:/config/storage
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
 ```
+
+## Build Electron Application
+
+Reticulum MeshChat can be run from source via a command line, as explained above, or as a standalone application.
+
+To run as a standalone application, we need to compile the python script and dependencies to an executable with [cxfreeze](https://github.com/marcelotduarte/cx_Freeze) and then build an [Electron](https://www.electronjs.org/) app which includes a bundled browser that can interact with the compiled python executable.
+
+This allows for the entire application to be run by double clicking a single file without the need for a user to manually install python, nor run any commands in a command line application.
+
+To build a `.exe` when running on Windows or a `.dmg` when running on a Mac, run the following;
+
+```
+pip install -r requirements.txt
+npm install
+npm run dist
+```
+
+> Note: cxfreeze only supports building an executable for the current platform. You will need a Mac to build for Mac, and a Windows PC to build for Windows.
+
+Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
 ## Local Development
 
