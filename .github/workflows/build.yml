@@ -2,123 +2,123 @@ name: Build and Release
 
 on:
   push:
-    # tags:
-    #   - '*'
+    tags:
+      - "*"
 
 jobs:
-  # build_windows:
-  #   runs-on: windows-latest
-  #   permissions:
-  #     contents: write
-  #   steps:
-  #     - name: Clone Repo
-  #       uses: actions/checkout@v1
+  build_windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v1
 
-  #     - name: Install NodeJS
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 18
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
 
-  #     - name: Install Python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.11'
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-  #     - name: Install Python Deps
-  #       run: pip install -r requirements.txt
+      - name: Install Python Deps
+        run: pip install -r requirements.txt
 
-  #     - name: Install NodeJS Deps
-  #       run: npm install
+      - name: Install NodeJS Deps
+        run: npm install
 
-  #     - name: Build Electron App
-  #       run: npm run dist
+      - name: Build Electron App
+        run: npm run dist
 
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         draft: true
-  #         allowUpdates: true
-  #         replacesArtifacts: true
-  #         omitDraftDuringUpdate: true
-  #         omitNameDuringUpdate: true
-  #         artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          draft: true
+          allowUpdates: true
+          replacesArtifacts: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
 
-  # build_mac:
-  #   runs-on: macos-13
-  #   permissions:
-  #     contents: write
-  #   steps:
-  #     - name: Clone Repo
-  #       uses: actions/checkout@v1
+  build_mac:
+    runs-on: macos-13
+    permissions:
+      contents: write
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v1
 
-  #     - name: Install NodeJS
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 18
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
 
-  #     - name: Install Python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.11'
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-  #     - name: Install Python Deps
-  #       run: pip install -r requirements.txt
+      - name: Install Python Deps
+        run: pip install -r requirements.txt
 
-  #     - name: Install NodeJS Deps
-  #       run: npm install
+      - name: Install NodeJS Deps
+        run: npm install
 
-  #     - name: Build Electron App
-  #       run: npm run dist
+      - name: Build Electron App
+        run: npm run dist
 
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         draft: true
-  #         allowUpdates: true
-  #         replacesArtifacts: true
-  #         omitDraftDuringUpdate: true
-  #         omitNameDuringUpdate: true
-  #         artifacts: "dist/*-mac.dmg"
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          draft: true
+          allowUpdates: true
+          replacesArtifacts: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifacts: "dist/*-mac.dmg"
 
-  # build_linux:
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: write
-  #   steps:
-  #     - name: Clone Repo
-  #       uses: actions/checkout@v1
+  build_linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v1
 
-  #     - name: Install NodeJS
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 18
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
 
-  #     - name: Install Python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.11'
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-  #     - name: Install Python Deps
-  #       run: pip install -r requirements.txt
+      - name: Install Python Deps
+        run: pip install -r requirements.txt
 
-  #     - name: Install NodeJS Deps
-  #       run: npm install
+      - name: Install NodeJS Deps
+        run: npm install
 
-  #     - name: Build Electron App
-  #       run: npm run dist
+      - name: Build Electron App
+        run: npm run dist
 
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         draft: true
-  #         allowUpdates: true
-  #         replacesArtifacts: true
-  #         omitDraftDuringUpdate: true
-  #         omitNameDuringUpdate: true
-  #         artifacts: "dist/*-linux.AppImage"
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          draft: true
+          allowUpdates: true
+          replacesArtifacts: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifacts: "dist/*-linux.AppImage"
 
   build_docker:
     runs-on: ubuntu-latest
@@ -149,9 +149,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/g7ufo/reticulum-meshchat:latest
-            ghcr.io/g7ufo/reticulum-meshchat:${{ github.ref_name }}
+            ghcr.io/liamcottle/reticulum-meshchat:latest
+            ghcr.io/liamcottle/reticulum-meshchat:${{ github.ref_name }}
           labels: |
             org.opencontainers.image.title=Reticulum MeshChat
             org.opencontainers.image.description=Docker image for Reticulum MeshChat
-            org.opencontainers.image.url=https://github.com/g7ufo/reticulum-meshchat/pkgs/container/reticulum-meshchat/
+            org.opencontainers.image.url=https://github.com/liamcottle/reticulum-meshchat/pkgs/container/reticulum-meshchat/

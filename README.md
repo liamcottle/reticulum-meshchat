@@ -280,43 +280,61 @@ Once completed, you should have a `.exe` or a `.dmg` in the `dist` folder.
 
 ## Running via Docker
 
-A very simple example of a `docker-compose.yml` file, generating and storing conifg in a volume would look like this:
+A very simple example of a `docker-compose.yml` file, generating and passing the .reticulum directory to the container:
 
 ```yaml
 services:
   reticulum-meshchat:
     container_name: reticulum-meshchat
-    image: ghcr.io/g7ufo/reticulum-meshchat:latest
+    image: ghcr.io/liamcottle/reticulum-meshchat:latest
+    pull_policy: always
     restart: unless-stopped
     ports:
       - 8000:8000
     volumes:
-      reticulum-config:/config
+      .reticulum:/config/.reticulum
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
-
-volumes:
-  reticulum-config:
 ```
 
-By default the container will run `python meshchat.py --host=0.0.0.0 --reticulum-config-dir=/config/.reticulum --headless`. This can be overridden (for example to use an existing conifg) like:
+To make the web interface accessible from the host, you will need to include the IP (or `0.0.0.0` for all) in the `ports` command, for example:
 
 ```yaml
 services:
   reticulum-meshchat:
     container_name: reticulum-meshchat
-    image: ghcr.io/g7ufo/reticulum-meshchat:latest
+    image: ghcr.io/liamcottle/reticulum-meshchat:latest
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - 0.0.0.0:8000:8000
+    volumes:
+      .reticulum:/config/.reticulum
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+```
+
+By default the container will run `python meshchat.py --host=0.0.0.0 --reticulum-config-dir=/config/.reticulum --headless`. This can be overridden like:
+
+```yaml
+services:
+  reticulum-meshchat:
+    container_name: reticulum-meshchat
+    image: ghcr.io/liamcottle/reticulum-meshchat:latest
+    pull_policy: always
     command:
       - python
       - meshchat.py
       - --host=0.0.0.0
-      - --reticulum-config-dir=/a_different_path/.reticulum
+      - --reticulum-config-dir=/maybe-a-different-path/.reticulum
       - --headless
+      - --some-other-argument
+      - --and-another-argument
     restart: unless-stopped
     ports:
       - 8000:8000
     volumes:
-      .reticulum:/a_different_path/.reticulum
+      .reticulum:/maybe-a-different-path/.reticulum
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
 ```
