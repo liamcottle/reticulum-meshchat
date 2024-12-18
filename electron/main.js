@@ -111,9 +111,10 @@ app.whenReady().then(async () => {
     // open external links in default web browser instead of electron
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
 
-        // open internal MeshChat urls starting with http://localhost in electron
-        // this is needed for pages such as call.html that open in a new window
-        if(url.startsWith("http://localhost")){
+        // we want to open call.html in a new electron window
+        // but all other target="_blank" links should open in the system web browser
+        // we don't want /rnode-flasher/index.html to open in electron, otherwise user can't select usb devices...
+        if(url.startsWith("http://localhost") && url.includes("/call.html")){
             return {
                 action: "allow",
             };

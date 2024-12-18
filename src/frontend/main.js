@@ -65,6 +65,11 @@ const router = createRouter({
             path: '/settings',
             component: defineAsyncComponent(() => import("./components/settings/SettingsPage.vue")),
         },
+        {
+            name: "tools",
+            path: '/tools',
+            component: defineAsyncComponent(() => import("./components/tools/ToolsPage.vue")),
+        },
     ],
 })
 
