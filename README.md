@@ -329,7 +329,7 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 **LXMF Router**
 
 - By default, the LXMF router rejects inbound messages larger than 1mb.
-- LXMF clients are likely to have [this default limit](https://github.com/markqvist/LXMF/blob/master/LXMF/LXMRouter.py#L35), and your messages will [fail to send](https://github.com/markqvist/LXMF/blob/master/LXMF/LXMRouter.py#L1026).
+- LXMF clients are likely to have [this default limit](https://github.com/markqvist/LXMF/blob/c426c93cc5d63a3dae18ad2264b1299a7ad9e46c/LXMF/LXMRouter.py#L38), and your messages will [fail to send](https://github.com/markqvist/LXMF/blob/c426c93cc5d63a3dae18ad2264b1299a7ad9e46c/LXMF/LXMRouter.py#L1428).
 - MeshChat has increased the receive limit to 10mb to allow for larger attachments.
 
 ## License
