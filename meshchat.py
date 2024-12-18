@@ -2009,6 +2009,16 @@ class ReticulumMeshChat:
         elif announce.aspect == "nomadnetwork.node":
             display_name = self.parse_nomadnetwork_node_display_name(announce.app_data)
 
+        # find lxmf user icon from database
+        lxmf_user_icon = None
+        db_lxmf_user_icon = database.LxmfUserIcon.get_or_none(database.LxmfUserIcon.destination_hash == announce.destination_hash)
+        if db_lxmf_user_icon is not None:
+            lxmf_user_icon = {
+                "icon_name": db_lxmf_user_icon.icon_name,
+                "foreground_colour": db_lxmf_user_icon.foreground_colour,
+                "background_colour": db_lxmf_user_icon.background_colour,
+            }
+
         return {
             "id": announce.id,
             "destination_hash": announce.destination_hash,
@@ -2018,6 +2028,7 @@ class ReticulumMeshChat:
             "app_data": announce.app_data,
             "display_name": display_name,
             "custom_display_name": self.get_custom_destination_display_name(announce.destination_hash),
+            "lxmf_user_icon": lxmf_user_icon,
             "created_at": announce.created_at,
             "updated_at": announce.updated_at,
         }
