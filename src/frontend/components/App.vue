@@ -4,10 +4,8 @@
         <!-- header -->
         <div class="flex bg-white dark:bg-zinc-950 p-2 border-gray-300 dark:border-zinc-900 border-b">
             <div class="flex w-full">
-                <div class="hidden sm:flex my-auto border border-gray-300 rounded-md w-10 h-10 mr-3 shadow bg-gray-50">
-                    <div class="flex mx-auto my-auto">
-                        <img class="w-9 h-9" src="/assets/images/logo.png" />
-                    </div>
+                <div class="hidden sm:flex my-auto w-10 h-10 mr-2">
+                    <img class="w-10 h-10" src="/assets/images/logo-chat-bubble.png" />
                 </div>
                 <div class="my-auto">
                     <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">Reticulum MeshChat</div>
