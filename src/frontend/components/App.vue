@@ -8,9 +8,9 @@
                     <img class="w-10 h-10" src="/assets/images/logo-chat-bubble.png" />
                 </div>
                 <div class="my-auto">
-                    <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">Reticulum MeshChat</div>
+                    <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">MeshChat</div>
                     <div class="text-sm text-gray-700 dark:text-white">
-                        Developed by
+                        Built by
                         <a target="_blank" href="https://liamcottle.com" class="text-blue-500 dark:text-blue-400">Liam Cottle</a>
                     </div>
                 </div>
