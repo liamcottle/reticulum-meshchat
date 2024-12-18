@@ -2,10 +2,10 @@
     <div :class="{'dark': config?.theme === 'dark'}" class="h-screen w-full flex flex-col">
 
         <!-- header -->
-        <div class="flex bg-white dark:bg-zinc-950 p-2 border-gray-300 dark:border-zinc-900 border-b">
+        <div class="flex bg-white dark:bg-zinc-950 p-2 border-gray-300 dark:border-zinc-900 border-b min-h-16">
             <div class="flex w-full">
-                <div class="hidden sm:flex my-auto w-10 h-10 mr-2">
-                    <img class="w-10 h-10" src="/assets/images/logo-chat-bubble.png" />
+                <div class="hidden sm:flex my-auto w-12 h-12 mr-2">
+                    <img class="w-12 h-12" src="/assets/images/logo-chat-bubble.png" />
                 </div>
                 <div class="my-auto">
                     <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">MeshChat</div>
