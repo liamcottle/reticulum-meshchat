@@ -544,28 +544,30 @@ class RNode {
             0x02, // enable pairing
         ]);
 
-        // attempt to get bluetooth pairing pin
-        try {
+        // todo: listen for packets, pin will be available once user has initiated pairing from Android device
 
-            // read response from device
-            const [ command, ...pinBytes ] = await this.readFromSerialPort(5000);
-            if(command !== this.CMD_BT_PIN){
-                throw `unexpected command response: ${command}`;
-            }
-
-            // convert 4 bytes to 32bit integer
-            const pin = pinBytes[0] << 24 | pinBytes[1] << 16 | pinBytes[2] << 8 | pinBytes[3];
-
-            // todo: remove logs
-            console.log(pinBytes);
-            console.log(pin);
-
-            // todo: convert to string
-            return pin;
-
-        } catch(error) {
-            throw `failed to get bluetooth pin: ${error}`;
-        }
+        // // attempt to get bluetooth pairing pin
+        // try {
+        //
+        //     // read response from device
+        //     const [ command, ...pinBytes ] = await this.readFromSerialPort(5000);
+        //     if(command !== this.CMD_BT_PIN){
+        //         throw `unexpected command response: ${command}`;
+        //     }
+        //
+        //     // convert 4 bytes to 32bit integer
+        //     const pin = pinBytes[0] << 24 | pinBytes[1] << 16 | pinBytes[2] << 8 | pinBytes[3];
+        //
+        //     // todo: remove logs
+        //     console.log(pinBytes);
+        //     console.log(pin);
+        //
+        //     // todo: convert to string
+        //     return pin;
+        //
+        // } catch(error) {
+        //     throw `failed to get bluetooth pin: ${error}`;
+        // }
 
     }
 

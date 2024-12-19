@@ -104,20 +104,27 @@
                     <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${flashingProgress}%`}"></div>
                 </div>
             </div>
+
         </div>
 
-        <div v-if="selectedProduct && selectedModel && recommendedFirmwareFilename" class="border-t px-2 py-1">
-            <div class="text-sm">You should flash: {{ recommendedFirmwareFilename }}</div>
-        </div>
-
-        <div class="border-t px-2 py-1">
-            <div class="text-sm space-x-1">
+        <div class="border-t px-2 py-1 text-sm">
+            <div>
+                <span>Download Firmware</span>
+                <span v-if="selectedProduct && selectedModel && recommendedFirmwareFilename">: {{ recommendedFirmwareFilename }}</span>
+            </div>
+            <div class="space-x-1">
                 <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">Official Firmware</a>
                 <span>•</span>
                 <a target="_blank" href="https://github.com/liberatedsystems/RNode_Firmware_CE/releases" class="text-blue-500 hover:underline">CE Firmware</a>
                 <span>•</span>
                 <a target="_blank" href="https://github.com/attermann/microReticulum_Firmware/releases" class="text-blue-500 hover:underline">Transport Node Firmware</a>
             </div>
+        </div>
+
+        <div class="border-t px-2 py-1 text-sm">
+            <div>Common error messages</div>
+            <div>• Hardware Failure: You need to provision the eeprom in step 3.</div>
+            <div>• Firmware Corrupt: You need to set the firmware hash in step 4.</div>
         </div>
 
     </div>
@@ -129,9 +136,18 @@
         </div>
 
         <div class="p-3">
-            <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            <button v-if="!isProvisioning" @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Provision
             </button>
+            <div v-else class="flex items-center space-x-1">
+                <div class="mr-1">
+                    <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <div>Provisioning: please wait...</div>
+            </div>
         </div>
 
     </div>
@@ -143,9 +159,18 @@
         </div>
 
         <div class="p-3">
-            <button @click="setFirmwareHash" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            <button v-if="!isSettingFirmwareHash" @click="setFirmwareHash" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Set Firmware Hash
             </button>
+            <div v-else class="flex items-center space-x-1">
+                <div class="mr-1">
+                    <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <div>Setting Firmware Hash: please wait...</div>
+            </div>
         </div>
 
     </div>
@@ -153,7 +178,97 @@
     <div class="border bg-gray-50 rounded shadow">
 
         <div class="border-b px-2 py-1">
-            5. Configure TNC Mode (optional)
+            5. Done
+        </div>
+
+        <div class="px-2 py-1 text-sm">
+            <div>• If you made it this far, and all previous steps were successful, your RNode should be ready to use.</div>
+            <div>• To use RNode with <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat" class="text-blue-500 hover:underline">MeshChat</a>, you will need to add an <u>RNodeInterface</u> in the <u>Interfaces → Add Interface</u> page.</div>
+            <div>• To use RNode with <a target="_blank" href="https://github.com/markqvist/Sideband/" class="text-blue-500 hover:underline">Sideband</a>, you will need to configure it in <u>Hardware → RNode</u> and enable <u>Connectivity → Connect via RNode</u>.</div>
+            <div>• You must restart MeshChat and Sideband for interface setting changes to take effect, otherwise nothing will happen!</div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Advanced Tools
+        </div>
+
+        <div class="p-3">
+
+            <div class="space-x-1">
+                <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Detect RNode
+                </button>
+                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Reboot RNode
+                </button>
+                <button @click="readDisplay" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Read Display
+                </button>
+                <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Dump EEPROM
+                </button>
+                <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
+                    Wipe EEPROM
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
+
+            <!-- show rnode display if available -->
+            <div v-if="rnodeDisplayImage">
+                <img :src="rnodeDisplayImage" class="h-28"/>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Configure Bluetooth (optional)
+        </div>
+
+        <div class="border-b px-2 py-1 text-sm">
+            <div>• Bluetooth is not supported on all devices.</div>
+            <div>• Some devices use Bluetooth Classic, and some use BLE (Bluetooth Low Energy)</div>
+            <div>• Put the RNode into Bluetooth Pairing mode, then connect to it from Android Bluetooth settings.</div>
+            <div>• Once you have initiated a pair request from Android, a PIN should show on the RNode display.</div>
+            <div>• In Sideband you will need to enable <u>Connect using Bluetooth</u> in <u>Hardware → RNode</u>.</div>
+            <div>• If your device uses BLE you will also need to enable <u>Device requires BLE</u> in <u>Hardware → RNode</u>.</div>
+            <div>• Don't forget to restart Sideband for the setting changes to take effect, otherwise nothing will happen!</div>
+        </div>
+
+        <div class="p-3">
+            <div class="space-x-1">
+                <button @click="enableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Enable
+                </button>
+                <button @click="disableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Disable
+                </button>
+                <button @click="startBluetoothPairing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Start Pairing
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Configure TNC Mode (optional)
+        </div>
+
+        <div class="border-b px-2 py-1 text-sm">
+            <div>• TNC mode allows an RNode to be used as a KISS compatible TNC over the Serial Port.</div>
+            <div>• This mode makes it usable with amateur radio software that can talk to a KISS TNC over a serial port.</div>
+            <div>• You must leave TNC mode disabled when using RNode with apps like MeshChat or Sideband.</div>
         </div>
 
         <div class="p-3">
@@ -197,73 +312,6 @@
 
     </div>
 
-    <div class="border bg-gray-50 rounded shadow">
-
-        <div class="border-b px-2 py-1">
-            6. Configure Bluetooth (optional)
-        </div>
-
-        <div class="p-3">
-
-            <div class="space-x-1">
-                <button @click="enableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Enable
-                </button>
-                <button @click="disableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Disable
-                </button>
-                <button @click="startBluetoothPairing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Start Pairing
-                </button>
-            </div>
-
-        </div>
-
-        <div class="border-t px-2 py-1">
-            <div class="text-sm space-x-1">
-                Bluetooth is not supported on all devices. <span class="text-red-500">Pairing is untested and may not work!</span>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="border bg-gray-50 rounded shadow">
-
-        <div class="border-b px-2 py-1">
-            Extra Tools
-        </div>
-
-        <div class="p-3">
-
-            <div class="space-x-1">
-                <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Detect RNode
-                </button>
-                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Reboot RNode
-                </button>
-                <button @click="readDisplay" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Read Display
-                </button>
-                <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Dump EEPROM
-                </button>
-                <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
-                    Wipe EEPROM
-                </button>
-            </div>
-
-            <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
-
-            <!-- show rnode display if available -->
-            <div v-if="rnodeDisplayImage">
-                <img :src="rnodeDisplayImage" class="h-28"/>
-            </div>
-
-        </div>
-
-    </div>
-
 </div>
 
 <!-- setup web-serial-polyfill -->
@@ -288,6 +336,9 @@
 
                 isFlashing: false,
                 flashingProgress: 0,
+
+                isProvisioning: false,
+                isSettingFirmwareHash: false,
 
                 rnodeDisplayImage: null,
 
@@ -1220,7 +1271,7 @@
                 }
 
                 // ask user to confirm
-                if(!confirm("Are you sure you want to wipe the eeprom on this device?")){
+                if(!confirm("Are you sure you want to wipe the eeprom on this device? This will take about 30 seconds. An alert will show when the eeprom wipe has finished.")){
                     return;
                 }
 
@@ -1287,141 +1338,153 @@
 
                 console.log("device is not provisioned yet, doing it now...");
 
-                // determine device info
-                // todo implement ui to configure these values
-                const product = this.selectedProduct.id;
-                // use mapped_id if available, else fallback to id, some devices use the same model, but different firmware file
-                const model = this.selectedModel.mapped_id ?? this.selectedModel.id;
-                const hardwareRevision = 0x1;
-                const serialNumber = 1;
-                const timestampInSeconds = Math.floor(Date.now() / 1000);
-                const serialBytes = this.packInt(serialNumber);
-                const timestampBytes = this.packInt(timestampInSeconds);
+                this.isProvisioning = true;
 
-                // compute device info checksum
-                const checksum = Utils.md5([
-                    product,
-                    model,
-                    hardwareRevision,
-                    ...serialBytes,
-                    ...timestampBytes,
-                ]);
+                try {
 
-                console.log("checksum", checksum);
+                    // determine device info
+                    // todo implement ui to configure these values
+                    const product = this.selectedProduct.id;
+                    // use mapped_id if available, else fallback to id, some devices use the same model, but different firmware file
+                    const model = this.selectedModel.mapped_id ?? this.selectedModel.id;
+                    const hardwareRevision = 0x1;
+                    const serialNumber = 1;
+                    const timestampInSeconds = Math.floor(Date.now() / 1000);
+                    const serialBytes = this.packInt(serialNumber);
+                    const timestampBytes = this.packInt(timestampInSeconds);
 
-                // write device info to eeprom
-                console.log("writing device info");
-                await rnode.writeRom(ROM.ADDR_PRODUCT, product);
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                await rnode.writeRom(ROM.ADDR_MODEL, model);
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                await rnode.writeRom(ROM.ADDR_HW_REV, hardwareRevision);
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                await rnode.writeRom(ROM.ADDR_SERIAL, serialBytes[0]);
-                await rnode.writeRom(ROM.ADDR_SERIAL + 1, serialBytes[1]);
-                await rnode.writeRom(ROM.ADDR_SERIAL + 2, serialBytes[2]);
-                await rnode.writeRom(ROM.ADDR_SERIAL + 3, serialBytes[3]);
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                await rnode.writeRom(ROM.ADDR_MADE, timestampBytes[0]);
-                await rnode.writeRom(ROM.ADDR_MADE + 1, timestampBytes[1]);
-                await rnode.writeRom(ROM.ADDR_MADE + 2, timestampBytes[2]);
-                await rnode.writeRom(ROM.ADDR_MADE + 3, timestampBytes[3]);
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                console.log("writing device info: done");
+                    // compute device info checksum
+                    const checksum = Utils.md5([
+                        product,
+                        model,
+                        hardwareRevision,
+                        ...serialBytes,
+                        ...timestampBytes,
+                    ]);
 
-                // write checksum to eeprom
-                console.log("writing checksum");
-                for(var i = 0; i < 16; i++){
-                    await rnode.writeRom(ROM.ADDR_CHKSUM + i, checksum[i]);
+                    console.log("checksum", checksum);
+
+                    // write device info to eeprom
+                    console.log("writing device info");
+                    await rnode.writeRom(ROM.ADDR_PRODUCT, product);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_MODEL, model);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_HW_REV, hardwareRevision);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_SERIAL, serialBytes[0]);
+                    await rnode.writeRom(ROM.ADDR_SERIAL + 1, serialBytes[1]);
+                    await rnode.writeRom(ROM.ADDR_SERIAL + 2, serialBytes[2]);
+                    await rnode.writeRom(ROM.ADDR_SERIAL + 3, serialBytes[3]);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_MADE, timestampBytes[0]);
+                    await rnode.writeRom(ROM.ADDR_MADE + 1, timestampBytes[1]);
+                    await rnode.writeRom(ROM.ADDR_MADE + 2, timestampBytes[2]);
+                    await rnode.writeRom(ROM.ADDR_MADE + 3, timestampBytes[3]);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing device info: done");
+
+                    // write checksum to eeprom
+                    console.log("writing checksum");
+                    for(var i = 0; i < 16; i++){
+                        await rnode.writeRom(ROM.ADDR_CHKSUM + i, checksum[i]);
+                    }
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing checksum: done");
+
+                    // write signature to eeprom
+                    // fixme: actually implement signature, for now it's just zeroed out
+                    console.log("writing signature");
+                    for(var i = 0; i < 128; i++){
+                        // await rnode.writeRom(ROM.ADDR_SIGNATURE + i, signature[i]);
+                        await rnode.writeRom(ROM.ADDR_SIGNATURE + i, 0x00); // fixme: fake signature
+                    }
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing signature: done");
+
+                    // write info lock byte to eeprom
+                    console.log("writing lock byte");
+                    await rnode.writeRom(ROM.ADDR_INFO_LOCK, ROM.INFO_LOCK_BYTE);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing lock byte: done");
+
+                    // todo get partition hash from release.json OR directly from the firmware.bin
+                    // partition_filename = fw_filename.replace(".zip", ".bin")
+                    // partition_hash = get_partition_hash(rnode.platform, UPD_DIR+"/"+selected_version+"/"+partition_filename)
+
+                    // todo set firmware hash in eeprom
+                    // RNS.log("Setting firmware checksum...")
+                    // rnode.set_firmware_hash(partition_hash)
+
+                    // RNS.log("Generating a new device signing key...")
+                    // device_signer = RNS.Identity()
+                    // device_signer.to_file(FWD_DIR+"/device.key")
+                    // RNS.log("Device signing key written to "+str(FWD_DIR+"/device.key"))
+
+                    // if not os.path.isfile(FWD_DIR+"/signing.key"):
+                    // RNS.log("Generating a new EEPROM signing key...")
+                    // private_key = rsa.generate_private_key(
+                    //     public_exponent=65537,
+                    //     key_size=1024,
+                    //     backend=default_backend()
+                    // )
+                    // private_bytes = private_key.private_bytes(
+                    //     encoding=serialization.Encoding.DER,
+                    //     format=serialization.PrivateFormat.PKCS8,
+                    //     encryption_algorithm=serialization.NoEncryption()
+                    // )
+                    // public_key = private_key.public_key()
+                    // public_bytes = public_key.public_bytes(
+                    //     encoding=serialization.Encoding.DER,
+                    //     format=serialization.PublicFormat.SubjectPublicKeyInfo
+                    // )
+
+                    // can get partition hash from releases.json
+                    // partition_hash = bytes.fromhex(release_info.split()[1])
+
+                    // await rnode.indicateFirmwareUpdate();
+                    // await rnode.setFirmwareHash(partition_hash);
+
+                    // todo get signing.key
+
+                    // file = open(key_path, "rb")
+                    // private_bytes = file.read()
+                    // file.close()
+                    // private_key = serialization.load_der_private_key(
+                    //     private_bytes,
+                    //     password=None,
+                    //     backend=default_backend()
+                    // )
+                    // public_key = private_key.public_key()
+                    // public_bytes = public_key.public_bytes(
+                    //     encoding=serialization.Encoding.DER,
+                    //     format=serialization.PublicFormat.SubjectPublicKeyInfo
+                    // )
+                    // signature = private_key.sign(
+                    //     checksum,
+                    //     padding.PSS(
+                    //         mgf=padding.MGF1(hashes.SHA256()),
+                    //         salt_length=padding.PSS.MAX_LENGTH
+                    //     ),
+                    //     hashes.SHA256()
+                    // )
+
+                    // wait a bit for eeprom writes to complete
+                    await Utils.sleepMillis(5000);
+
+                    // done
+                    await rnode.reset();
+
+                    alert("device has been provisioned!");
+
+                } catch(e) {
+                    console.log(e);
+                    alert("failed to provision, please try again");
                 }
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                console.log("writing checksum: done");
 
-                // write signature to eeprom
-                // fixme: actually implement signature, for now it's just zeroed out
-                console.log("writing signature");
-                for(var i = 0; i < 128; i++){
-                    // await rnode.writeRom(ROM.ADDR_SIGNATURE + i, signature[i]);
-                    await rnode.writeRom(ROM.ADDR_SIGNATURE + i, 0x00); // fixme: fake signature
-                }
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                console.log("writing signature: done");
+                this.isProvisioning = false;
 
-                // write info lock byte to eeprom
-                console.log("writing lock byte");
-                await rnode.writeRom(ROM.ADDR_INFO_LOCK, ROM.INFO_LOCK_BYTE);
-                console.log(Utils.bytesToHex(await rnode.getRom()));
-                console.log("writing lock byte: done");
-
-                // todo get partition hash from release.json OR directly from the firmware.bin
-                // partition_filename = fw_filename.replace(".zip", ".bin")
-                // partition_hash = get_partition_hash(rnode.platform, UPD_DIR+"/"+selected_version+"/"+partition_filename)
-
-                // todo set firmware hash in eeprom
-                // RNS.log("Setting firmware checksum...")
-                // rnode.set_firmware_hash(partition_hash)
-
-                // RNS.log("Generating a new device signing key...")
-                // device_signer = RNS.Identity()
-                // device_signer.to_file(FWD_DIR+"/device.key")
-                // RNS.log("Device signing key written to "+str(FWD_DIR+"/device.key"))
-
-                // if not os.path.isfile(FWD_DIR+"/signing.key"):
-                // RNS.log("Generating a new EEPROM signing key...")
-                // private_key = rsa.generate_private_key(
-                //     public_exponent=65537,
-                //     key_size=1024,
-                //     backend=default_backend()
-                // )
-                // private_bytes = private_key.private_bytes(
-                //     encoding=serialization.Encoding.DER,
-                //     format=serialization.PrivateFormat.PKCS8,
-                //     encryption_algorithm=serialization.NoEncryption()
-                // )
-                // public_key = private_key.public_key()
-                // public_bytes = public_key.public_bytes(
-                //     encoding=serialization.Encoding.DER,
-                //     format=serialization.PublicFormat.SubjectPublicKeyInfo
-                // )
-
-                // can get partition hash from releases.json
-                // partition_hash = bytes.fromhex(release_info.split()[1])
-
-                // await rnode.indicateFirmwareUpdate();
-                // await rnode.setFirmwareHash(partition_hash);
-
-                // todo get signing.key
-
-                // file = open(key_path, "rb")
-                // private_bytes = file.read()
-                // file.close()
-                // private_key = serialization.load_der_private_key(
-                //     private_bytes,
-                //     password=None,
-                //     backend=default_backend()
-                // )
-                // public_key = private_key.public_key()
-                // public_bytes = public_key.public_bytes(
-                //     encoding=serialization.Encoding.DER,
-                //     format=serialization.PublicFormat.SubjectPublicKeyInfo
-                // )
-                // signature = private_key.sign(
-                //     checksum,
-                //     padding.PSS(
-                //         mgf=padding.MGF1(hashes.SHA256()),
-                //         salt_length=padding.PSS.MAX_LENGTH
-                //     ),
-                //     hashes.SHA256()
-                // )
-
-                // wait a bit for eeprom writes to complete
-                await Utils.sleepMillis(5000);
-
-                // done
-                await rnode.reset();
                 await rnode.close();
-
-                alert("device has been provisioned!");
 
             },
             async setFirmwareHash() {
@@ -1449,25 +1512,36 @@
                     return;
                 }
 
-                // todo: this works, but we should be calculating the firmware hash from the file, and not giving the board what it already knows
-                console.log("setting firmware hash");
-                await rnode.setFirmwareHash(await rnode.getFirmwareHash());
-                console.log("setting firmware hash: done");
+                this.isSettingFirmwareHash = true;
 
-                // wait a bit for eeprom writes to complete
-                await Utils.sleepMillis(5000);
-
-                // reset board if it didn't do it automatically
                 try {
-                    await rnode.reset();
+
+                    // todo: this works, but we should be calculating the firmware hash from the file, and not giving the board what it already knows
+                    console.log("setting firmware hash");
+                    await rnode.setFirmwareHash(await rnode.getFirmwareHash());
+                    console.log("setting firmware hash: done");
+
+                    // wait a bit for eeprom writes to complete
+                    await Utils.sleepMillis(5000);
+
+                    // reset board if it didn't do it automatically
+                    try {
+                        await rnode.reset();
+                    } catch(e) {
+                        console.log("couldn't auto reset board, probably did it automatically...");
+                    }
+
+                    alert("firmware hash has been set!");
+
                 } catch(e) {
-                    console.log("couldn't auto reset board, probably did it automatically...");
+                    console.log(e);
+                    alert("failed to set firmware hash, please try again")
                 }
+
+                this.isSettingFirmwareHash = false;
 
                 // done
                 await rnode.close();
-
-                alert("firmware hash has been set!");
 
             },
             async enableTncMode() {
@@ -1671,10 +1745,11 @@
                     console.log("start bluetooth pairing");
                     const pin = await rnode.startBluetoothPairing();
                     console.log("start bluetooth pairing: done");
-                    alert(`Bluetooth Pairing Pin: ${pin}`);
                 } catch(error) {
                     alert(error);
                 }
+
+                alert("RNode should now be in Bluetooth Pairing mode. A pin will be shown on the screen when you pair with it from Android bluetooth settings.");
 
                 // done
                 await rnode.close();
