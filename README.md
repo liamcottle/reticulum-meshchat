@@ -256,6 +256,69 @@ python meshchat.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeG
 
 > NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
 
+
+## Running via Docker
+
+A very simple example of a `docker-compose.yml` file, generating and passing the .reticulum directory to the container:
+
+```yaml
+services:
+  reticulum-meshchat:
+    container_name: reticulum-meshchat
+    image: ghcr.io/liamcottle/reticulum-meshchat:latest
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    volumes:
+      .reticulum:/config/.reticulum
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+```
+
+To make the web interface accessible from the host, you will need to include the IP (or `0.0.0.0` for all) in the `ports` command, for example:
+
+```yaml
+services:
+  reticulum-meshchat:
+    container_name: reticulum-meshchat
+    image: ghcr.io/liamcottle/reticulum-meshchat:latest
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - 0.0.0.0:8000:8000
+    volumes:
+      .reticulum:/config/.reticulum
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+```
+
+By default the container will run `python meshchat.py --host=0.0.0.0 --reticulum-config-dir=/config/.reticulum --storage-dir=/config/.reticulum/storage --headless`. This can be overridden like:
+
+```yaml
+services:
+  reticulum-meshchat:
+    container_name: reticulum-meshchat
+    image: ghcr.io/liamcottle/reticulum-meshchat:latest
+    pull_policy: always
+    command:
+      - python
+      - meshchat.py
+      - --host=0.0.0.0
+      - --reticulum-config-dir=/config/.reticulum
+      - --storage-dir=/config/storage
+      - --headless
+      - --some-other-argument
+      - --and-another-argument
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    volumes:
+      .my-different-storage-dir:/config/storage
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+```
+
 ## Build Electron Application
 
 Reticulum MeshChat can be run from source via a command line, as explained above, or as a standalone application.
