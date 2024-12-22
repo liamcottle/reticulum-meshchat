@@ -7,10 +7,10 @@ class AnnounceHandler:
         self.received_announce_callback = received_announce_callback
 
     # we will just pass the received announce back to the provided callback
-    def received_announce(self, destination_hash, announced_identity, app_data):
+    def received_announce(self, destination_hash, announced_identity, app_data, announce_packet_hash):
         try:
             # handle received announce
-            self.received_announce_callback(self.aspect_filter, destination_hash, announced_identity, app_data)
+            self.received_announce_callback(self.aspect_filter, destination_hash, announced_identity, app_data, announce_packet_hash)
         except:
             # ignore failure to handle received announce
             pass

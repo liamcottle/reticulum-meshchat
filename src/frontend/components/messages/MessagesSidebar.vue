@@ -90,7 +90,20 @@
                         </div>
                         <div>
                             <div class="text-gray-900 dark:text-gray-100">{{ peer.custom_display_name ?? peer.display_name }}</div>
-                            <div class="text-gray-500 dark:text-gray-400 text-sm">{{ formatTimeAgo(peer.updated_at) }}</div>
+                            <div class="flex space-x-1 text-gray-500 dark:text-gray-400 text-sm">
+
+                                <!-- time ago -->
+                                <span class="flex my-auto space-x-1">
+                                    {{ formatTimeAgo(peer.updated_at) }}
+                                </span>
+
+                                <!-- snr (only shown for peers directly heard on rf)  -->
+                                <span v-if="peer.snr != null && (peer.hops === 0 || peer.hops === 1)" class="flex my-auto space-x-1">
+                                    <span>•</span>
+                                    <span>SNR {{ peer.snr }}dB</span>
+                                </span>
+
+                            </div>
                         </div>
                     </div>
                 </div>
