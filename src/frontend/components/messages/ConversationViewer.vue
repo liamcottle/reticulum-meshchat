@@ -17,26 +17,36 @@
                     </div>
                     <div class="my-auto font-semibold dark:text-white" :title="selectedPeer.display_name">{{ selectedPeer.custom_display_name ?? selectedPeer.display_name }}</div>
                 </div>
-                <div class="text-sm dark:text-zinc-300"><{{ selectedPeer.destination_hash }}></div>
-                <div class="flex space-x-1 text-gray-500 dark:text-gray-400 text-sm">
+                <div class="text-sm dark:text-zinc-300">
 
-                    <!-- hops away -->
-                    <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="flex my-auto text-gray-500 cursor-pointer">
-                        <span v-if="selectedPeerPath.hops === 0 || selectedPeerPath.hops === 1">Direct</span>
-                        <span v-else>{{ selectedPeerPath.hops }} hops away</span>
-                    </span>
+                    <!-- destination hash -->
+                    <div class="inline-block mr-1">
+                        <div><{{ selectedPeer.destination_hash }}></div>
+                    </div>
 
-                    <!-- snr -->
-                    <span v-if="selectedPeerSignalMetrics?.snr != null" class="flex my-auto space-x-1">
-                        <span v-if="selectedPeerPath">•</span>
-                        <span>SNR {{ selectedPeerSignalMetrics.snr }}</span>
-                    </span>
+                    <div class="inline-block">
+                        <div class="flex space-x-1">
 
-                    <!-- stamp cost -->
-                    <span v-if="selectedPeerLxmfStampInfo?.stamp_cost" class="flex my-auto space-x-1">
-                        <span v-if="selectedPeerPath || selectedPeerSignalMetrics?.snr != null">•</span>
-                        <span @click="onStampInfoClick(selectedPeerLxmfStampInfo)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampInfo.stamp_cost }}</span>
-                    </span>
+                            <!-- hops away -->
+                            <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="flex my-auto cursor-pointer">
+                                <span v-if="selectedPeerPath.hops === 0 || selectedPeerPath.hops === 1">Direct</span>
+                                <span v-else>{{ selectedPeerPath.hops }} hops away</span>
+                            </span>
+
+                            <!-- snr -->
+                            <span v-if="selectedPeerSignalMetrics?.snr != null" class="flex my-auto space-x-1">
+                                <span v-if="selectedPeerPath">•</span>
+                                <span>SNR {{ selectedPeerSignalMetrics.snr }}</span>
+                            </span>
+
+                            <!-- stamp cost -->
+                            <span v-if="selectedPeerLxmfStampInfo?.stamp_cost" class="flex my-auto space-x-1">
+                                <span v-if="selectedPeerPath || selectedPeerSignalMetrics?.snr != null">•</span>
+                                <span @click="onStampInfoClick(selectedPeerLxmfStampInfo)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampInfo.stamp_cost }}</span>
+                            </span>
+
+                        </div>
+                    </div>
 
                 </div>
             </div>
