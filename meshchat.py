@@ -1047,6 +1047,66 @@ class ReticulumMeshChat:
                 },
             })
 
+        # get signal metrics for a destination by checking the latest announce or lxmf message received from them
+        @routes.get("/api/v1/destination/{destination_hash}/signal-metrics")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # signal metrics to return
+            snr = None
+            rssi = None
+            quality = None
+            updated_at = None
+
+            # get latest announce from database for the provided destination hash
+            latest_announce = (database.Announce.select()
+                               .where(database.Announce.destination_hash == destination_hash)
+                               .get_or_none())
+
+            # get latest lxmf message from database sent to us from the provided destination hash
+            latest_lxmf_message = (database.LxmfMessage.select()
+                                   .where(database.LxmfMessage.destination_hash == self.local_lxmf_destination.hexhash)
+                                   .where(database.LxmfMessage.source_hash == destination_hash)
+                                   .order_by(database.LxmfMessage.id.desc())
+                                   .get_or_none())
+
+            # determine when latest announce was received
+            latest_announce_at = None
+            if latest_announce is not None:
+                latest_announce_at = datetime.fromisoformat(latest_announce.updated_at)
+
+            # determine when latest lxmf message was received
+            latest_lxmf_message_at = None
+            if latest_lxmf_message is not None:
+                latest_lxmf_message_at = datetime.fromisoformat(latest_lxmf_message.created_at)
+
+            # get signal metrics from latest announce
+            if latest_announce is not None:
+                snr = latest_announce.snr
+                rssi = latest_announce.rssi
+                quality = latest_announce.quality
+                # using updated_at from announce because this is when the latest announce was received
+                updated_at = latest_announce.updated_at
+
+            # get signal metrics from latest lxmf message if it's more recent than the announce
+            if latest_lxmf_message is not None and latest_lxmf_message_at > latest_announce_at:
+                snr = latest_lxmf_message.snr
+                rssi = latest_lxmf_message.rssi
+                quality = latest_lxmf_message.quality
+                # using created_at from lxmf message because this is when the message was received
+                updated_at = latest_lxmf_message.created_at
+
+            return web.json_response({
+                "signal_metrics": {
+                    "snr": snr,
+                    "rssi": rssi,
+                    "quality": quality,
+                    "updated_at": updated_at,
+                },
+            })
+
         # pings an lxmf.delivery destination by sending empty data and waiting for the recipient to send a proof back
         # the lxmf router proves all received packets, then drops them if they can't be decoded as lxmf messages
         # this allows us to ping/probe any active lxmf.delivery destination and get rtt/snr/rssi data on demand
