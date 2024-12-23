@@ -20,6 +20,7 @@
                 <div class="text-sm dark:text-zinc-300">
                     <{{ selectedPeer.destination_hash }}>
                     <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span>
+                    <span v-if="selectedPeerSignalMetrics && selectedPeerSignalMetrics.snr != null"> • <span>SNR {{ selectedPeerSignalMetrics.snr }}</span></span>
                     <span v-if="selectedPeerLxmfStampInfo && selectedPeerLxmfStampInfo.stamp_cost"> • <span @click="onStampInfoClick(selectedPeerLxmfStampInfo)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampInfo.stamp_cost }}</span></span>
                 </div>
             </div>
@@ -393,6 +394,7 @@ export default {
 
             selectedPeerPath: null,
             selectedPeerLxmfStampInfo: null,
+            selectedPeerSignalMetrics: null,
 
             lxmfMessagesRequestSequence: 0,
             chatItems: [],
@@ -471,6 +473,7 @@ export default {
 
             this.getPeerPath();
             this.getPeerLxmfStampInfo();
+            this.getPeerSignalMetrics();
 
             // load 1 page of previous messages
             await this.loadPrevious();
@@ -540,15 +543,18 @@ export default {
             const json = JSON.parse(message.data);
             switch(json.type){
                 case 'announce': {
-                    // update stamp info if an announce is received from the selected peer
+                    // update stamp info and signal metrics if an announce is received from the selected peer
                     if(json.announce.destination_hash === this.selectedPeer?.destination_hash){
+                        await this.getPeerPath();
                         await this.getPeerLxmfStampInfo();
+                        await this.getPeerSignalMetrics();
                     }
                     break;
                 }
                 case 'lxmf.delivery': {
                     this.onLxmfMessageReceived(json.lxmf_message);
                     await this.getPeerPath();
+                    await this.getPeerSignalMetrics();
                     break;
                 }
                 case 'lxmf_message_created': {
@@ -664,6 +670,26 @@ export default {
 
                     // update ui
                     this.selectedPeerLxmfStampInfo = response.data.lxmf_stamp_info;
+
+                } catch(e) {
+                    console.log(e);
+                }
+            }
+
+        },
+        async getPeerSignalMetrics() {
+
+            // clear previous signal metrics
+            this.selectedPeerSignalMetrics = null;
+
+            if(this.selectedPeer){
+                try {
+
+                    // get signal metrics
+                    const response = await window.axios.get(`/api/v1/destination/${this.selectedPeer.destination_hash}/signal-metrics`);
+
+                    // update ui
+                    this.selectedPeerSignalMetrics = response.data.signal_metrics;
 
                 } catch(e) {
                     console.log(e);
