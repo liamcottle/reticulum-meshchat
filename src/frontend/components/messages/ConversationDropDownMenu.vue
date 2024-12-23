@@ -19,6 +19,14 @@
                 </DropDownMenuItem>
             </a>
 
+            <!-- ping button -->
+            <DropDownMenuItem @click="onPingDestination">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5">
+                    <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" clip-rule="evenodd" />
+                </svg>
+                <span>Ping Destination</span>
+            </DropDownMenuItem>
+
             <!-- set custom display name button -->
             <DropDownMenuItem @click="onSetCustomDisplayName">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5">
@@ -83,6 +91,25 @@ export default {
         },
         async onSetCustomDisplayName() {
             this.$emit("set-custom-display-name");
+        },
+        async onPingDestination() {
+            try {
+
+                // ping destination
+                const response = await window.axios.get(`/api/v1/ping/${this.peer.destination_hash}/lxmf.delivery`, {
+                    params: {
+                        timeout: 30,
+                    },
+                });
+
+                // show result
+                DialogUtils.alert(response.data.message);
+
+            } catch(e) {
+                console.log(e);
+                const message = e.response?.data?.message ?? "Ping failed. Try again later";
+                DialogUtils.alert(message);
+            }
         },
     },
 }

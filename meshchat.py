@@ -1163,8 +1163,9 @@ class ReticulumMeshChat:
                     "message": f"Ping failed. Timed out after {timeout_seconds} seconds.",
                 }, status=503)
 
-            # get number of hops to destination
-            hops = RNS.Transport.hops_to(destination_hash)
+            # get number of hops to destination and back from destination
+            hops_there = RNS.Transport.hops_to(destination_hash)
+            hops_back = receipt.proof_packet.hops
 
             # get rssi
             rssi = receipt.proof_packet.rssi
@@ -1187,10 +1188,11 @@ class ReticulumMeshChat:
             rtt_duration_string = f"{rtt_milliseconds} ms"
 
             return web.json_response({
-                "message": f"Valid reply from {receipt.destination.hash.hex()}: hops={hops} time={rtt_duration_string}",
+                "message": f"Valid reply from {receipt.destination.hash.hex()}\nDuration: {rtt_duration_string}\nHops There: {hops_there}\nHops Back: {hops_back}",
                 "ping_result": {
                     "rtt": rtt,
-                    "hops": hops,
+                    "hops_there": hops_there,
+                    "hops_back": hops_back,
                     "rssi": rssi,
                     "snr": snr,
                     "quality": quality,
