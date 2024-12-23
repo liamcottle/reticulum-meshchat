@@ -143,22 +143,6 @@ class ReticulumMeshChat:
         self.audio_call_manager = AudioCallManager(identity=self.identity)
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
 
-        # create a new implementation of RNS.Transport.packet_filter so we can intercept every incoming packet
-        original_packet_filter = RNS.Transport.packet_filter
-        def hooked_packet_filter(packet):
-
-            # fire callback
-            try:
-                self.on_rns_packet(packet)
-            except:
-                pass
-
-            # call original implementation
-            return original_packet_filter(packet)
-
-        # hook original implementation
-        RNS.Transport.packet_filter = staticmethod(hooked_packet_filter)
-
         # start background thread for auto announce loop
         thread = threading.Thread(target=asyncio.run, args=(self.announce_loop(),))
         thread.daemon = True
@@ -238,10 +222,6 @@ class ReticulumMeshChat:
 
             # wait 1 second before next loop
             await asyncio.sleep(1)
-
-    # called for every received packet
-    def on_rns_packet(self, packet: RNS.Packet):
-        print(f"on_rns_packet: {packet.get_hash().hex()}: snr={packet.get_snr()}, rssi={packet.get_rssi()}, link_quality={packet.get_q()}")
 
     # uses the provided destination hash as the active propagation node
     def set_active_propagation_node(self, destination_hash: str | None):
