@@ -97,12 +97,9 @@
                                     {{ formatTimeAgo(peer.updated_at) }}
                                 </span>
 
-                                <!-- hops away -->
-                                <span v-if="peer.hops != null && peer.hops !== 128" class="flex my-auto text-sm text-gray-500 space-x-1">
-                                    <span>•</span>
-                                    <span v-if="peer.hops === 0">Direct</span>
-                                    <span v-else-if="peer.hops === 1">1 Hop</span>
-                                    <span v-else>{{ peer.hops }} Hops</span>
+                                <!-- hops away (only shown for peers heard directly) -->
+                                <span v-if="peer.hops != null && (peer.hops === 0 || peer.hops === 1)" class="flex my-auto text-sm text-gray-500 space-x-1">
+                                    <span>• Direct</span>
                                 </span>
 
                                 <!-- snr (only shown for peers directly heard on rf) -->
