@@ -63,7 +63,11 @@
 
             <!-- dropdown menu -->
             <div class="ml-auto my-auto mx-2">
-                <ConversationDropDownMenu v-if="selectedPeer" :peer="selectedPeer" @conversation-deleted="onConversationDeleted"/>
+                <ConversationDropDownMenu
+                    v-if="selectedPeer"
+                    :peer="selectedPeer"
+                    @conversation-deleted="onConversationDeleted"
+                    @set-custom-display-name="updateCustomDisplayName"/>
             </div>
 
             <!-- close button -->
