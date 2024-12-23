@@ -505,6 +505,9 @@ export default {
             // reset
             this.chatItems = [];
             this.hasMorePrevious = true;
+            this.selectedPeerPath = null;
+            this.selectedPeerLxmfStampInfo = null;
+            this.selectedPeerSignalMetrics = null;
             if(!this.selectedPeer){
                 return;
             }
@@ -676,10 +679,6 @@ export default {
             }
         },
         async getPeerPath() {
-
-            // clear previous known path
-            this.selectedPeerPath = null;
-
             if(this.selectedPeer){
                 try {
 
@@ -691,15 +690,14 @@ export default {
 
                 } catch(e) {
                     console.log(e);
+
+                    // clear previous known path
+                    this.selectedPeerPath = null;
+
                 }
             }
-
         },
         async getPeerLxmfStampInfo() {
-
-            // clear previous stamp info
-            this.selectedPeerLxmfStampInfo = null;
-
             if(this.selectedPeer){
                 try {
 
@@ -710,16 +708,16 @@ export default {
                     this.selectedPeerLxmfStampInfo = response.data.lxmf_stamp_info;
 
                 } catch(e) {
+
                     console.log(e);
+
+                    // clear previous stamp info
+                    this.selectedPeerLxmfStampInfo = null;
+
                 }
             }
-
         },
         async getPeerSignalMetrics() {
-
-            // clear previous signal metrics
-            this.selectedPeerSignalMetrics = null;
-
             if(this.selectedPeer){
                 try {
 
@@ -730,10 +728,14 @@ export default {
                     this.selectedPeerSignalMetrics = response.data.signal_metrics;
 
                 } catch(e) {
+
                     console.log(e);
+
+                    // clear previous signal metrics
+                    this.selectedPeerSignalMetrics = null;
+
                 }
             }
-
         },
         onDestinationPathClick(path) {
             DialogUtils.alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
