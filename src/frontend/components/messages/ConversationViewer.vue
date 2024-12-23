@@ -46,7 +46,7 @@
                             <!-- snr -->
                             <span v-if="selectedPeerSignalMetrics?.snr != null" class="flex my-auto space-x-1">
                                 <span v-if="selectedPeerPath">•</span>
-                                <span>SNR {{ selectedPeerSignalMetrics.snr }}</span>
+                                <span @click="onSignalMetricsClick(selectedPeerSignalMetrics)" class="cursor-pointer">SNR {{ selectedPeerSignalMetrics.snr }}</span>
                             </span>
 
                             <!-- stamp cost -->
@@ -774,6 +774,13 @@ export default {
 
             DialogUtils.alert(`This peer has enabled stamp security.\n\nYour device must have a ticket, or solve an automated proof of work task each time you send them a message.\n\nTime per message: ${estimatedTimeForStamp}`);
 
+        },
+        onSignalMetricsClick(signalMetrics) {
+            DialogUtils.alert([
+                `Signal Quality: ${ signalMetrics.quality ?? '???' }%`,
+                `RSSI: ${ signalMetrics.rssi ?? '???' }dBm`,
+                `SNR: ${ signalMetrics.snr  ?? '???'}dB`,
+            ].join("\n"));
         },
         scrollMessagesToBottom: function() {
             // next tick waits for the ui to have the new elements added
