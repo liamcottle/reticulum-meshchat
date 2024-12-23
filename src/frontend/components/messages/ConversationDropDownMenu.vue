@@ -102,8 +102,34 @@ export default {
                     },
                 });
 
+                const pingResult = response.data.ping_result;
+                const rttMilliseconds = (pingResult.rtt * 1000).toFixed(3);
+                const rttDurationString = `${rttMilliseconds} ms`;
+
+                const info = [
+                    `Valid reply from ${this.peer.destination_hash}`,
+                    `Duration: ${rttDurationString}`,
+                    `Hops There: ${pingResult.hops_there}`,
+                    `Hops Back: ${pingResult.hops_back}`,
+                ];
+
+                // add signal quality if available
+                if(pingResult.quality != null){
+                    info.push(`Signal Quality: ${pingResult.quality}%`);
+                }
+
+                // add rssi if available
+                if(pingResult.rssi != null){
+                    info.push(`RSSI: ${pingResult.rssi}dBm`);
+                }
+
+                // add snr if available
+                if(pingResult.snr != null){
+                    info.push(`SNR: ${pingResult.snr}dB`);
+                }
+
                 // show result
-                DialogUtils.alert(response.data.message);
+                DialogUtils.alert(info.join("\n"));
 
             } catch(e) {
                 console.log(e);
