@@ -160,6 +160,9 @@ export default {
                     info.push(`quality=${pingResult.quality}%`);
                 }
 
+                // add receiving interface
+                info.push(`via=${pingResult.receiving_interface}`);
+
                 // update ui
                 this.addPingResult(info.join(" "));
 

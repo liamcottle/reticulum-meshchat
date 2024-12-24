@@ -1196,6 +1196,7 @@ class ReticulumMeshChat:
                     "rssi": rssi,
                     "snr": snr,
                     "quality": quality,
+                    "receiving_interface": str(receipt.proof_packet.receiving_interface),
                 },
             })
 
