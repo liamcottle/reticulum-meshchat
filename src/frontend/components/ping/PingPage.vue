@@ -49,7 +49,7 @@
             <!-- results -->
             <div class="flex flex-col h-full bg-white dark:bg-zinc-800 rounded shadow overflow-hidden">
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Results</div>
-                <div id="results" class="flex flex-col h-full bg-black text-white p-2 overflow-y-scroll">
+                <div id="results" class="flex flex-col h-full bg-black text-white p-2 overflow-y-scroll font-mono">
                     <div v-for="pingResult of pingResults">{{ pingResult }}</div>
                 </div>
             </div>
