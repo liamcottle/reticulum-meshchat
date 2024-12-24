@@ -1047,6 +1047,23 @@ class ReticulumMeshChat:
                 },
             })
 
+        # drop path to destination
+        @routes.post("/api/v1/destination/{destination_hash}/drop-path")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # drop path
+            self.reticulum.drop_path(destination_hash)
+
+            return web.json_response({
+                "message": "Path has been dropped",
+            })
+
         # get signal metrics for a destination by checking the latest announce or lxmf message received from them
         @routes.get("/api/v1/destination/{destination_hash}/signal-metrics")
         async def index(request):

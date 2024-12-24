@@ -29,14 +29,17 @@
                     </div>
 
                     <div class="p-2 space-x-1">
-                        <button v-if="!isRunning" @click.stop="start" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                        <button v-if="!isRunning" @click="start" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
                             Start
                         </button>
-                        <button v-if="isRunning" @click.stop="stop" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                        <button v-if="isRunning" @click="stop" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
                             Stop
                         </button>
-                        <button @click.stop="clear" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                        <button @click="clear" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
                             Clear Results
+                        </button>
+                        <button @click="dropPath" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-red-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                            Drop Path
                         </button>
                     </div>
 
@@ -180,6 +183,24 @@ export default {
                 this.addPingResult(`seq=${this.seq} error=${message}`);
 
             }
+        },
+        async dropPath() {
+
+            // simple check to ensure destination hash is valid
+            if(this.destinationHash == null || this.destinationHash.length !== 32){
+                DialogUtils.alert("Invalid Destination Hash!");
+                return;
+            }
+
+            try {
+                const response = await window.axios.post(`/api/v1/destination/${this.destinationHash}/drop-path`);
+                DialogUtils.alert(response.data.message);
+            } catch(e) {
+                console.log(e);
+                const message = e.response?.data?.message ?? `Failed to drop path: ${e}`;
+                DialogUtils.alert(message);
+            }
+
         },
         addPingResult(result) {
             this.pingResults.push(result);
