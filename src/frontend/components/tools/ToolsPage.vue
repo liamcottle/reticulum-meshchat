@@ -39,7 +39,7 @@
                 </div>
                 <div class="my-auto mr-auto dark:text-gray-200">
                     <div class="font-bold">Ping</div>
-                    <div class="text-sm">Allows you to ping an lxmf.delivery destination hash</div>
+                    <div class="text-sm">Allows you to ping a destination hash.</div>
                 </div>
                 <div class="my-auto text-gray-400 group-hover:text-gray-500">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
