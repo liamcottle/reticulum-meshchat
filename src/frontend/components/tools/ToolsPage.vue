@@ -10,24 +10,6 @@
                 </div>
             </div>
 
-            <!-- rnode flasher -->
-            <a target="_blank" href="/rnode-flasher/index.html" class="group flex bg-white dark:bg-zinc-800 p-2 rounded shadow hover:bg-gray-50 dark:hover:bg-zinc-700">
-                <div class="mr-2">
-                    <div class="flex bg-gray-300 text-white rounded shadow">
-                        <img src="/rnode-flasher/reticulum_logo_512.png" class="size-14"/>
-                    </div>
-                </div>
-                <div class="my-auto mr-auto dark:text-gray-200">
-                    <div class="font-bold">RNode Flasher</div>
-                    <div class="text-sm">Flash RNode firmware to supported devices.</div>
-                </div>
-                <div class="my-auto text-gray-400 group-hover:text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
-                    </svg>
-                </div>
-            </a>
-
             <!-- ping -->
             <RouterLink :to="{ name: 'ping' }" class="group flex bg-white dark:bg-zinc-800 p-2 rounded shadow hover:bg-gray-50 dark:hover:bg-zinc-700">
                 <div class="mr-2">
@@ -47,6 +29,24 @@
                     </svg>
                 </div>
             </RouterLink>
+
+            <!-- rnode flasher -->
+            <a target="_blank" href="/rnode-flasher/index.html" class="group flex bg-white dark:bg-zinc-800 p-2 rounded shadow hover:bg-gray-50 dark:hover:bg-zinc-700">
+                <div class="mr-2">
+                    <div class="flex bg-gray-300 text-white rounded shadow">
+                        <img src="/rnode-flasher/reticulum_logo_512.png" class="size-14"/>
+                    </div>
+                </div>
+                <div class="my-auto mr-auto dark:text-gray-200">
+                    <div class="font-bold">RNode Flasher</div>
+                    <div class="text-sm">Flash RNode firmware to supported devices.</div>
+                </div>
+                <div class="my-auto text-gray-400 group-hover:text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                    </svg>
+                </div>
+            </a>
 
         </div>
     </div>
