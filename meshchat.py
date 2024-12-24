@@ -1047,6 +1047,83 @@ class ReticulumMeshChat:
                 },
             })
 
+        # drop path to destination
+        @routes.post("/api/v1/destination/{destination_hash}/drop-path")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # drop path
+            self.reticulum.drop_path(destination_hash)
+
+            return web.json_response({
+                "message": "Path has been dropped",
+            })
+
+        # get signal metrics for a destination by checking the latest announce or lxmf message received from them
+        @routes.get("/api/v1/destination/{destination_hash}/signal-metrics")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # signal metrics to return
+            snr = None
+            rssi = None
+            quality = None
+            updated_at = None
+
+            # get latest announce from database for the provided destination hash
+            latest_announce = (database.Announce.select()
+                               .where(database.Announce.destination_hash == destination_hash)
+                               .get_or_none())
+
+            # get latest lxmf message from database sent to us from the provided destination hash
+            latest_lxmf_message = (database.LxmfMessage.select()
+                                   .where(database.LxmfMessage.destination_hash == self.local_lxmf_destination.hexhash)
+                                   .where(database.LxmfMessage.source_hash == destination_hash)
+                                   .order_by(database.LxmfMessage.id.desc())
+                                   .get_or_none())
+
+            # determine when latest announce was received
+            latest_announce_at = None
+            if latest_announce is not None:
+                latest_announce_at = datetime.fromisoformat(latest_announce.updated_at)
+
+            # determine when latest lxmf message was received
+            latest_lxmf_message_at = None
+            if latest_lxmf_message is not None:
+                latest_lxmf_message_at = datetime.fromisoformat(latest_lxmf_message.created_at)
+
+            # get signal metrics from latest announce
+            if latest_announce is not None:
+                snr = latest_announce.snr
+                rssi = latest_announce.rssi
+                quality = latest_announce.quality
+                # using updated_at from announce because this is when the latest announce was received
+                updated_at = latest_announce.updated_at
+
+            # get signal metrics from latest lxmf message if it's more recent than the announce
+            if latest_lxmf_message is not None and latest_lxmf_message_at > latest_announce_at:
+                snr = latest_lxmf_message.snr
+                rssi = latest_lxmf_message.rssi
+                quality = latest_lxmf_message.quality
+                # using created_at from lxmf message because this is when the message was received
+                updated_at = latest_lxmf_message.created_at
+
+            return web.json_response({
+                "signal_metrics": {
+                    "snr": snr,
+                    "rssi": rssi,
+                    "quality": quality,
+                    "updated_at": updated_at,
+                },
+            })
+
         # pings an lxmf.delivery destination by sending empty data and waiting for the recipient to send a proof back
         # the lxmf router proves all received packets, then drops them if they can't be decoded as lxmf messages
         # this allows us to ping/probe any active lxmf.delivery destination and get rtt/snr/rssi data on demand
@@ -1103,8 +1180,9 @@ class ReticulumMeshChat:
                     "message": f"Ping failed. Timed out after {timeout_seconds} seconds.",
                 }, status=503)
 
-            # get number of hops to destination
-            hops = RNS.Transport.hops_to(destination_hash)
+            # get number of hops to destination and back from destination
+            hops_there = RNS.Transport.hops_to(destination_hash)
+            hops_back = receipt.proof_packet.hops
 
             # get rssi
             rssi = receipt.proof_packet.rssi
@@ -1127,13 +1205,15 @@ class ReticulumMeshChat:
             rtt_duration_string = f"{rtt_milliseconds} ms"
 
             return web.json_response({
-                "message": f"Valid reply from {receipt.destination.hash.hex()}: hops={hops} time={rtt_duration_string}",
+                "message": f"Valid reply from {receipt.destination.hash.hex()}\nDuration: {rtt_duration_string}\nHops There: {hops_there}\nHops Back: {hops_back}",
                 "ping_result": {
                     "rtt": rtt,
-                    "hops": hops,
+                    "hops_there": hops_there,
+                    "hops_back": hops_back,
                     "rssi": rssi,
                     "snr": snr,
                     "quality": quality,
+                    "receiving_interface": str(receipt.proof_packet.receiving_interface),
                 },
             })
 
@@ -2009,6 +2089,19 @@ class ReticulumMeshChat:
         elif announce.aspect == "nomadnetwork.node":
             display_name = self.parse_nomadnetwork_node_display_name(announce.app_data)
 
+        # find lxmf user icon from database
+        lxmf_user_icon = None
+        db_lxmf_user_icon = database.LxmfUserIcon.get_or_none(database.LxmfUserIcon.destination_hash == announce.destination_hash)
+        if db_lxmf_user_icon is not None:
+            lxmf_user_icon = {
+                "icon_name": db_lxmf_user_icon.icon_name,
+                "foreground_colour": db_lxmf_user_icon.foreground_colour,
+                "background_colour": db_lxmf_user_icon.background_colour,
+            }
+
+        # get current hops away
+        hops = RNS.Transport.hops_to(bytes.fromhex(announce.destination_hash))
+
         return {
             "id": announce.id,
             "destination_hash": announce.destination_hash,
@@ -2016,8 +2109,13 @@ class ReticulumMeshChat:
             "identity_hash": announce.identity_hash,
             "identity_public_key": announce.identity_public_key,
             "app_data": announce.app_data,
+            "hops": hops,
+            "rssi": announce.rssi,
+            "snr": announce.snr,
+            "quality": announce.quality,
             "display_name": display_name,
             "custom_display_name": self.get_custom_destination_display_name(announce.destination_hash),
+            "lxmf_user_icon": lxmf_user_icon,
             "created_at": announce.created_at,
             "updated_at": announce.updated_at,
         }
@@ -2175,7 +2273,12 @@ class ReticulumMeshChat:
         query.execute()
 
     # upserts the provided announce to the database
-    def db_upsert_announce(self, identity: RNS.Identity, destination_hash: bytes, aspect: str, app_data: bytes):
+    def db_upsert_announce(self, identity: RNS.Identity, destination_hash: bytes, aspect: str, app_data: bytes, announce_packet_hash: bytes):
+
+        # get rssi, snr and signal quality if available
+        rssi = self.reticulum.get_packet_rssi(announce_packet_hash)
+        snr = self.reticulum.get_packet_snr(announce_packet_hash)
+        quality = self.reticulum.get_packet_q(announce_packet_hash)
 
         # prepare data to insert or update
         data = {
@@ -2183,6 +2286,9 @@ class ReticulumMeshChat:
             "aspect": aspect,
             "identity_hash": identity.hash.hex(),
             "identity_public_key": base64.b64encode(identity.get_public_key()).decode("utf-8"),
+            "rssi": rssi,
+            "snr": snr,
+            "quality": quality,
             "updated_at": datetime.now(timezone.utc),
         }
 
@@ -2366,13 +2472,13 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for an audio call address
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_audio_call_announce_received(self, aspect, destination_hash, announced_identity, app_data):
+    def on_audio_call_announce_received(self, aspect, destination_hash, announced_identity, app_data, announce_packet_hash):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [call.audio]")
 
         # upsert announce to database
-        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data, announce_packet_hash)
 
         # find announce from database
         announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
@@ -2387,13 +2493,13 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for an lxmf address
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_lxmf_announce_received(self, aspect, destination_hash, announced_identity, app_data):
+    def on_lxmf_announce_received(self, aspect, destination_hash, announced_identity, app_data, announce_packet_hash):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [lxmf.delivery]")
 
         # upsert announce to database
-        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data, announce_packet_hash)
 
         # find announce from database
         announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
@@ -2412,13 +2518,13 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for an lxmf propagation node address
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_lxmf_propagation_announce_received(self, aspect, destination_hash, announced_identity, app_data):
+    def on_lxmf_propagation_announce_received(self, aspect, destination_hash, announced_identity, app_data, announce_packet_hash):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [lxmf.propagation]")
 
         # upsert announce to database
-        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data, announce_packet_hash)
 
         # find announce from database
         announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
@@ -2496,13 +2602,13 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for a nomadnet node
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_nomadnet_node_announce_received(self, aspect, destination_hash, announced_identity, app_data):
+    def on_nomadnet_node_announce_received(self, aspect, destination_hash, announced_identity, app_data, announce_packet_hash):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [nomadnetwork.node]")
 
         # upsert announce to database
-        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data)
+        self.db_upsert_announce(announced_identity, destination_hash, aspect, app_data, announce_packet_hash)
 
         # find announce from database
         announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())

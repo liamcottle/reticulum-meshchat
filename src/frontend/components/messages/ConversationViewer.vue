@@ -6,6 +6,16 @@
         <!-- header -->
         <div class="flex p-2 border-b border-gray-300 dark:border-zinc-800">
 
+            <!-- peer icon -->
+            <div class="my-auto mr-2">
+                <div v-if="selectedPeer.lxmf_user_icon" class="p-2 rounded" :style="{ 'color': selectedPeer.lxmf_user_icon.foreground_colour, 'background-color': selectedPeer.lxmf_user_icon.background_colour }">
+                    <MaterialDesignIcon :icon-name="selectedPeer.lxmf_user_icon.icon_name" class="w-6 h-6"/>
+                </div>
+                <div v-else class="bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-400 p-2 rounded">
+                    <MaterialDesignIcon icon-name="account-outline" class="w-6 h-6"/>
+                </div>
+            </div>
+
             <!-- peer info -->
             <div>
                 <div @click="updateCustomDisplayName" class="flex cursor-pointer">
@@ -18,36 +28,46 @@
                     <div class="my-auto font-semibold dark:text-white" :title="selectedPeer.display_name">{{ selectedPeer.custom_display_name ?? selectedPeer.display_name }}</div>
                 </div>
                 <div class="text-sm dark:text-zinc-300">
-                    <{{ selectedPeer.destination_hash }}>
-                    <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="cursor-pointer">{{ selectedPeerPath.hops }} {{ selectedPeerPath.hops === 1 ? 'hop' : 'hops' }} away</span>
-                    <span v-if="selectedPeerLxmfStampInfo && selectedPeerLxmfStampInfo.stamp_cost"> • <span @click="onStampInfoClick(selectedPeerLxmfStampInfo)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampInfo.stamp_cost }}</span></span>
+
+                    <!-- destination hash -->
+                    <div class="inline-block mr-1">
+                        <div><{{ selectedPeer.destination_hash }}></div>
+                    </div>
+
+                    <div class="inline-block">
+                        <div class="flex space-x-1">
+
+                            <!-- hops away -->
+                            <span v-if="selectedPeerPath" @click="onDestinationPathClick(selectedPeerPath)" class="flex my-auto cursor-pointer">
+                                <span v-if="selectedPeerPath.hops === 0 || selectedPeerPath.hops === 1">Direct</span>
+                                <span v-else>{{ selectedPeerPath.hops }} hops away</span>
+                            </span>
+
+                            <!-- snr -->
+                            <span v-if="selectedPeerSignalMetrics?.snr != null" class="flex my-auto space-x-1">
+                                <span v-if="selectedPeerPath">•</span>
+                                <span @click="onSignalMetricsClick(selectedPeerSignalMetrics)" class="cursor-pointer">SNR {{ selectedPeerSignalMetrics.snr }}</span>
+                            </span>
+
+                            <!-- stamp cost -->
+                            <span v-if="selectedPeerLxmfStampInfo?.stamp_cost" class="flex my-auto space-x-1">
+                                <span v-if="selectedPeerPath || selectedPeerSignalMetrics?.snr != null">•</span>
+                                <span @click="onStampInfoClick(selectedPeerLxmfStampInfo)" class="cursor-pointer">Stamp Cost {{ selectedPeerLxmfStampInfo.stamp_cost }}</span>
+                            </span>
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <!-- call button -->
-            <div class="ml-auto my-auto mr-2">
-                <a :href="`call.html?destination_hash=${selectedPeer.destination_hash}`" target="_blank" class="cursor-pointer">
-                    <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
-                        <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-                            </svg>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <!-- delete button -->
-            <div class="my-auto mr-2">
-                <div @click="deleteConversation" class="cursor-pointer">
-                    <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
-                        <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+            <!-- dropdown menu -->
+            <div class="ml-auto my-auto mx-2">
+                <ConversationDropDownMenu
+                    v-if="selectedPeer"
+                    :peer="selectedPeer"
+                    @conversation-deleted="onConversationDeleted"
+                    @set-custom-display-name="updateCustomDisplayName"/>
             </div>
 
             <!-- close button -->
@@ -376,10 +396,14 @@ import WebSocketConnection from "../../js/WebSocketConnection";
 import AddAudioButton from "./AddAudioButton.vue";
 import moment from "moment";
 import SendMessageButton from "./SendMessageButton.vue";
+import MaterialDesignIcon from "../MaterialDesignIcon.vue";
+import ConversationDropDownMenu from "./ConversationDropDownMenu.vue";
 
 export default {
     name: 'ConversationViewer',
     components: {
+        ConversationDropDownMenu,
+        MaterialDesignIcon,
         SendMessageButton,
         AddAudioButton,
     },
@@ -393,6 +417,7 @@ export default {
 
             selectedPeerPath: null,
             selectedPeerLxmfStampInfo: null,
+            selectedPeerSignalMetrics: null,
 
             lxmfMessagesRequestSequence: 0,
             chatItems: [],
@@ -465,12 +490,16 @@ export default {
             // reset
             this.chatItems = [];
             this.hasMorePrevious = true;
+            this.selectedPeerPath = null;
+            this.selectedPeerLxmfStampInfo = null;
+            this.selectedPeerSignalMetrics = null;
             if(!this.selectedPeer){
                 return;
             }
 
             this.getPeerPath();
             this.getPeerLxmfStampInfo();
+            this.getPeerSignalMetrics();
 
             // load 1 page of previous messages
             await this.loadPrevious();
@@ -540,15 +569,18 @@ export default {
             const json = JSON.parse(message.data);
             switch(json.type){
                 case 'announce': {
-                    // update stamp info if an announce is received from the selected peer
+                    // update stamp info and signal metrics if an announce is received from the selected peer
                     if(json.announce.destination_hash === this.selectedPeer?.destination_hash){
+                        await this.getPeerPath();
                         await this.getPeerLxmfStampInfo();
+                        await this.getPeerSignalMetrics();
                     }
                     break;
                 }
                 case 'lxmf.delivery': {
                     this.onLxmfMessageReceived(json.lxmf_message);
                     await this.getPeerPath();
+                    await this.getPeerSignalMetrics();
                     break;
                 }
                 case 'lxmf_message_created': {
@@ -632,10 +664,6 @@ export default {
             }
         },
         async getPeerPath() {
-
-            // clear previous known path
-            this.selectedPeerPath = null;
-
             if(this.selectedPeer){
                 try {
 
@@ -647,15 +675,14 @@ export default {
 
                 } catch(e) {
                     console.log(e);
+
+                    // clear previous known path
+                    this.selectedPeerPath = null;
+
                 }
             }
-
         },
         async getPeerLxmfStampInfo() {
-
-            // clear previous stamp info
-            this.selectedPeerLxmfStampInfo = null;
-
             if(this.selectedPeer){
                 try {
 
@@ -666,10 +693,34 @@ export default {
                     this.selectedPeerLxmfStampInfo = response.data.lxmf_stamp_info;
 
                 } catch(e) {
+
                     console.log(e);
+
+                    // clear previous stamp info
+                    this.selectedPeerLxmfStampInfo = null;
+
                 }
             }
+        },
+        async getPeerSignalMetrics() {
+            if(this.selectedPeer){
+                try {
 
+                    // get signal metrics
+                    const response = await window.axios.get(`/api/v1/destination/${this.selectedPeer.destination_hash}/signal-metrics`);
+
+                    // update ui
+                    this.selectedPeerSignalMetrics = response.data.signal_metrics;
+
+                } catch(e) {
+
+                    console.log(e);
+
+                    // clear previous signal metrics
+                    this.selectedPeerSignalMetrics = null;
+
+                }
+            }
         },
         onDestinationPathClick(path) {
             DialogUtils.alert(`${path.hops} ${ path.hops === 1 ? 'hop' : 'hops' } away via ${path.next_hop_interface}`);
@@ -708,6 +759,13 @@ export default {
 
             DialogUtils.alert(`This peer has enabled stamp security.\n\nYour device must have a ticket, or solve an automated proof of work task each time you send them a message.\n\nTime per message: ${estimatedTimeForStamp}`);
 
+        },
+        onSignalMetricsClick(signalMetrics) {
+            DialogUtils.alert([
+                `Signal Quality: ${ signalMetrics.quality ?? '???' }%`,
+                `RSSI: ${ signalMetrics.rssi ?? '???' }dBm`,
+                `SNR: ${ signalMetrics.snr  ?? '???'}dB`,
+            ].join("\n"));
         },
         scrollMessagesToBottom: function() {
             // next tick waits for the ui to have the new elements added
@@ -771,25 +829,7 @@ export default {
             }
 
         },
-        async deleteConversation() {
-
-            // do nothing if no peer selected
-            if(!this.selectedPeer){
-                return;
-            }
-
-            // ask user to confirm deleting conversation history
-            if(!confirm("Are you sure you want to delete all messages from this conversation? This can not be undone!")){
-                return;
-            }
-
-            // delete all lxmf messages from "us to destination" and from "destination to us"
-            try {
-                await window.axios.delete(`/api/v1/lxmf-messages/conversation/${this.selectedPeer.destination_hash}`);
-            } catch(e) {
-                DialogUtils.alert("failed to delete conversation");
-                console.log(e);
-            }
+        async onConversationDeleted() {
 
             // reload conversation
             await this.initialLoad();

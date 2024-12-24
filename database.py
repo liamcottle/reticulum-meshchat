@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from peewee import *
 from playhouse.migrate import migrate as migrate_database, SqliteMigrator
 
-latest_version = 4  # increment each time new database migrations are added
+latest_version = 5  # increment each time new database migrations are added
 database = DatabaseProxy()  # use a proxy object, as we will init real db client inside meshchat.py
 migrator = SqliteMigrator(database)
 
@@ -30,6 +30,14 @@ def migrate(current_version):
     if current_version < 4:
         migrate_database(
             migrator.add_column("lxmf_messages", 'method', LxmfMessage.method),
+        )
+
+    # migrate to version 5
+    if current_version < 5:
+        migrate_database(
+            migrator.add_column("announces", 'rssi', Announce.rssi),
+            migrator.add_column("announces", 'snr', Announce.snr),
+            migrator.add_column("announces", 'quality', Announce.quality),
         )
 
     return latest_version
@@ -61,6 +69,9 @@ class Announce(BaseModel):
     identity_hash = CharField(index=True)  # identity hash that announced the destination
     identity_public_key = CharField()  # base64 encoded public key, incase we want to recreate the identity manually
     app_data = TextField(null=True)  # base64 encoded app data bytes
+    rssi = IntegerField(null=True)
+    snr = FloatField(null=True)
+    quality = FloatField(null=True)
 
     created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
     updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))

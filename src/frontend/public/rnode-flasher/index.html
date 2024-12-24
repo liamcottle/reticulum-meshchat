@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <title>RNode Flasher</title>
+
+    <script src="./js/rnode.js"></script>
+    <script src="./js/nrf52_dfu_flasher.js"></script>
+    <script src="./js/zip.min.js"></script>
+
+    <!-- tailwind css -->
+    <script src="./js/tailwindcss/tailwind-v3.4.3-forms-v0.5.7.js"></script>
+
+    <!-- vue js -->
+    <script src="./js/vue@3.4.26/dist/vue.global.js"></script>
+
+    <script src="./js/crypto-js@3.9.1-1/core.js"></script>
+    <script src="./js/crypto-js@3.9.1-1/md5.js"></script>
+
+</head>
+<body class="bg-slate-300">
+
+<div id="app" class="space-y-2 p-3">
+
+    <!-- header -->
+    <div class="flex border bg-gray-50 p-3 rounded shadow">
+        <div class="mr-3">
+            <img src="reticulum_logo_512.png" class="w-14 h-14"/>
+        </div>
+        <div class="my-auto">
+            <div class="font-bold">RNode Flasher</div>
+            <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500 hover:underline">Liam Cottle</a></div>
+        </div>
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            1. Select your device
+        </div>
+
+        <div class="p-3">
+
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[70px] my-auto text-right">Product</div>
+                <select v-model="selectedProduct" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option :value="null" disabled>Select a Product</option>
+                    <option v-for="product of products" :value="product">{{ product.name }}</option>
+                </select>
+            </div>
+
+            <div class="flex space-x-1">
+                <div class="min-w-[70px] my-auto text-right">Model</div>
+                <select v-model="selectedModel" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option :value="null" disabled>Select a Model</option>
+                    <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
+                </select>
+            </div>
+
+        </div>
+
+        <!-- button to enter dfu mode on PLATFORM_NRF52 -->
+        <div v-if="selectedProduct?.platform === 0x70" class="p-3 border-t">
+            <button @click="enterDfuMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Enter DFU Mode
+            </button>
+        </div>
+
+        <div class="border-t px-2 py-1">
+            <div class="text-sm space-x-1">
+                <span>Can't find your device? Open an issue on</span>
+                <a target="_blank" href="https://github.com/liamcottle/rnode-flasher" class="text-blue-500 hover:underline">GitHub</a>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            2. Select firmware to flash (.zip)
+        </div>
+
+        <div class="p-3">
+
+            <div class="mb-2">
+                <input ref="file" type="file"/>
+            </div>
+
+            <div v-if="!isFlashing" class="space-x-1">
+                <button @click="flash" :disabled="isFlashing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Flash Now
+                </button>
+            </div>
+
+            <div v-else>
+                <span v-if="flashingProgress > 0">Flashing: {{flashingProgress}}%</span>
+                <span v-else>Flashing: please wait...</span>
+                <div class="mt-1 w-[200px] overflow-hidden rounded-full bg-gray-200">
+                    <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${flashingProgress}%`}"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="border-t px-2 py-1 text-sm">
+            <div>
+                <span>Download Firmware</span>
+                <span v-if="selectedProduct && selectedModel && recommendedFirmwareFilename">: {{ recommendedFirmwareFilename }}</span>
+            </div>
+            <div class="space-x-1">
+                <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">Official Firmware</a>
+                <span>•</span>
+                <a target="_blank" href="https://github.com/liberatedsystems/RNode_Firmware_CE/releases" class="text-blue-500 hover:underline">CE Firmware</a>
+                <span>•</span>
+                <a target="_blank" href="https://github.com/attermann/microReticulum_Firmware/releases" class="text-blue-500 hover:underline">Transport Node Firmware</a>
+            </div>
+        </div>
+
+        <div class="border-t px-2 py-1 text-sm">
+            <div>Common error messages</div>
+            <div>• Hardware Failure: You need to provision the eeprom in step 3.</div>
+            <div>• Firmware Corrupt: You need to set the firmware hash in step 4.</div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            3. Provision EEPROM (sets device info, checksum and blank signature)
+        </div>
+
+        <div class="p-3">
+            <button v-if="!isProvisioning" @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Provision
+            </button>
+            <div v-else class="flex items-center space-x-1">
+                <div class="mr-1">
+                    <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <div>Provisioning: please wait...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            4. Set Firmware Hash (uses hash from board, will fix later)
+        </div>
+
+        <div class="p-3">
+            <button v-if="!isSettingFirmwareHash" @click="setFirmwareHash" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Set Firmware Hash
+            </button>
+            <div v-else class="flex items-center space-x-1">
+                <div class="mr-1">
+                    <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <div>Setting Firmware Hash: please wait...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            5. Done
+        </div>
+
+        <div class="px-2 py-1 text-sm">
+            <div>• If you made it this far, and all previous steps were successful, your RNode should be ready to use.</div>
+            <div>• To use RNode with <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat" class="text-blue-500 hover:underline">MeshChat</a>, you will need to add an <u>RNodeInterface</u> in the <u>Interfaces → Add Interface</u> page.</div>
+            <div>• To use RNode with <a target="_blank" href="https://github.com/markqvist/Sideband/" class="text-blue-500 hover:underline">Sideband</a>, you will need to configure it in <u>Hardware → RNode</u> and enable <u>Connectivity → Connect via RNode</u>.</div>
+            <div>• You must restart MeshChat and Sideband for interface setting changes to take effect, otherwise nothing will happen!</div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Advanced Tools
+        </div>
+
+        <div class="p-3">
+
+            <div class="space-x-1">
+                <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Detect RNode
+                </button>
+                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Reboot RNode
+                </button>
+                <button @click="readDisplay" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Read Display
+                </button>
+                <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Dump EEPROM
+                </button>
+                <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
+                    Wipe EEPROM
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
+
+            <!-- show rnode display if available -->
+            <div v-if="rnodeDisplayImage">
+                <img :src="rnodeDisplayImage" class="h-28"/>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Configure Bluetooth (optional)
+        </div>
+
+        <div class="border-b px-2 py-1 text-sm">
+            <div>• Bluetooth is not supported on all devices.</div>
+            <div>• Some devices use Bluetooth Classic, and some use BLE (Bluetooth Low Energy)</div>
+            <div>• Put the RNode into Bluetooth Pairing mode, then connect to it from Android Bluetooth settings.</div>
+            <div>• Once you have initiated a pair request from Android, a PIN should show on the RNode display.</div>
+            <div>• In Sideband you will need to enable <u>Connect using Bluetooth</u> in <u>Hardware → RNode</u>.</div>
+            <div>• If your device uses BLE you will also need to enable <u>Device requires BLE</u> in <u>Hardware → RNode</u>.</div>
+            <div>• Don't forget to restart Sideband for the setting changes to take effect, otherwise nothing will happen!</div>
+        </div>
+
+        <div class="p-3">
+            <div class="space-x-1">
+                <button @click="enableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Enable
+                </button>
+                <button @click="disableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Disable
+                </button>
+                <button @click="startBluetoothPairing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Start Pairing
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Configure TNC Mode (optional)
+        </div>
+
+        <div class="border-b px-2 py-1 text-sm">
+            <div>• TNC mode allows an RNode to be used as a KISS compatible TNC over the Serial Port.</div>
+            <div>• This mode makes it usable with amateur radio software that can talk to a KISS TNC over a serial port.</div>
+            <div>• You must leave TNC mode disabled when using RNode with apps like MeshChat or Sideband.</div>
+        </div>
+
+        <div class="p-3">
+
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Frequency (Hz)</div>
+                <input v-model="configFrequency" type="number" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Bandwidth</div>
+                <select v-model="configBandwidth" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
+                </select>
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Tx Power (dBm)</div>
+                <input v-model="configTxPower" type="number" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Spreading Factor</div>
+                <select v-model="configSpreadingFactor" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
+                </select>
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Coding Rate</div>
+                <select v-model="configCodingRate" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">{{ codingrate }}</option>
+                </select>
+            </div>
+            <div class="space-x-1">
+                <button @click="enableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Enable
+                </button>
+                <button @click="disableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Disable
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- setup web-serial-polyfill -->
+<script type="module">
+    import { serial } from "./js/web-serial-polyfill@1.0.15/dist/serial.js";
+    if(!navigator.serial && navigator.usb){
+        navigator.serial = serial;
+    }
+</script>
+
+<!-- setup esptool-js -->
+<script type="module">
+    import { ESPLoader, Transport } from "./js/esptool-js@0.4.5/bundle.js";
+    window.ESPLoader = ESPLoader;
+    window.Transport = Transport;
+</script>
+
+<script>
+    Vue.createApp({
+        data() {
+            return {
+
+                isFlashing: false,
+                flashingProgress: 0,
+
+                isProvisioning: false,
+                isSettingFirmwareHash: false,
+
+                rnodeDisplayImage: null,
+
+                selectedProduct: null,
+                selectedModel: null,
+                products: [
+                    {
+                        name: "Heltec LoRa32 v2",
+                        id: ROM.PRODUCT_H32_V2,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_C4,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_C9,
+                                name: "868 MHz / 915 MHz / 923 MHz",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_heltec32v2.zip",
+                        flash_config: {
+                            flash_size: "8MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_heltec32v2.boot_app0",
+                                "0x1000": "rnode_firmware_heltec32v2.bootloader",
+                                "0x10000": "rnode_firmware_heltec32v2.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_heltec32v2.partitions",
+                            },
+                        },
+                    },
+                    {
+                        name: "Heltec LoRa32 v3",
+                        id: ROM.PRODUCT_H32_V3,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_C5,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_CA,
+                                name: "868 MHz / 915 MHz / 923 MHz",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_heltec32v3.zip",
+                        flash_config: {
+                            flash_size: "8MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_heltec32v3.boot_app0",
+                                "0x0": "rnode_firmware_heltec32v3.bootloader",
+                                "0x10000": "rnode_firmware_heltec32v3.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_heltec32v3.partitions",
+                            },
+                        },
+                    },
+                    {
+                        name: "LilyGO LoRa32 v1.0",
+                        id: ROM.PRODUCT_T32_10,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_BA,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_BB,
+                                name: "868 MHz / 915 MHz / 923 MHz",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_lora32v10.zip",
+                        flash_config: {
+                            flash_size: "4MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_lora32v10.boot_app0",
+                                "0x1000": "rnode_firmware_lora32v10.bootloader",
+                                "0x10000": "rnode_firmware_lora32v10.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_lora32v10.partitions",
+                            },
+                        },
+                    },
+                    {
+                        name: "LilyGO LoRa32 v2.0",
+                        id: ROM.PRODUCT_T32_20,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_B3,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_B8,
+                                name: "868 MHz / 915 MHz / 923 MHz",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_lora32v20.zip",
+                        flash_config: {
+                            flash_size: "4MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_lora32v20.boot_app0",
+                                "0x1000": "rnode_firmware_lora32v20.bootloader",
+                                "0x10000": "rnode_firmware_lora32v20.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_lora32v20.partitions",
+                            },
+                        },
+                    },
+                    {
+                        name: "LilyGO LoRa32 v2.1",
+                        id: ROM.PRODUCT_T32_21,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_B4,
+                                name: "433 MHz",
+                                firmware_filename: "rnode_firmware_lora32v21.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_B9,
+                                name: "868/915/923 MHz",
+                                firmware_filename: "rnode_firmware_lora32v21.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21.partitions",
+                                    },
+                                },
+                            },
+                            // The TCXO model codes are only used here to select the correct firmware,
+                            // actual model codes in firmware is still 0xB4 and 0xB9.
+                            // https://github.com/markqvist/Reticulum/blob/master/RNS/Utilities/rnodeconf.py#L156
+                            // https://github.com/markqvist/Reticulum/blob/master/RNS/Utilities/rnodeconf.py#L3283
+                            {
+                                id: ROM.MODEL_B4_TCXO,
+                                mapped_id: ROM.MODEL_B4, // this device uses the same model code, but different firmware file
+                                name: "433 MHz, with TCXO",
+                                firmware_filename: "rnode_firmware_lora32v21_tcxo.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21_tcxo.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21_tcxo.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21_tcxo.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21_tcxo.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_B9_TCXO,
+                                mapped_id: ROM.MODEL_B9, // this device uses the same model code, but different firmware file
+                                name: "868/915/923 MHz, with TCXO",
+                                firmware_filename: "rnode_firmware_lora32v21_tcxo.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21_tcxo.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21_tcxo.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21_tcxo.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21_tcxo.partitions",
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        name: "LilyGO LoRa T3S3",
+                        id: ROM.PRODUCT_RNODE,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_A5,
+                                name: "433 MHz (with SX1278 chip)",
+                                firmware_filename: "rnode_firmware_t3s3_sx127x.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3_sx127x.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3_sx127x.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3_sx127x.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3_sx127x.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_AA,
+                                name: "868/915/923 MHz (with SX1276 chip)",
+                                firmware_filename: "rnode_firmware_t3s3_sx127x.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3_sx127x.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3_sx127x.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3_sx127x.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3_sx127x.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_A1,
+                                name: "433 MHz (with SX1268 chip)",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_A6,
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        name: "LilyGO T-Beam",
+                        id: ROM.PRODUCT_TBEAM,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_E4,
+                                name: "433 MHz (with SX1278 chip)",
+                                firmware_filename: "rnode_firmware_tbeam.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_E9,
+                                name: "868/915/923 MHz (with SX1276 chip)",
+                                firmware_filename: "rnode_firmware_tbeam.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_E3,
+                                name: "433 MHz (with SX1268 chip)",
+                                firmware_filename: "rnode_firmware_tbeam_sx1262.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam_sx1262.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam_sx1262.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam_sx1262.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam_sx1262.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_E8,
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                                firmware_filename: "rnode_firmware_tbeam_sx1262.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam_sx1262.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam_sx1262.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam_sx1262.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam_sx1262.partitions",
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        name: "LilyGO T-Beam Supreme",
+                        id: ROM.PRODUCT_TBEAM_S_V1,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_DB,
+                                name: "433 MHz (with SX1268 chip)",
+                            },
+                            {
+                                id: ROM.MODEL_DC,
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_tbeam_supreme.zip",
+                        flash_config: {
+                            flash_size: "4MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_tbeam_supreme.boot_app0",
+                                "0x0": "rnode_firmware_tbeam_supreme.bootloader",
+                                "0x10000": "rnode_firmware_tbeam_supreme.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_tbeam_supreme.partitions",
+                            },
+                        },
+                    },
+                    {
+                        name: "LilyGO T-Deck",
+                        id: ROM.PRODUCT_TDECK,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_D4,
+                                name: "433 MHz (with SX1268 chip)",
+                            },
+                            {
+                                id: ROM.MODEL_D9,
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_tdeck.zip",
+                        flash_config: {
+                            flash_size: "4MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_tdeck.boot_app0",
+                                "0x0": "rnode_firmware_tdeck.bootloader",
+                                "0x10000": "rnode_firmware_tdeck.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_tdeck.partitions",
+                            },
+                        },
+                    },
+                    {
+                        name: "LilyGO T-Echo",
+                        id: ROM.PRODUCT_TECHO,
+                        platform: ROM.PLATFORM_NRF52,
+                        models: [
+                            {
+                                id: ROM.MODEL_T4,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_T9,
+                                name: "868 MHz / 915 MHz / 923 MHz",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_techo.zip",
+                    },
+                    {
+                        name: "RAK4631",
+                        id: ROM.PRODUCT_RAK4631,
+                        platform: ROM.PLATFORM_NRF52,
+                        models: [
+                            {
+                                id: ROM.MODEL_11,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_12,
+                                name: "868 MHz / 915 MHz / 923 MHz",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_rak4631.zip",
+                    },
+                    {
+                        name: "RNode",
+                        id: ROM.PRODUCT_RNODE,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_A2,
+                                name: "Handheld v2.1 RNode, 410 - 525 MHz",
+                                firmware_filename: "rnode_firmware_ng21.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_ng21.boot_app0",
+                                        "0x1000": "rnode_firmware_ng21.bootloader",
+                                        "0x10000": "rnode_firmware_ng21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_ng21.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_A7,
+                                name: "Handheld v2.1 RNode, 820 - 1020 MHz",
+                                firmware_filename: "rnode_firmware_ng21.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_ng21.boot_app0",
+                                        "0x1000": "rnode_firmware_ng21.bootloader",
+                                        "0x10000": "rnode_firmware_ng21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_ng21.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_A1,
+                                name: "Prototype v2.2 RNode, 410 - 525 MHz",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_A6,
+                                name: "Prototype v2.2 RNode, 820 - 1020 MHz",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                ],
+
+                // Liam's default config for New Zealand / LongFast on Slot 10
+                configFrequency: 917375000,
+                configBandwidth: 250000,
+                configTxPower: 22,
+                configSpreadingFactor: 11,
+                configCodingRate: 5,
+
+                RNodeInterfaceDefaults: {
+                    bandwidths: [ // bandwidth in hz
+                        7800, // 7.8 kHz
+                        10400, // 10.4 kHz
+                        15600, // 15.6 kHz
+                        20800, // 20.8 kHz
+                        31250, // 31.25 kHz
+                        41700, // 41.7 kHz
+                        62500, // 62.5 kHz
+                        125000, // 125 kHz
+                        250000, // 250 kHz
+                        500000, // 500 kHz
+                    ],
+                    codingrates: [
+                        5, // 4:5
+                        6, // 4:6
+                        7, // 4:7
+                        8, // 4:8
+                    ],
+                    spreadingfactors: [
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                    ],
+                },
+
+            };
+        },
+        mounted() {
+
+        },
+        methods: {
+            async askForSerialPort() {
+
+                if(!navigator.serial){
+                    alert("Web Serial is not supported in this browser");
+                    return null;
+                }
+
+                // ask user to select device
+                return await navigator.serial.requestPort({
+                    filters: [],
+                });
+
+            },
+            async enterDfuMode() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // enter dfu mode
+                console.log("entering dfu mode");
+                const flasher = new Nrf52DfuFlasher(serialPort);
+                await flasher.enterDfuMode();
+                console.log("entering dfu mode: done");
+
+                alert("Device should now be in DFU mode.");
+
+            },
+            async flash() {
+                switch(this.selectedProduct?.platform){
+                    case ROM.PLATFORM_ESP32: {
+                        await this.flashEsp32();
+                        break;
+                    }
+                    case ROM.PLATFORM_NRF52: {
+                        await this.flashNrf52();
+                        break;
+                    }
+                    default: {
+                        alert("Please select a device first");
+                        break;
+                    }
+                }
+            },
+            async flashNrf52() {
+
+                // ensure firmware file selected
+                const file = this.$refs["file"].files[0];
+                if(!file){
+                    alert("Select a firmware file first");
+                    return;
+                }
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // update progress
+                this.isFlashing = true;
+                this.flashingProgress = 0;
+
+                try {
+
+                    // flash file
+                    const flasher = new Nrf52DfuFlasher(serialPort);
+                    await flasher.flash(file, (percentage, message) => {
+                        this.flashingProgress = percentage;
+                    });
+
+                    // flashing successful
+                    alert("Firmware has been flashed!");
+
+                } catch(e) {
+                    alert("Firmware flashing failed: " + e);
+                    console.log(e);
+                } finally {
+                    this.isFlashing = false;
+                }
+
+                // close port
+                console.log("Closing serial port");
+                try {
+                    await this.serialPort.close();
+                } catch(e) {
+                    console.log("failed to close serial port, ignoring...", e);
+                }
+
+
+            },
+            async flashEsp32() {
+
+                // ensure ESPLoader is available
+                if(!window.ESPLoader){
+                    alert("esptool-js could not be loaded.");
+                    return;
+                }
+
+                // ensure flash config is known, use from selected model, or fallback to selected product
+                const flashConfig = this.selectedModel?.flash_config ?? this.selectedProduct?.flash_config;
+                if(!flashConfig){
+                    alert("Flash config is not available for the selected device.");
+                    return;
+                }
+
+                // ensure firmware file selected
+                const file = this.$refs["file"].files[0];
+                if(!file){
+                    alert("Select a firmware file first");
+                    return;
+                }
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // update progress
+                this.isFlashing = true;
+                this.flashingProgress = 0;
+
+                try {
+
+                    // read zip file
+                    const blobReader = new window.zip.BlobReader(file);
+                    const zipReader = new window.zip.ZipReader(blobReader);
+                    const zipEntries = await zipReader.getEntries();
+
+                    // get files to flash
+                    const filesToFlash = [];
+                    for(const [address, filename] of Object.entries(flashConfig.flash_files)){
+
+                        // find file inside zip
+                        const file = zipEntries.find((zipEntry) => zipEntry.filename === filename);
+                        if(!file){
+                            throw filename + " not found in firmware file!";
+                        }
+
+                        // get file data as binary string
+                        const blob = await file.getData(new window.zip.BlobWriter());
+                        const data = await this.readAsBinaryString(blob); // fixme: deprecated, but works for now
+
+                        // add to files to flash
+                        filesToFlash.push({
+                            "address": parseInt(address),
+                            "data": data,
+                        });
+
+                    }
+
+                    // init transport and esploader
+                    const transport = new window.Transport(serialPort, true);
+                    const esploader = new window.ESPLoader({
+                        transport: transport,
+                        baudrate: 921600,
+                        debugLogging: false,
+                        enableTracing: false,
+                        terminal: {
+                            clean() {
+
+                            },
+                            writeLine(data) {
+                                console.log(data);
+                            },
+                            write(data) {
+                                console.log(data);
+                            },
+                        },
+                    });
+
+                    // load device info
+                    await esploader.main();
+
+                    // flash device
+                    await esploader.writeFlash({
+                        fileArray: filesToFlash,
+                        flashSize: flashConfig.flash_size,
+                        flashMode: "DIO",
+                        flashFreq: "80MHz",
+                        eraseAll: false,
+                        compress: true,
+                        calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
+                        reportProgress: (fileIndex, written, total) => {
+                            const currentFilePercentage = (written / total) * 100;
+                            this.flashingProgress = Math.floor(currentFilePercentage);
+                        },
+                    });
+
+                    // reboot device
+                    await transport.setDTR(false);
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                    await transport.setDTR(true);
+
+                    // flashing successful
+                    alert("Firmware has been flashed!");
+
+                } catch(e) {
+                    alert("Firmware flashing failed: " + e);
+                    console.log(e);
+                } finally {
+                    this.isFlashing = false;
+                }
+
+                // close port
+                console.log("Closing serial port");
+                try {
+                    await serialPort.close();
+                } catch(e) {
+                    console.log("failed to close serial port, ignoring...", e);
+                }
+
+            },
+            async detect() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                const firmwareVersion = await rnode.getFirmwareVersion();
+                alert("Device has RNode firmware v" + firmwareVersion);
+
+                console.log({
+                    firmware_version: await rnode.getFirmwareVersion(),
+                    platform: await rnode.getPlatform(),
+                    mcu: await rnode.getMcu(),
+                    board: await rnode.getBoard(),
+                    device_hash: await rnode.getDeviceHash(),
+                    firmware_hash_target: await rnode.getTargetFirmwareHash(),
+                    firmware_hash: await rnode.getFirmwareHash(),
+                    // rom: await rnode.getRom(),
+                    frequency: await rnode.getFrequency(),
+                    bandwidth: await rnode.getBandwidth(),
+                    tx_power: await rnode.getTxPower(),
+                    spreading_factor: await rnode.getSpreadingFactor(),
+                    coding_rate: await rnode.getCodingRate(),
+                    radio_state: await rnode.getRadioState(),
+                    rx_stat: await rnode.getRxStat(),
+                    tx_stat: await rnode.getTxStat(),
+                    rssi_stat: await rnode.getRssiStat(),
+                });
+
+                await rnode.close();
+
+            },
+            packInt(value) {
+                const buffer = new ArrayBuffer(4); // 4 bytes for a 32-bit integer
+                const view = new DataView(buffer);
+                view.setUint32(0, value, false); // false for big-endian
+                return new Uint8Array(buffer);
+            },
+            unpackInt(byteArray) {
+                const buffer = new Uint8Array(byteArray).buffer; // Get the underlying ArrayBuffer from the byte array
+                const view = new DataView(buffer);
+                return view.getUint32(0, false); // false for big-endian
+            },
+            async reboot() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // reboot
+                await rnode.reset();
+                await rnode.close();
+
+                // done
+                alert("Board is rebooting!");
+
+            },
+            frameBufferToCanvas(framebuffer, width, height, backgroundColour, foregroundColour) {
+
+                // create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                // fill the canvas with background colour
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = backgroundColour;
+                ctx.fillRect(0, 0, width, height);
+
+                // draw foreground pixels where bits are 1
+                ctx.fillStyle = foregroundColour;
+                for(let y = 0; y < height; y++){
+                    for(let x = 0; x < width; x++){
+                        const byteIndex = Math.floor((y * width + x) / 8);
+                        const bitIndex = x % 8;
+                        const bit = (framebuffer[byteIndex] >> (7 - bitIndex)) & 1;
+                        if(bit){
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
+
+                return canvas;
+
+            },
+            rnodeDisplayBufferToPng(displayBuffer) {
+
+                // get display area and stat area
+                const displayArea = displayBuffer.slice(0, 512);
+                const statArea = displayBuffer.slice(512, 1024);
+
+                // create canvas from frame buffers
+                const displayCanvasOriginal = this.frameBufferToCanvas(displayArea, 64, 64, "#000000", "#FFFFFF");
+                const statCanvasOriginal = this.frameBufferToCanvas(statArea, 64, 64, "#000000", "#FFFFFF");
+
+                // create horizontal canvas to show display area and stat area next to each other
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 64;
+
+                // draw canvases to final canvas
+                const canvasCtx = canvas.getContext('2d');
+                canvasCtx.imageSmoothingEnabled = false;
+                canvasCtx.drawImage(displayCanvasOriginal, 0, 0, 64, 64);
+                canvasCtx.drawImage(statCanvasOriginal, 64, 0, 64, 64);
+
+                // create scaled canvas
+                const scaleFactor = 4;
+                const scaledCanvas = document.createElement('canvas');
+                scaledCanvas.width = canvas.width * scaleFactor;
+                scaledCanvas.height = canvas.height * scaleFactor;
+
+                // scale original canvas onto new canvas
+                const scaledCtx = scaledCanvas.getContext('2d');
+                scaledCtx.imageSmoothingEnabled = false;
+                scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+                // convert canvas to png
+                return scaledCanvas.toDataURL("image/png");
+
+            },
+            async readDisplay() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // read display
+                const displayBuffer = await rnode.readDisplay();
+
+                // disconnect from rnode
+                await rnode.close();
+
+                // update ui
+                this.rnodeDisplayImage = this.rnodeDisplayBufferToPng(displayBuffer);
+
+            },
+            async dumpEeprom() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // get rom
+                const eeprom = await rnode.getRom();
+                if(!eeprom){
+                    alert("Unable to retrieve eeprom!");
+                    return;
+                }
+
+                // done
+                console.log(Utils.bytesToHex(eeprom));
+                await rnode.close();
+
+            },
+            async wipeEeprom() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // ask user to confirm
+                if(!confirm("Are you sure you want to wipe the eeprom on this device? This will take about 30 seconds. An alert will show when the eeprom wipe has finished.")){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // wipe eeprom
+                console.log("wiping eeprom");
+                await rnode.wipeRom();
+                console.log("wiping eeprom: done");
+
+                // must reboot device after wipe
+                await rnode.reset();
+                await rnode.close();
+
+                // done
+                alert("eeprom has been wiped!");
+
+            },
+            async provision() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    await rnode.close();
+                    return;
+                }
+
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(details){
+                    console.log(details);
+                    alert("Eeprom is already provisioned. You must wipe it to reprovision!");
+                    await rnode.close();
+                    return;
+                }
+
+                // ensure user has selected product
+                if(!this.selectedProduct){
+                    alert("Please select a product!");
+                    await rnode.close();
+                    return;
+                }
+
+                // ensure user has selected model
+                if(!this.selectedModel){
+                    alert("Please select a model!");
+                    await rnode.close();
+                    return;
+                }
+
+                console.log("device is not provisioned yet, doing it now...");
+
+                this.isProvisioning = true;
+
+                try {
+
+                    // determine device info
+                    // todo implement ui to configure these values
+                    const product = this.selectedProduct.id;
+                    // use mapped_id if available, else fallback to id, some devices use the same model, but different firmware file
+                    const model = this.selectedModel.mapped_id ?? this.selectedModel.id;
+                    const hardwareRevision = 0x1;
+                    const serialNumber = 1;
+                    const timestampInSeconds = Math.floor(Date.now() / 1000);
+                    const serialBytes = this.packInt(serialNumber);
+                    const timestampBytes = this.packInt(timestampInSeconds);
+
+                    // compute device info checksum
+                    const checksum = Utils.md5([
+                        product,
+                        model,
+                        hardwareRevision,
+                        ...serialBytes,
+                        ...timestampBytes,
+                    ]);
+
+                    console.log("checksum", checksum);
+
+                    // write device info to eeprom
+                    console.log("writing device info");
+                    await rnode.writeRom(ROM.ADDR_PRODUCT, product);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_MODEL, model);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_HW_REV, hardwareRevision);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_SERIAL, serialBytes[0]);
+                    await rnode.writeRom(ROM.ADDR_SERIAL + 1, serialBytes[1]);
+                    await rnode.writeRom(ROM.ADDR_SERIAL + 2, serialBytes[2]);
+                    await rnode.writeRom(ROM.ADDR_SERIAL + 3, serialBytes[3]);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    await rnode.writeRom(ROM.ADDR_MADE, timestampBytes[0]);
+                    await rnode.writeRom(ROM.ADDR_MADE + 1, timestampBytes[1]);
+                    await rnode.writeRom(ROM.ADDR_MADE + 2, timestampBytes[2]);
+                    await rnode.writeRom(ROM.ADDR_MADE + 3, timestampBytes[3]);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing device info: done");
+
+                    // write checksum to eeprom
+                    console.log("writing checksum");
+                    for(var i = 0; i < 16; i++){
+                        await rnode.writeRom(ROM.ADDR_CHKSUM + i, checksum[i]);
+                    }
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing checksum: done");
+
+                    // write signature to eeprom
+                    // fixme: actually implement signature, for now it's just zeroed out
+                    console.log("writing signature");
+                    for(var i = 0; i < 128; i++){
+                        // await rnode.writeRom(ROM.ADDR_SIGNATURE + i, signature[i]);
+                        await rnode.writeRom(ROM.ADDR_SIGNATURE + i, 0x00); // fixme: fake signature
+                    }
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing signature: done");
+
+                    // write info lock byte to eeprom
+                    console.log("writing lock byte");
+                    await rnode.writeRom(ROM.ADDR_INFO_LOCK, ROM.INFO_LOCK_BYTE);
+                    console.log(Utils.bytesToHex(await rnode.getRom()));
+                    console.log("writing lock byte: done");
+
+                    // todo get partition hash from release.json OR directly from the firmware.bin
+                    // partition_filename = fw_filename.replace(".zip", ".bin")
+                    // partition_hash = get_partition_hash(rnode.platform, UPD_DIR+"/"+selected_version+"/"+partition_filename)
+
+                    // todo set firmware hash in eeprom
+                    // RNS.log("Setting firmware checksum...")
+                    // rnode.set_firmware_hash(partition_hash)
+
+                    // RNS.log("Generating a new device signing key...")
+                    // device_signer = RNS.Identity()
+                    // device_signer.to_file(FWD_DIR+"/device.key")
+                    // RNS.log("Device signing key written to "+str(FWD_DIR+"/device.key"))
+
+                    // if not os.path.isfile(FWD_DIR+"/signing.key"):
+                    // RNS.log("Generating a new EEPROM signing key...")
+                    // private_key = rsa.generate_private_key(
+                    //     public_exponent=65537,
+                    //     key_size=1024,
+                    //     backend=default_backend()
+                    // )
+                    // private_bytes = private_key.private_bytes(
+                    //     encoding=serialization.Encoding.DER,
+                    //     format=serialization.PrivateFormat.PKCS8,
+                    //     encryption_algorithm=serialization.NoEncryption()
+                    // )
+                    // public_key = private_key.public_key()
+                    // public_bytes = public_key.public_bytes(
+                    //     encoding=serialization.Encoding.DER,
+                    //     format=serialization.PublicFormat.SubjectPublicKeyInfo
+                    // )
+
+                    // can get partition hash from releases.json
+                    // partition_hash = bytes.fromhex(release_info.split()[1])
+
+                    // await rnode.indicateFirmwareUpdate();
+                    // await rnode.setFirmwareHash(partition_hash);
+
+                    // todo get signing.key
+
+                    // file = open(key_path, "rb")
+                    // private_bytes = file.read()
+                    // file.close()
+                    // private_key = serialization.load_der_private_key(
+                    //     private_bytes,
+                    //     password=None,
+                    //     backend=default_backend()
+                    // )
+                    // public_key = private_key.public_key()
+                    // public_bytes = public_key.public_bytes(
+                    //     encoding=serialization.Encoding.DER,
+                    //     format=serialization.PublicFormat.SubjectPublicKeyInfo
+                    // )
+                    // signature = private_key.sign(
+                    //     checksum,
+                    //     padding.PSS(
+                    //         mgf=padding.MGF1(hashes.SHA256()),
+                    //         salt_length=padding.PSS.MAX_LENGTH
+                    //     ),
+                    //     hashes.SHA256()
+                    // )
+
+                    // wait a bit for eeprom writes to complete
+                    await Utils.sleepMillis(5000);
+
+                    // done
+                    await rnode.reset();
+
+                    alert("device has been provisioned!");
+
+                } catch(e) {
+                    console.log(e);
+                    alert("failed to provision, please try again");
+                }
+
+                this.isProvisioning = false;
+
+                await rnode.close();
+
+            },
+            async setFirmwareHash() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                this.isSettingFirmwareHash = true;
+
+                try {
+
+                    // todo: this works, but we should be calculating the firmware hash from the file, and not giving the board what it already knows
+                    console.log("setting firmware hash");
+                    await rnode.setFirmwareHash(await rnode.getFirmwareHash());
+                    console.log("setting firmware hash: done");
+
+                    // wait a bit for eeprom writes to complete
+                    await Utils.sleepMillis(5000);
+
+                    // reset board if it didn't do it automatically
+                    try {
+                        await rnode.reset();
+                    } catch(e) {
+                        console.log("couldn't auto reset board, probably did it automatically...");
+                    }
+
+                    alert("firmware hash has been set!");
+
+                } catch(e) {
+                    console.log(e);
+                    alert("failed to set firmware hash, please try again")
+                }
+
+                this.isSettingFirmwareHash = false;
+
+                // done
+                await rnode.close();
+
+            },
+            async enableTncMode() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // todo check if firmware hashes match, as config will not save if device has invalid target hash, because radio must be able to init
+
+                // configure
+                console.log("configuring");
+                await rnode.setFrequency(this.configFrequency);
+                await rnode.setBandwidth(this.configBandwidth);
+                await rnode.setTxPower(this.configTxPower);
+                await rnode.setSpreadingFactor(this.configSpreadingFactor);
+                await rnode.setCodingRate(this.configCodingRate);
+                await rnode.setRadioStateOn();
+                console.log("configuring: done");
+
+                // save config
+                // fixme: for some reason, sending saveConfig ONCE doesn't write the entire config to eeprom...???
+                // fixme: when calling saveConfig once, it seems to miss the last 2 bytes of frequency, and doesn't set the conf ok byte...
+                // fixme: however, it seems to save it correctly if I send the CMD_CONF_SAVE more than once...
+                // fixme: note that sending the CMD_CONF_SAVE once in the python implementation seems to work fine, just not here...
+                console.log("saving config");
+                await Utils.sleepMillis(500);
+                await rnode.saveConfig();
+                await rnode.saveConfig();
+                console.log("saving config: done");
+
+                await Utils.sleepMillis(5000);
+
+                // done
+                await rnode.reset();
+                await rnode.close();
+                alert("TNC mode has been enabled!");
+
+            },
+            async disableTncMode() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // todo check if firmware hashes match, as config will not save if device has invalid target hash, because radio must be able to init
+
+                // configure
+                console.log("disabling tnc mode");
+                await rnode.deleteConfig();
+                console.log("disabling tnc mode: done");
+
+                // wait a bit for eeprom writes to complete
+                await Utils.sleepMillis(5000);
+
+                // done
+                await rnode.reset();
+                await rnode.close();
+                alert("TNC mode has been disabled!");
+
+            },
+            async enableBluetooth() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // enable bluetooth
+                console.log("enabling bluetooth");
+                await rnode.enableBluetooth();
+                console.log("enabling bluetooth: done");
+
+                await Utils.sleepMillis(1000);
+
+                // done
+                await rnode.close();
+                alert("Bluetooth has been enabled!");
+
+            },
+            async disableBluetooth() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // disable bluetooth
+                console.log("disabling bluetooth");
+                await rnode.disableBluetooth();
+                console.log("disabling bluetooth: done");
+
+                await Utils.sleepMillis(1000);
+
+                // done
+                await rnode.close();
+                alert("Bluetooth has been disabled!");
+
+            },
+            async startBluetoothPairing() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // start bluetooth pairing
+                try {
+                    console.log("start bluetooth pairing");
+                    const pin = await rnode.startBluetoothPairing();
+                    console.log("start bluetooth pairing: done");
+                } catch(error) {
+                    alert(error);
+                }
+
+                alert("RNode should now be in Bluetooth Pairing mode. A pin will be shown on the screen when you pair with it from Android bluetooth settings.");
+
+                // done
+                await rnode.close();
+
+            },
+            async readAsBinaryString(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result);
+                    };
+                    reader.readAsBinaryString(blob);
+                });
+            },
+        },
+        computed: {
+            recommendedFirmwareFilename() {
+                return this.selectedModel?.firmware_filename ?? this.selectedProduct?.firmware_filename;
+            },
+        },
+        watch: {
+            selectedProduct() {
+                // reset selected model when changing selected product
+                this.selectedModel = null;
+            },
+        },
+    }).mount('#app');
+</script>
+
+</body>
+</html>

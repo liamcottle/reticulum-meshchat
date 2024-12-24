@@ -41,6 +41,7 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
 - Supports auto resending undelivered messages when an announce is received from the recipient.
 - Supports sending messages to and syncing messages from [LXMF Propagation Nodes](https://github.com/markqvist/lxmf?tab=readme-ov-file#propagation-nodes).
 - Supports running a local LXMF Propagation Node so other users can use your device for message storage and retrieval.
+- Support for browsing pages, and downloading files hosted on Nomad Network Nodes.
 
 ## Beta Features
 
@@ -49,9 +50,6 @@ A simple mesh network communications app powered by the [Reticulum Network Stack
   - Using a microphone requires using the web ui over localhost or https, due to [AudioWorklet](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet) secure context.
   - I have tested two-way audio calls over LoRa with a single hop. It works well when a [reasonable bitrate](https://unsigned.io/understanding-lora-parameters/) is configured on the RNode.
   - Some browsers such as FireFox don't work as expected. Try using a Chromium based browser if running via the command line.
-- Support for browsing pages, and downloading files hosted on Nomad Network Nodes.
-
-> NOTE: micron format parsing is still in development, some pages may not render or work correctly at all.
 
 ## Download
 
@@ -374,7 +372,6 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 - [ ] button to forget announces
 - [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
   - [ ] will probably write a new app for mobile devices once [microReticulum](https://github.com/attermann/microReticulum) supports Links
-- [ ] support for micron input fields, to allow interacting with pages like Retipedia
 - [ ] support for managing Reticulum interfaces via the web ui
   - [x] AutoInterface
   - [x] RNodeInterface
@@ -395,7 +392,7 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 **LXMF Router**
 
 - By default, the LXMF router rejects inbound messages larger than 1mb.
-- LXMF clients are likely to have [this default limit](https://github.com/markqvist/LXMF/blob/master/LXMF/LXMRouter.py#L35), and your messages will [fail to send](https://github.com/markqvist/LXMF/blob/master/LXMF/LXMRouter.py#L1026).
+- LXMF clients are likely to have [this default limit](https://github.com/markqvist/LXMF/blob/c426c93cc5d63a3dae18ad2264b1299a7ad9e46c/LXMF/LXMRouter.py#L38), and your messages will [fail to send](https://github.com/markqvist/LXMF/blob/c426c93cc5d63a3dae18ad2264b1299a7ad9e46c/LXMF/LXMRouter.py#L1428).
 - MeshChat has increased the receive limit to 10mb to allow for larger attachments.
 
 ## License

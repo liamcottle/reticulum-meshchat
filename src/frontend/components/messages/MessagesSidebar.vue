@@ -26,9 +26,7 @@
                                 <MaterialDesignIcon :icon-name="conversation.lxmf_user_icon.icon_name" class="w-6 h-6"/>
                             </div>
                             <div v-else class="bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-400 p-2 rounded">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
+                                <MaterialDesignIcon icon-name="account-outline" class="w-6 h-6"/>
                             </div>
                         </div>
                         <div class="mr-auto">
@@ -83,15 +81,36 @@
                 <div v-if="searchedPeers.length > 0" class="w-full">
                     <div @click="onPeerClick(peer)" v-for="peer of searchedPeers" class="flex cursor-pointer p-2 border-l-2" :class="[ peer.destination_hash === selectedDestinationHash ? 'bg-gray-100 dark:bg-zinc-700 border-blue-500 dark:border-blue-400' : 'bg-white dark:bg-zinc-950 border-transparent hover:bg-gray-50 dark:hover:bg-zinc-700 hover:border-gray-200 dark:hover:border-zinc-600' ]">
                         <div class="my-auto mr-2">
-                            <div class="bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-400 p-2 rounded">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
+                            <div v-if="peer.lxmf_user_icon" class="p-2 rounded" :style="{ 'color': peer.lxmf_user_icon.foreground_colour, 'background-color': peer.lxmf_user_icon.background_colour }">
+                                <MaterialDesignIcon :icon-name="peer.lxmf_user_icon.icon_name" class="w-6 h-6"/>
+                            </div>
+                            <div v-else class="bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-400 p-2 rounded">
+                                <MaterialDesignIcon icon-name="account-outline" class="w-6 h-6"/>
                             </div>
                         </div>
                         <div>
                             <div class="text-gray-900 dark:text-gray-100">{{ peer.custom_display_name ?? peer.display_name }}</div>
-                            <div class="text-gray-500 dark:text-gray-400 text-sm">{{ formatTimeAgo(peer.updated_at) }}</div>
+                            <div class="flex space-x-1 text-gray-500 dark:text-gray-400 text-sm">
+
+                                <!-- time ago -->
+                                <span class="flex my-auto space-x-1">
+                                    {{ formatTimeAgo(peer.updated_at) }}
+                                </span>
+
+                                <!-- hops away -->
+                                <span v-if="peer.hops != null && peer.hops !== 128" class="flex my-auto text-sm text-gray-500 space-x-1">
+                                    <span>•</span>
+                                    <span v-if="peer.hops === 0 || peer.hops === 1">Direct</span>
+                                    <span v-else>{{ peer.hops }} hops</span>
+                                </span>
+
+                                <!-- snr -->
+                                <span v-if="peer.snr != null" class="flex my-auto space-x-1">
+                                    <span>•</span>
+                                    <span>SNR {{ peer.snr }}</span>
+                                </span>
+
+                            </div>
                         </div>
                     </div>
                 </div>
