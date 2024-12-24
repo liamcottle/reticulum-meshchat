@@ -28,6 +28,26 @@
                 </div>
             </a>
 
+            <!-- ping -->
+            <RouterLink :to="{ name: 'ping' }" class="group flex bg-white dark:bg-zinc-800 p-2 rounded shadow hover:bg-gray-50 dark:hover:bg-zinc-700">
+                <div class="mr-2">
+                    <div class="flex bg-gray-300 text-gray-500 rounded shadow p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-10">
+                            <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="my-auto mr-auto dark:text-gray-200">
+                    <div class="font-bold">Ping</div>
+                    <div class="text-sm">Allows you to ping an lxmf.delivery destination hash</div>
+                </div>
+                <div class="my-auto text-gray-400 group-hover:text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                    </svg>
+                </div>
+            </RouterLink>
+
         </div>
     </div>
 </template>

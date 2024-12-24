@@ -61,6 +61,11 @@ const router = createRouter({
             component: defineAsyncComponent(() => import("./components/propagation-nodes/PropagationNodesPage.vue")),
         },
         {
+            name: "ping",
+            path: '/ping',
+            component: defineAsyncComponent(() => import("./components/ping/PingPage.vue")),
+        },
+        {
             name: "settings",
             path: '/settings',
             component: defineAsyncComponent(() => import("./components/settings/SettingsPage.vue")),
