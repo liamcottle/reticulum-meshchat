@@ -66,6 +66,7 @@ export default {
             isRunning: false,
             destinationHash: null,
             timeout: 10,
+            seq: 0,
             pingResults: [],
             abortController: null,
         };
@@ -94,6 +95,7 @@ export default {
             }
 
             // we are now running ping
+            this.seq = 0;
             this.isRunning = true;
             this.abortController = new AbortController();
 
@@ -122,6 +124,8 @@ export default {
         async ping() {
             try {
 
+                this.seq++;
+
                 // ping destination
                 const response = await window.axios.get(`/api/v1/ping/${this.destinationHash}/lxmf.delivery`, {
                     signal: this.abortController.signal,
@@ -132,10 +136,10 @@ export default {
 
                 const pingResult = response.data.ping_result;
                 const rttMilliseconds = (pingResult.rtt * 1000).toFixed(3);
-                const rttDurationString = `${rttMilliseconds} ms`;
+                const rttDurationString = `${rttMilliseconds}ms`;
 
                 const info = [
-                    `Valid reply:`,
+                    `seq=${this.seq}`,
                     `duration=${rttDurationString}`,
                     `hops_there=${pingResult.hops_there}`,
                     `hops_back=${pingResult.hops_back}`,
@@ -169,8 +173,8 @@ export default {
                 console.log(e);
 
                 // add ping error to results
-                const message = e.response?.data?.message ?? `Ping failed: ${e}`;
-                this.addPingResult(message);
+                const message = e.response?.data?.message ?? e;
+                this.addPingResult(`seq=${this.seq} error=${message}`);
 
             }
         },
