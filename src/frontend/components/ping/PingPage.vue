@@ -104,7 +104,7 @@ export default {
                 await this.ping();
 
                 // wait a bit before running next ping
-                await this.sleep(500);
+                await this.sleep(1000);
 
             }
 
