@@ -29,13 +29,13 @@
                     </div>
 
                     <div class="p-2 space-x-1">
-                        <button v-if="!isRunning" @click="start" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                        <button v-if="!isRunning" @click="start" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600 dark:focus-visible:outline-zinc-500">
                             Start
                         </button>
-                        <button v-if="isRunning" @click="stop" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                        <button v-if="isRunning" @click="stop" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600 dark:focus-visible:outline-zinc-500">
                             Stop
                         </button>
-                        <button @click="clear" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                        <button @click="clear" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600 dark:focus-visible:outline-zinc-500">
                             Clear Results
                         </button>
                         <button @click="dropPath" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-red-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
@@ -49,7 +49,7 @@
             <!-- results -->
             <div class="flex flex-col h-full bg-white dark:bg-zinc-800 rounded shadow overflow-hidden min-h-52">
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Results</div>
-                <div id="results" class="flex flex-col h-full bg-black text-white p-2 overflow-y-scroll font-mono">
+                <div id="results" class="flex flex-col h-full bg-black text-white dark:bg-zinc-800 dark:text-gray-200 p-2 overflow-y-scroll font-mono">
                     <div v-for="pingResult of pingResults">{{ pingResult }}</div>
                 </div>
             </div>
