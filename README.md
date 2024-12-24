@@ -256,6 +256,13 @@ python meshchat.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeG
 
 > NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
 
+
+## Running via Docker
+
+A very simple example of a `docker-compose.yml` file can be found [here](./docker-compose-example.yml).
+
+The reticulum config is auto-generated at startup in the `meshchat-config` volume along with the storage db used by meshchat.
+
 ## Build Electron Application
 
 Reticulum MeshChat can be run from source via a command line, as explained above, or as a standalone application.

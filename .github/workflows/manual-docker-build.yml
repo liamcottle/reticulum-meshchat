@@ -1,0 +1,42 @@
+name: Temporary manual trigger for Docker build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_docker:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the GitHub Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/g7ufo/reticulum-meshchat:latest
+            ghcr.io/g7ufo/reticulum-meshchat:${{ github.ref_name }}
+          labels: |
+            org.opencontainers.image.title=Reticulum MeshChat
+            org.opencontainers.image.description=Docker image for Reticulum MeshChat
+            org.opencontainers.image.url=https://github.com/g7ufo/reticulum-meshchat/pkgs/container/reticulum-meshchat/
+
