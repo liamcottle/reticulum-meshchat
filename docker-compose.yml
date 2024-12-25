@@ -8,7 +8,7 @@ services:
     ports:
       - 0.0.0.0:8000:8000
     volumes:
-      meshchat-config:/config
+      - meshchat-config:/config
     # Uncomment if you have a USB device connected, such as an RNode
     # devices:
     #   - /dev/ttyUSB0:/dev/ttyUSB0

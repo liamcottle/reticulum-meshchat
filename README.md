@@ -259,7 +259,7 @@ python meshchat.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeG
 
 ## Running via Docker
 
-A very simple example of a `docker-compose.yml` file can be found [here](./docker-compose-example.yml).
+A very simple example of a `docker-compose.yml` file can be found [here](./docker-compose.yml).
 
 The reticulum config is auto-generated at startup in the `meshchat-config` volume along with the storage db used by meshchat.
 
