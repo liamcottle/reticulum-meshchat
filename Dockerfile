@@ -3,6 +3,7 @@ FROM node:20-bookworm-slim AS build-frontend
 
 WORKDIR /src
 
+# Copy required source files
 COPY *.json .
 COPY *.js .
 COPY src/frontend ./src/frontend
@@ -16,11 +17,14 @@ FROM python:3.11-bookworm
 
 WORKDIR /app
 
+# Install Python deps
 COPY ./requirements.txt .
-COPY --from=build-frontend /src/public public
-
 RUN pip install -r requirements.txt
 
+# Copy prebuilt frontend
+COPY --from=build-frontend /src/public public
+
+# Copy other required source files
 COPY *.py .
 COPY src/__init__.py ./src/__init__.py
 COPY src/backend ./src/backend
