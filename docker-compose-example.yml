@@ -4,15 +4,14 @@ services:
     image: ghcr.io/liamcottle/reticulum-meshchat:latest
     pull_policy: always
     restart: unless-stopped
-    # Make the web interace accessible from the host at 8000.
+    # Make the meshchat web interface accessible from the host on port 8000
     ports:
       - 0.0.0.0:8000:8000
     volumes:
       meshchat-config:/config
-    # Uncomment if you have a USB device connected
+    # Uncomment if you have a USB device connected, such as an RNode
     # devices:
     #   - /dev/ttyUSB0:/dev/ttyUSB0
 
 volumes:
     meshchat-config:
-
