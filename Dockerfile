@@ -7,6 +7,7 @@ COPY *.json .
 COPY *.js .
 COPY src/frontend ./src/frontend
 
+# Install NodeJS deps, exluding electron
 RUN npm install --omit=dev && \
   npm run build-frontend
 
