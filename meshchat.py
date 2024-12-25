@@ -23,6 +23,7 @@ from serial.tools import list_ports
 
 import database
 from src.backend.announce_handler import AnnounceHandler
+from src.backend.colour_utils import ColourUtils
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.backend.audio_call_manager import AudioCall, AudioCallManager
 
@@ -1666,6 +1667,18 @@ class ReticulumMeshChat:
             # enable or disable local propagation node
             self.enable_local_propagation_node(value)
 
+        # update lxmf user icon name in config
+        if "lxmf_user_icon_name" in data:
+            self.config.lxmf_user_icon_name.set(data["lxmf_user_icon_name"])
+
+        # update lxmf user icon foreground colour in config
+        if "lxmf_user_icon_foreground_colour" in data:
+            self.config.lxmf_user_icon_foreground_colour.set(data["lxmf_user_icon_foreground_colour"])
+
+        # update lxmf user icon background colour in config
+        if "lxmf_user_icon_background_colour" in data:
+            self.config.lxmf_user_icon_background_colour.set(data["lxmf_user_icon_background_colour"])
+
         # send config to websocket clients
         await self.send_config_to_websocket_clients()
 
@@ -1890,6 +1903,9 @@ class ReticulumMeshChat:
             "lxmf_preferred_propagation_node_destination_hash": self.config.lxmf_preferred_propagation_node_destination_hash.get(),
             "lxmf_preferred_propagation_node_auto_sync_interval_seconds": self.config.lxmf_preferred_propagation_node_auto_sync_interval_seconds.get(),
             "lxmf_preferred_propagation_node_last_synced_at": self.config.lxmf_preferred_propagation_node_last_synced_at.get(),
+            "lxmf_user_icon_name": self.config.lxmf_user_icon_name.get(),
+            "lxmf_user_icon_foreground_colour": self.config.lxmf_user_icon_foreground_colour.get(),
+            "lxmf_user_icon_background_colour": self.config.lxmf_user_icon_background_colour.get(),
         }
 
     # convert audio call to dict
@@ -2418,6 +2434,22 @@ class ReticulumMeshChat:
                 audio_field.audio_bytes,
             ]
 
+        # add icon appearance if configured
+        # fixme: we could save a tiny amount of bandwidth here, but this requires more effort...
+        # we could keep track of when the icon appearance was last sent to this destination, and when it last changed
+        # we could save 6 bytes for the 2x colours, and also however long the icon name is, but not today!
+        lxmf_user_icon_name = self.config.lxmf_user_icon_name.get()
+        lxmf_user_icon_foreground_colour = self.config.lxmf_user_icon_foreground_colour.get()
+        lxmf_user_icon_background_colour = self.config.lxmf_user_icon_background_colour.get()
+        if (lxmf_user_icon_name is not None
+                and lxmf_user_icon_foreground_colour is not None
+                and lxmf_user_icon_background_colour is not None):
+            lxmf_message.fields[LXMF.FIELD_ICON_APPEARANCE] = [
+                lxmf_user_icon_name,
+                ColourUtils.hex_colour_to_byte_array(lxmf_user_icon_foreground_colour),
+                ColourUtils.hex_colour_to_byte_array(lxmf_user_icon_background_colour),
+            ]
+
         # register delivery callbacks
         lxmf_message.register_delivery_callback(self.on_lxmf_sending_state_updated)
         lxmf_message.register_failed_callback(self.on_lxmf_sending_failed)
@@ -2846,6 +2878,9 @@ class Config:
     lxmf_preferred_propagation_node_auto_sync_interval_seconds = IntConfig("lxmf_preferred_propagation_node_auto_sync_interval_seconds", 0)
     lxmf_preferred_propagation_node_last_synced_at = IntConfig("lxmf_preferred_propagation_node_last_synced_at", None)
     lxmf_local_propagation_node_enabled = BoolConfig("lxmf_local_propagation_node_enabled", False)
+    lxmf_user_icon_name = StringConfig("lxmf_user_icon_name", None)
+    lxmf_user_icon_foreground_colour = StringConfig("lxmf_user_icon_foreground_colour", None)
+    lxmf_user_icon_background_colour = StringConfig("lxmf_user_icon_background_colour", None)
 
 # FIXME: we should probably set this as an instance variable of ReticulumMeshChat so it has a proper home, and pass it in to the constructor?
 nomadnet_cached_links = {}

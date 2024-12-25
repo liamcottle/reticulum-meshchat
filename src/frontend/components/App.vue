@@ -146,13 +146,16 @@
                         <!-- my identity -->
                         <div v-if="config" class="bg-white border-t dark:border-zinc-900 dark:bg-zinc-950">
                             <div @click="isShowingMyIdentitySection = !isShowingMyIdentitySection" class="flex text-gray-700 p-2 cursor-pointer">
-                                <div class="my-auto mr-2 dark:text-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                    </svg>
+                                <div class="my-auto mr-2">
+                                    <RouterLink @click.stop :to="{ name: 'profile' }">
+                                        <LxmfUserIcon
+                                            :icon-name="config?.lxmf_user_icon_name"
+                                            :icon-foreground-colour="config?.lxmf_user_icon_foreground_colour"
+                                            :icon-background-colour="config?.lxmf_user_icon_background_colour"/>
+                                    </RouterLink>
                                 </div>
                                 <div class="my-auto dark:text-white">My Identity</div>
-                                <div class="ml-auto">
+                                <div class="my-auto ml-auto">
                                     <button @click.stop="saveIdentitySettings" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 
            dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
                                         Save
@@ -311,10 +314,12 @@ import GlobalState from "../js/GlobalState";
 import Utils from "../js/Utils";
 import GlobalEmitter from "../js/GlobalEmitter";
 import NotificationUtils from "../js/NotificationUtils";
+import LxmfUserIcon from "./LxmfUserIcon.vue";
 
 export default {
     name: 'App',
     components: {
+        LxmfUserIcon,
         SidebarLink,
     },
     data() {
