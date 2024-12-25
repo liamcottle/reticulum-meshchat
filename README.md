@@ -259,9 +259,15 @@ python meshchat.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeG
 
 ## Running via Docker
 
-A very simple example of a `docker-compose.yml` file can be found [here](./docker-compose.yml).
+A docker image is automatically built by GitHub actions, and can be downloaded from the GitHub container registry.
 
-The reticulum config is auto-generated at startup in the `meshchat-config` volume along with the storage db used by meshchat.
+```
+docker pull ghcr.io/liamcottle/reticulum-meshchat:master
+```
+
+Additionally, an example [docker-compose.yml](./docker-compose.yml) is available.
+
+The example automatically generates a new reticulum config file in the `meshchat-config` volume. The MeshChat database is also stored in this volume.
 
 ## Build Electron Application
 
