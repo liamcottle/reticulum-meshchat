@@ -8,7 +8,6 @@ COPY *.js .
 COPY src/frontend ./src/frontend
 
 RUN npm install --omit=dev && \
-  npm install tailwindcss && \
   npm run build-frontend
 
 # Main app build
