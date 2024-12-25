@@ -31,4 +31,3 @@ COPY src/backend ./src/backend
 COPY *.json .
 
 CMD ["python", "meshchat.py", "--host=0.0.0.0", "--reticulum-config-dir=/config/.reticulum", "--storage-dir=/config/.meshchat", "--headless"]
-
