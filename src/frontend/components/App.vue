@@ -147,7 +147,7 @@
                         <div v-if="config" class="bg-white border-t dark:border-zinc-900 dark:bg-zinc-950">
                             <div @click="isShowingMyIdentitySection = !isShowingMyIdentitySection" class="flex text-gray-700 p-2 cursor-pointer">
                                 <div class="my-auto mr-2">
-                                    <RouterLink @click.stop :to="{ name: 'profile' }">
+                                    <RouterLink @click.stop :to="{ name: 'profile.icon' }">
                                         <LxmfUserIcon
                                             :icon-name="config?.lxmf_user_icon_name"
                                             :icon-foreground-colour="config?.lxmf_user_icon_foreground_colour"

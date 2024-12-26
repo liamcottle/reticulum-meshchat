@@ -79,7 +79,7 @@ import DialogUtils from "../../js/DialogUtils";
 import ColourPickerDropdown from "../ColourPickerDropdown.vue";
 
 export default {
-    name: 'ProfilePage',
+    name: 'ProfileIconPage',
     components: {
         ColourPickerDropdown,
         LxmfUserIcon,
