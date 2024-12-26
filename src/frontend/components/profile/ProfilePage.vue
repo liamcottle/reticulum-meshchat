@@ -54,8 +54,8 @@
                     <div class="flex p-1">
                         <input v-model="search" type="text" :placeholder="`Search ${iconNames.length} icons...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
                     </div>
-                    <div class="divide-y">
-                        <div @click="onIconClick(mdiIconName)" v-for="mdiIconName of searchedIconNames" class="flex space-x-2 p-2 cursor-pointer hover:bg-gray-100">
+                    <div class="divide-y divide-gray-300 dark:divide-zinc-700">
+                        <div @click="onIconClick(mdiIconName)" v-for="mdiIconName of searchedIconNames" class="flex space-x-2 p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700">
                             <div class="my-auto">
                                 <LxmfUserIcon :icon-name="mdiIconName" :icon-foreground-colour="iconForegroundColour" :icon-background-colour="iconBackgroundColour"/>
                             </div>
