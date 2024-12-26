@@ -109,6 +109,7 @@
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",
     "vite": "^6.0.5",
+    "vite-plugin-vuetify": "^2.0.4",
     "vue-router": "^4.5.0",
     "vuetify": "^3.7.6"
   }
