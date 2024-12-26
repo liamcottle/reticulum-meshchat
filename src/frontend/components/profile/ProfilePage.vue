@@ -20,75 +20,21 @@
             <!-- colours -->
             <div class="bg-white dark:bg-zinc-800 rounded shadow">
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Select your Colours</div>
-                <div class="divide-y divide-gray-300 dark:divide-zinc-700 text-gray-900 dark:text-gray-100">
+                <div class="flex p-2 space-x-2">
 
                     <!-- icon colour -->
-                    <div class="p-2">
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Icon Colour</div>
+                    <div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Icon</div>
                         <div class="flex">
-                            <select v-model="iconForegroundColour" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
-                                <option value="#000000">Black</option>
-                                <option value="#FFFFFF">White</option>
-                                <option disabled></option>
-                                <option value="#64748b">Slate</option>
-                                <option value="#6b7280">Gray</option>
-                                <option value="#71717a">Zinc</option>
-                                <option value="#737373">Neutral</option>
-                                <option value="#78716c">Stone</option>
-                                <option disabled></option>
-                                <option value="#ef4444">Red</option>
-                                <option value="#f97316">Orange</option>
-                                <option value="#f59e0b">Amber</option>
-                                <option value="#eab308">Yellow</option>
-                                <option value="#84cc16">Lime</option>
-                                <option value="#22c55e">Green</option>
-                                <option value="#10b981">Emerald</option>
-                                <option value="#14b8a6">Teal</option>
-                                <option value="#06b6d4">Cyan</option>
-                                <option value="#0ea5e9">Sky</option>
-                                <option value="#3b82f6">Blue</option>
-                                <option value="#6366f1">Indigo</option>
-                                <option value="#8b5cf6">Violet</option>
-                                <option value="#a855f7">Purple</option>
-                                <option value="#d946ef">Fuschia</option>
-                                <option value="#ec4899">Pink</option>
-                                <option value="#f43f5e">Rose</option>
-                            </select>
+                            <ColourPickerDropdown v-model:colour="iconForegroundColour"/>
                         </div>
                     </div>
 
                     <!-- background colour -->
-                    <div class="p-2">
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Background Colour</div>
+                    <div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Background</div>
                         <div class="flex">
-                            <select v-model="iconBackgroundColour" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
-                                <option value="#000000">Black</option>
-                                <option value="#FFFFFF">White</option>
-                                <option disabled></option>
-                                <option value="#64748b">Slate</option>
-                                <option value="#6b7280">Gray</option>
-                                <option value="#71717a">Zinc</option>
-                                <option value="#737373">Neutral</option>
-                                <option value="#78716c">Stone</option>
-                                <option disabled></option>
-                                <option value="#ef4444">Red</option>
-                                <option value="#f97316">Orange</option>
-                                <option value="#f59e0b">Amber</option>
-                                <option value="#eab308">Yellow</option>
-                                <option value="#84cc16">Lime</option>
-                                <option value="#22c55e">Green</option>
-                                <option value="#10b981">Emerald</option>
-                                <option value="#14b8a6">Teal</option>
-                                <option value="#06b6d4">Cyan</option>
-                                <option value="#0ea5e9">Sky</option>
-                                <option value="#3b82f6">Blue</option>
-                                <option value="#6366f1">Indigo</option>
-                                <option value="#8b5cf6">Violet</option>
-                                <option value="#a855f7">Purple</option>
-                                <option value="#d946ef">Fuschia</option>
-                                <option value="#ec4899">Pink</option>
-                                <option value="#f43f5e">Rose</option>
-                            </select>
+                            <ColourPickerDropdown v-model:colour="iconBackgroundColour"/>
                         </div>
                     </div>
 
@@ -124,9 +70,12 @@ import * as mdi from "@mdi/js";
 import MaterialDesignIcon from "../../../../build/exe/lib/src/frontend/components/MaterialDesignIcon.vue";
 import LxmfUserIcon from "../LxmfUserIcon.vue";
 import DialogUtils from "../../js/DialogUtils";
+import ColourPickerDropdown from "../ColourPickerDropdown.vue";
+
 export default {
     name: 'ProfilePage',
     components: {
+        ColourPickerDropdown,
         LxmfUserIcon,
         MaterialDesignIcon,
     },
