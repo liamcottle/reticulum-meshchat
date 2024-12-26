@@ -184,8 +184,8 @@ export default {
         config() {
             // update ui when config is updated
             this.iconName = this.config.lxmf_user_icon_name;
-            this.iconForegroundColour = this.config.lxmf_user_icon_foreground_colour || "#000000";
-            this.iconBackgroundColour = this.config.lxmf_user_icon_background_colour || "#FFFFFF";
+            this.iconForegroundColour = this.config.lxmf_user_icon_foreground_colour || "#6b7280";
+            this.iconBackgroundColour = this.config.lxmf_user_icon_background_colour || "#e5e7eb";
         },
     },
 }
