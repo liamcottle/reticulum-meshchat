@@ -20,21 +20,27 @@
             <!-- colours -->
             <div class="bg-white dark:bg-zinc-800 rounded shadow">
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Select your Colours</div>
-                <div class="flex p-2 space-x-2">
+                <div class="divide-y divide-gray-300 dark:divide-zinc-700 text-gray-900 dark:text-gray-100">
 
-                    <!-- icon colour -->
-                    <div>
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Icon</div>
-                        <div class="flex">
-                            <ColourPickerDropdown v-model:colour="iconForegroundColour"/>
+                    <!-- background colour -->
+                    <div class="p-2 flex space-x-2">
+                        <div class="flex my-auto">
+                            <ColourPickerDropdown v-model:colour="iconBackgroundColour"/>
+                        </div>
+                        <div class="my-auto">
+                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Background Colour</div>
+                            <div class="text-sm text-gray-900 dark:text-gray-100">{{ iconBackgroundColour }}</div>
                         </div>
                     </div>
 
-                    <!-- background colour -->
-                    <div>
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Background</div>
-                        <div class="flex">
-                            <ColourPickerDropdown v-model:colour="iconBackgroundColour"/>
+                    <!-- icon colour -->
+                    <div class="p-2 flex space-x-2">
+                        <div class="flex my-auto">
+                            <ColourPickerDropdown v-model:colour="iconForegroundColour"/>
+                        </div>
+                        <div class="my-auto">
+                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Icon Colour</div>
+                            <div class="text-sm text-gray-900 dark:text-gray-100">{{ iconForegroundColour }}</div>
                         </div>
                     </div>
 
