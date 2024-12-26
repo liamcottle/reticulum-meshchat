@@ -8,7 +8,6 @@ import "./fonts/RobotoMonoNerdFont/font.css";
 import App from './components/App.vue';
 
 // init vuetify
-import 'vuetify/styles';
 import { createVuetify } from 'vuetify';
 const vuetify = createVuetify();
 
