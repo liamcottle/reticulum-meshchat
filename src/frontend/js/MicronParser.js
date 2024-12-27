@@ -276,7 +276,7 @@ class MicronParser {
                     let input = document.createElement("input");
                     input.type = p.masked ? "password" : "text";
                     input.name = p.name;
-                    input.value = p.data;
+                    input.setAttribute('value', p.data);
                     if (p.width) {
                         input.size = p.width; 
                     }
@@ -288,7 +288,7 @@ class MicronParser {
                     cb.type = "checkbox";
                     cb.name = p.name;
                     cb.value = p.value;
-                    if (p.prechecked) cb.checked = true;
+                    if (p.prechecked) cb.setAttribute('checked', true);
                     label.appendChild(cb);
                     label.appendChild(document.createTextNode(" " + p.label));
                     this.applyStyleToElement(label, this.styleFromState(p.style));
@@ -299,7 +299,7 @@ class MicronParser {
                     rb.type = "radio";
                     rb.name = p.name;
                     rb.value = p.value;
-                    if (p.prechecked) rb.checked = true;
+                    if (p.prechecked) rb.setAttribute('checked', true);
                     label.appendChild(rb);
                     label.appendChild(document.createTextNode(" " + p.label));
                     this.applyStyleToElement(label, this.styleFromState(p.style));
