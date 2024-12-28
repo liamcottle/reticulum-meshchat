@@ -283,8 +283,6 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 ## TODO
 
 - [ ] button to forget announces
-- [ ] optimise ui to work nicely on a mobile device, such as Android/iOS
-  - [ ] will probably write a new app for mobile devices once [microReticulum](https://github.com/attermann/microReticulum) supports Links
 - [ ] support for managing Reticulum interfaces via the web ui
   - [x] AutoInterface
   - [x] RNodeInterface
