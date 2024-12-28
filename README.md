@@ -57,7 +57,13 @@ You can download the latest version for Windows, Mac and Linux from the [release
 
 Alternatively, you can download the source and run it manually from a command line.
 
-See the ["How to use it?"](#how-to-use-it) section below on how to do this.
+See the ["How to use it?"](#how-to-use-it) section, further down on how to do this.
+
+## Other Installation Methods
+
+- [Running MeshChat on Docker](./docs/meshchat_on_docker.md)
+- [Running MeshChat on a Raspberry Pi](./docs/meshchat_on_raspberry_pi.md)
+- [Running MeshChat on Android with Termux](./docs/meshchat_on_android_with_termux.md)
 
 ## Getting Started
 
@@ -273,12 +279,6 @@ python3 meshchat.py --headless
 ```
 
 I build the vite app everytime without hot reload, since MeshChat expects everything over its own port, not the vite server port. I will attempt to fix this in the future.
-
-## Other Installation Methods
-
-- [Running MeshChat on Docker](./docs/meshchat_on_docker.md)
-- [Running MeshChat on a Raspberry Pi](./docs/meshchat_on_raspberry_pi.md)
-- [Running MeshChat on Android with Termux](./docs/meshchat_on_android_with_termux.md)
 
 ## TODO
 
