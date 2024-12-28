@@ -6,6 +6,8 @@ This would allow you to connect an [RNode](https://github.com/markqvist/RNode_Fi
 
 My intended use case is to run the Pi + RNode combo from my solar-powered shed, and access the MeshChat Web UI via WiFi.
 
+> Note: This has been tested on a Raspberry Pi 4 Model B
+
 ## Install Raspberry Pi OS
 
 If you haven't already done so, the first step is to install Raspberry Pi OS onto an sdcard, and then boot up the Pi. Once booted, follow the below commands.
