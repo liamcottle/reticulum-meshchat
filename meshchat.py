@@ -1109,7 +1109,7 @@ class ReticulumMeshChat:
                 updated_at = latest_announce.updated_at
 
             # get signal metrics from latest lxmf message if it's more recent than the announce
-            if latest_lxmf_message is not None and latest_lxmf_message_at > latest_announce_at:
+            if latest_lxmf_message is not None and (latest_announce_at is None or latest_lxmf_message_at > latest_announce_at):
                 snr = latest_lxmf_message.snr
                 rssi = latest_lxmf_message.rssi
                 quality = latest_lxmf_message.quality
