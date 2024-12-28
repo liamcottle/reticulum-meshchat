@@ -73,10 +73,10 @@
 
 <script>
 import * as mdi from "@mdi/js";
-import MaterialDesignIcon from "../../../../build/exe/lib/src/frontend/components/MaterialDesignIcon.vue";
 import LxmfUserIcon from "../LxmfUserIcon.vue";
 import DialogUtils from "../../js/DialogUtils";
 import ColourPickerDropdown from "../ColourPickerDropdown.vue";
+import MaterialDesignIcon from "../MaterialDesignIcon.vue";
 
 export default {
     name: 'ProfileIconPage',
