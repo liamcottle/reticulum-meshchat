@@ -226,19 +226,6 @@ python meshchat.py --identity-base64 "GCN6mMhVemdNIK/fw97C1zvU17qjQPFTXRBotVckeG
 
 > NOTE: this is a randomly generated identity for example purposes. Do not use it, it has been leaked!
 
-
-## Running via Docker
-
-A docker image is automatically built by GitHub actions, and can be downloaded from the GitHub container registry.
-
-```
-docker pull ghcr.io/liamcottle/reticulum-meshchat:master
-```
-
-Additionally, an example [docker-compose.yml](./docker-compose.yml) is available.
-
-The example automatically generates a new reticulum config file in the `meshchat-config` volume. The MeshChat database is also stored in this volume.
-
 ## Build Electron Application
 
 Reticulum MeshChat can be run from source via a command line, as explained above, or as a standalone application.
@@ -289,6 +276,7 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 
 ## Other Installation Methods
 
+- [Running MeshChat on Docker](./docs/meshchat_on_docker.md)
 - [Running MeshChat on a Raspberry Pi](./docs/meshchat_raspberry_pi.md)
 - [Running MeshChat on Android with Termux](./docs/meshchat_on_android_with_termux.md)
 
