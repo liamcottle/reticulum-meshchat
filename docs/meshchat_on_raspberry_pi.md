@@ -1,4 +1,4 @@
-# MeshChat on Raspberry Pi
+# MeshChat on a Raspberry Pi
 
 A simple guide to install [MeshChat](https://github.com/liamcottle/reticulum-meshchat) on a Raspberry Pi.
 

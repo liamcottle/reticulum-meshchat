@@ -277,7 +277,7 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 ## Other Installation Methods
 
 - [Running MeshChat on Docker](./docs/meshchat_on_docker.md)
-- [Running MeshChat on a Raspberry Pi](./docs/meshchat_raspberry_pi.md)
+- [Running MeshChat on a Raspberry Pi](./docs/meshchat_on_raspberry_pi.md)
 - [Running MeshChat on Android with Termux](./docs/meshchat_on_android_with_termux.md)
 
 ## TODO
