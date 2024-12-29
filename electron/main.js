@@ -111,10 +111,22 @@ app.whenReady().then(async () => {
     // open external links in default web browser instead of electron
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
 
+        var shouldShowInNewElectronWindow = false;
+
         // we want to open call.html in a new electron window
         // but all other target="_blank" links should open in the system web browser
         // we don't want /rnode-flasher/index.html to open in electron, otherwise user can't select usb devices...
         if(url.startsWith("http://localhost") && url.includes("/call.html")){
+            shouldShowInNewElectronWindow = true;
+        }
+
+        // we want to open blob urls in a new electron window
+        else if(url.startsWith("blob:")) {
+            shouldShowInNewElectronWindow = true;
+        }
+
+        // open in new electron window
+        if(shouldShowInNewElectronWindow){
             return {
                 action: "allow",
             };
