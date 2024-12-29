@@ -3,7 +3,7 @@
 A docker image is automatically built by GitHub actions, and can be downloaded from the GitHub container registry.
 
 ```
-docker pull ghcr.io/liamcottle/reticulum-meshchat:master
+docker pull ghcr.io/liamcottle/reticulum-meshchat:latest
 ```
 
 Additionally, an example [docker-compose.yml](../docker-compose.yml) is available.
