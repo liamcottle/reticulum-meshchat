@@ -237,14 +237,14 @@
 
                     <!-- image attachment -->
                     <div v-if="newMessageImage" class="mb-2">
-                        <div class="w-32 h-32 rounded shadow border relative overflow-hidden">
+                        <div @click.stop="openImage(newMessageImageUrl)" class="cursor-pointer w-32 h-32 rounded shadow border relative overflow-hidden">
 
                             <!-- image preview -->
                             <img v-if="newMessageImageUrl" :src="newMessageImageUrl" class="w-full h-full object-cover"/>
 
                             <!-- remove button (top right) -->
                             <div class="absolute top-0 right-0 p-1">
-                                <div @click="removeImageAttachment" class="cursor-pointer">
+                                <div @click.stop="removeImageAttachment" class="cursor-pointer">
                                     <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-1 rounded-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                                             <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
