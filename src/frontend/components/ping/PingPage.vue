@@ -49,8 +49,8 @@
             <!-- results -->
             <div class="flex flex-col h-full bg-white dark:bg-zinc-800 rounded shadow overflow-hidden min-h-52">
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Results</div>
-                <div id="results" class="flex flex-col h-full bg-black text-white dark:bg-zinc-800 dark:text-gray-200 p-2 overflow-y-scroll font-mono">
-                    <div v-for="pingResult of pingResults">{{ pingResult }}</div>
+                <div id="results" class="flex flex-col h-full bg-black text-white dark:bg-zinc-800 dark:text-gray-200 p-2 overflow-y-auto overflow-x-auto font-mono whitespace-nowrap">
+                    <div v-for="pingResult of pingResults" class="w-fit">{{ pingResult }}</div>
                 </div>
             </div>
 
