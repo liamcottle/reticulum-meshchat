@@ -1160,8 +1160,16 @@ export default {
             this.$refs["file-input"].value = null;
         },
         removeImageAttachment: function() {
+
+            // ask user to confirm removing image attachment
+            if(!confirm("Are you sure you want to remove this image attachment?")){
+                return;
+            }
+
+            // remove image
             this.newMessageImage = null;
             this.newMessageImageUrl = null;
+
         },
         onImageSelected: function(imageBlob) {
 
