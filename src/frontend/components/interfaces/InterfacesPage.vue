@@ -82,7 +82,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-zinc-200">Select Configuration File</label>
                     <input type="file" 
                         @change="onFileSelected" 
-                        accept=".conf"
+                        accept="*"
                         class="mt-1 block w-full text-sm text-gray-500 dark:text-zinc-400
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-md file:border-0
