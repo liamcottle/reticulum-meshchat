@@ -33,11 +33,11 @@
                                 <button @click="deselectAllInterfaces" class="text-sm text-blue-500 hover:underline">Deselect All</button>
                             </div>
                         </div>
-                        <div class="p-2 space-y-2 max-h-72 overflow-y-auto">
-                            <div @click="toggleSelectedInterface(iface.name)" v-for="iface in importableInterfaces" :key="iface.name" class="cursor-pointer flex items-center p-2 border rounded dark:border-zinc-700 shadow">
-                                <div class="mr-auto text-sm text-gray-700 dark:text-zinc-200">
-                                    <div class="font-semibold">{{ iface.name }}</div>
-                                    <div class="text-sm text-gray-500">{{ iface.type }}</div>
+                        <div class="bg-gray-200 p-2 space-y-2 max-h-72 overflow-y-auto dark:bg-zinc-800">
+                            <div @click="toggleSelectedInterface(iface.name)" v-for="iface in importableInterfaces" :key="iface.name" class="bg-white cursor-pointer flex items-center p-2 border rounded shadow dark:bg-zinc-900 dark:border-zinc-700">
+                                <div class="mr-auto text-sm">
+                                    <div class="font-semibold text-gray-700 dark:text-zinc-100">{{ iface.name }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-zinc-100">{{ iface.type }}</div>
                                 </div>
                                 <input @click.stop type="checkbox" v-model="selectedInterfaces" :value="iface.name" class="mx-2 h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-zinc-600">
                             </div>
