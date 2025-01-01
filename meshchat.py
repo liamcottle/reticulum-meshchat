@@ -24,6 +24,7 @@ from serial.tools import list_ports
 import database
 from src.backend.announce_handler import AnnounceHandler
 from src.backend.colour_utils import ColourUtils
+from src.backend.interface_config_parser import InterfaceConfigParser
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.backend.audio_call_manager import AudioCall, AudioCallManager
 
@@ -621,43 +622,8 @@ class ReticulumMeshChat:
                 data = await request.json()
                 config = data.get('config')
 
-                # process config
-                interfaces = []
-                current_interface = None
-                for line in config.splitlines():
-
-                    # strip whitespace from either side of string
-                    line = line.strip()
-
-                    # skip empty lines and commented out lines
-                    if not line or line.startswith("#"):
-                        continue
-
-                    # check if we found a line containing an interface name
-                    if line.startswith("[[") and line.endswith("]]"):
-
-                        # we found a new interface, so add the previously parsed one to the interfaces list
-                        if current_interface:
-                            interfaces.append(current_interface)
-
-                        # get interface name by removing the "[[" and "]]"
-                        interface_name = line[2:-2]
-                        current_interface = {
-                            "name": interface_name,
-                            "type": None
-                        }
-
-                    # we found a key=value line, so we will set these values on the interface
-                    elif current_interface is not None and "=" in line:
-                        line_parts = line.split("=", 1)
-                        key = line_parts[0].strip()
-                        value = line_parts[1].strip()
-                        if key == "type":
-                            current_interface["type"] = value
-
-                # add the final interface to the list
-                if current_interface:
-                    interfaces.append(current_interface)
+                # parse config
+                interfaces = InterfaceConfigParser.parse(config)
                     
                 return web.json_response({
                     "interfaces": interfaces
