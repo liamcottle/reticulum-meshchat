@@ -1,6 +1,7 @@
 <template>
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
         <div class="overflow-y-auto p-2 space-y-2">
+
             <!-- warning - keeping orange-500 for warning visibility in both modes -->
             <div class="flex bg-orange-500 p-2 text-sm font-semibold leading-6 text-white rounded shadow">
                 <div class="my-auto">
@@ -59,6 +60,7 @@
                 @enable="enableInterface(iface._name)"
                 @disable="disableInterface(iface._name)"
                 @edit="editInterface(iface._name)"
+                @export="exportInterface(iface._name)"
                 @delete="deleteInterface(iface._name)"/>
 
             <!-- disabled interfaces -->
@@ -69,7 +71,9 @@
                 @enable="enableInterface(iface._name)"
                 @disable="disableInterface(iface._name)"
                 @edit="editInterface(iface._name)"
+                @export="exportInterface(iface._name)"
                 @delete="deleteInterface(iface._name)"/>
+
         </div>
     </div>
 
@@ -253,16 +257,35 @@ export default {
             try {
 
                 // fetch exported interfaces
-                const response = await window.axios.get('/api/v1/reticulum/interfaces/export', {
-                    responseType: 'blob'
-                });
+                const response = await window.axios.post('/api/v1/reticulum/interfaces/export');
 
                 // download file to browser
-                const blob = new Blob([response.data]);
-                DownloadUtils.downloadFile("meshchat_interfaces", blob);
+                DownloadUtils.downloadFile("meshchat_interfaces", new Blob([response.data], {
+                    type: "application/octet-stream",
+                }));
 
             } catch(e) {
                 DialogUtils.alert("Failed to export interfaces");
+                console.error(e);
+            }
+        },
+        async exportInterface(interfaceName) {
+            try {
+
+                // fetch exported interfaces
+                const response = await window.axios.post('/api/v1/reticulum/interfaces/export', {
+                    selected_interface_names: [
+                        interfaceName,
+                    ],
+                });
+
+                // download file to browser
+                DownloadUtils.downloadFile(interfaceName, new Blob([response.data], {
+                    type: "application/octet-stream",
+                }));
+
+            } catch(e) {
+                DialogUtils.alert("Failed to export interface");
                 console.error(e);
             }
         },

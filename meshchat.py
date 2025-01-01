@@ -590,13 +590,29 @@ class ReticulumMeshChat:
                 })
         
         # export interfaces
-        @routes.get("/api/v1/reticulum/interfaces/export")
+        @routes.post("/api/v1/reticulum/interfaces/export")
         async def export_interfaces(request):
             try:
+
+                # get request data
+                selected_interface_names = None
+                try:
+                    data = await request.json()
+                    selected_interface_names = data.get('selected_interface_names')
+                except:
+                    # request data was not json, but we don't care
+                    pass
 
                 # format interfaces for export
                 output = []
                 for interface_name, interface in self.reticulum.config["interfaces"].items():
+
+                    # skip interface if not selected
+                    if selected_interface_names is not None and selected_interface_names != "":
+                        if interface_name not in selected_interface_names:
+                            continue
+
+                    # add interface to output
                     output.append(f"[[{interface_name}]]")
                     for key, value in interface.items():
                         output.append(f"    {key} = {value}")
