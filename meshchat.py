@@ -619,29 +619,43 @@ class ReticulumMeshChat:
 
                 # get request data
                 data = await request.json()
-                config_text = data.get('config')
-                
+                config = data.get('config')
+
+                # process config
                 interfaces = []
                 current_interface = None
-                
-                for line in config_text.splitlines():
+                for line in config.splitlines():
+
+                    # strip whitespace from either side of string
                     line = line.strip()
+
+                    # skip empty lines and commented out lines
                     if not line or line.startswith("#"):
                         continue
-                        
+
+                    # check if we found a line containing an interface name
                     if line.startswith("[[") and line.endswith("]]"):
+
+                        # we found a new interface, so add the previously parsed one to the interfaces list
                         if current_interface:
                             interfaces.append(current_interface)
-                        name = line[2:-2]
+
+                        # get interface name by removing the "[[" and "]]"
+                        interface_name = line[2:-2]
                         current_interface = {
-                            "name": name,
+                            "name": interface_name,
                             "type": None
                         }
+
+                    # we found a key=value line, so we will set these values on the interface
                     elif current_interface is not None and "=" in line:
-                        key, value = [x.strip() for x in line.split("=", 1)]
+                        line_parts = line.split("=", 1)
+                        key = line_parts[0].strip()
+                        value = line_parts[1].strip()
                         if key == "type":
                             current_interface["type"] = value
-                
+
+                # add the final interface to the list
                 if current_interface:
                     interfaces.append(current_interface)
                     
