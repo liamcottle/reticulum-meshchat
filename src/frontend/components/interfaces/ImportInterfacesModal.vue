@@ -67,11 +67,12 @@
                                         <!-- rnode interface details -->
                                         <div v-else-if="iface.type === 'RNodeInterface'">
                                             <div>{{ iface.type }}</div>
+                                            <div>Port: {{ iface.port }}</div>
                                             <div>Frequency: {{ formatFrequency(iface.frequency) }}</div>
                                             <div>Bandwidth: {{ formatFrequency(iface.bandwidth) }}</div>
                                             <div>Spreading Factor: {{ iface.spreadingfactor }}</div>
                                             <div>Coding Rate: {{ iface.codingrate }}</div>
-                                            <div>Power: {{ iface.txpower }}dBm</div>
+                                            <div>Transmit Power: {{ iface.txpower }}dBm</div>
                                         </div>
 
                                         <!-- other interface types -->
