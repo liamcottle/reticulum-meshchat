@@ -35,9 +35,10 @@
                     <div class="space-y-2 max-h-60 overflow-y-auto">
                         <div v-for="iface in importableInterfaces" :key="iface.name" class="flex items-center p-2 border rounded dark:border-zinc-700">
                             <input type="checkbox" v-model="selectedInterfaces" :value="iface.name" class="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-zinc-600">
-                            <label class="ml-2 text-sm text-gray-700 dark:text-zinc-200">
-                                {{ iface.name }} ({{ iface.type }})
-                            </label>
+                            <div class="ml-2 text-sm text-gray-700 dark:text-zinc-200">
+                                <div class="font-semibold">{{ iface.name }}</div>
+                                <div class="text-sm text-gray-500">{{ iface.type }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
