@@ -260,9 +260,7 @@ export default {
                 const response = await window.axios.post('/api/v1/reticulum/interfaces/export');
 
                 // download file to browser
-                DownloadUtils.downloadFile("meshchat_interfaces", new Blob([response.data], {
-                    type: "application/octet-stream",
-                }));
+                DownloadUtils.downloadFile("meshchat_interfaces.txt", new Blob([response.data]));
 
             } catch(e) {
                 DialogUtils.alert("Failed to export interfaces");
@@ -280,9 +278,7 @@ export default {
                 });
 
                 // download file to browser
-                DownloadUtils.downloadFile(interfaceName, new Blob([response.data], {
-                    type: "application/octet-stream",
-                }));
+                DownloadUtils.downloadFile(`${interfaceName}.txt`, new Blob([response.data]));
 
             } catch(e) {
                 DialogUtils.alert("Failed to export interface");
