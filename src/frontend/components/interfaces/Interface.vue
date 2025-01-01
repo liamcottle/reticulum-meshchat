@@ -156,26 +156,24 @@
         </div>
 
         <!-- extra interface details -->
-        <div v-if="['UDPInterface', 'RNodeInterface'].includes(iface.type)" class="flex p-2 border-t dark:border-zinc-700">
-            <div class="text-sm flex space-x-1 dark:text-zinc-100">
+        <div v-if="['UDPInterface', 'RNodeInterface'].includes(iface.type)" class="p-1 text-sm border-t dark:text-zinc-100 dark:border-zinc-700">
 
-                <!-- udp interface -->
-                <div v-if="iface.type === 'UDPInterface'">
-                    <div>Listen: {{ iface.listen_ip }}:{{ iface.listen_port }}</div>
-                    <div>Forward: {{ iface.forward_ip }}:{{ iface.forward_port }}</div>
-                </div>
-
-                <!-- rnode interface details -->
-                <div v-else-if="iface.type === 'RNodeInterface'">
-                    <div>Port: {{ iface.port }}</div>
-                    <div>Frequency: {{ formatFrequency(iface.frequency) }}</div>
-                    <div>Bandwidth: {{ formatFrequency(iface.bandwidth) }}</div>
-                    <div>Spreading Factor: {{ iface.spreadingfactor }}</div>
-                    <div>Coding Rate: {{ iface.codingrate }}</div>
-                    <div>Transmit Power: {{ iface.txpower }}dBm</div>
-                </div>
-
+            <!-- udp interface -->
+            <div v-if="iface.type === 'UDPInterface'">
+                <div>Listen: {{ iface.listen_ip }}:{{ iface.listen_port }}</div>
+                <div>Forward: {{ iface.forward_ip }}:{{ iface.forward_port }}</div>
             </div>
+
+            <!-- rnode interface details -->
+            <div v-else-if="iface.type === 'RNodeInterface'">
+                <div>Port: {{ iface.port }}</div>
+                <div>Frequency: {{ formatFrequency(iface.frequency) }}</div>
+                <div>Bandwidth: {{ formatFrequency(iface.bandwidth) }}</div>
+                <div>Spreading Factor: {{ iface.spreadingfactor }}</div>
+                <div>Coding Rate: {{ iface.codingrate }}</div>
+                <div>Transmit Power: {{ iface.txpower }}dBm</div>
+            </div>
+
         </div>
 
         <div class="flex bg-gray-50 p-1 text-sm text-gray-500 space-x-1 border-t rounded-b dark:bg-zinc-800 dark:text-white dark:border-zinc-700">
