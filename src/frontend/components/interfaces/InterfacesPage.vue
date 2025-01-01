@@ -17,7 +17,7 @@
                 </button>
             </div>
 
-            <div class="flex space-x-2">
+            <div class="flex space-x-1">
 
                 <!-- Add Interface button -->
                 <RouterLink :to="{ name: 'interfaces.add' }">
