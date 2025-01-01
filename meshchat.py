@@ -593,8 +593,8 @@ class ReticulumMeshChat:
         async def export_interfaces(request):
             try:
                 output = []
-                for name, interface in self.reticulum.config["interfaces"].items():
-                    output.append(f"[[{name}]]")
+                for interface_name, interface in self.reticulum.config["interfaces"].items():
+                    output.append(f"[[{interface_name}]]")
                     for key, value in interface.items():
                         output.append(f"    {key} = {value}")
                     output.append("")
@@ -603,7 +603,7 @@ class ReticulumMeshChat:
                     text="\n".join(output),
                     content_type="text/plain",
                     headers={
-                        "Content-Disposition": "attachment; filename=reticulum_interfaces"
+                        "Content-Disposition": "attachment; filename=meshchat_interfaces"
                     }
                 )
             except Exception as e:
