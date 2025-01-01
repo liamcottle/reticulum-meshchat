@@ -13,16 +13,14 @@
 
                     <!-- file input -->
                     <div class="p-2">
-                        <div class="text-sm font-medium text-gray-700 dark:text-zinc-200">Select a Configuration File</div>
                         <div>
-                            <input ref="import-interfaces-file-input" type="file" @change="onFileSelected" accept="*"
-                                   class="mt-1 block w-full text-sm text-gray-500 dark:text-zinc-400
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-md file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-gray-500 file:text-white
-                        hover:file:bg-gray-400
-                        dark:file:bg-zinc-700 dark:hover:file:bg-zinc-600">
+                            <input ref="import-interfaces-file-input" type="file" @change="onFileSelected" accept="*" class="w-full text-sm text-gray-500 dark:text-zinc-400">
+                        </div>
+                        <div v-if="!selectedFile" class="mt-2 text-sm text-gray-700 dark:text-zinc-200">
+                            <ul class="list-disc list-inside">
+                                <li>You can import interfaces from a ~/.reticulum/config file.</li>
+                                <li>You can import interfaces from an exported interfaces file.</li>
+                            </ul>
                         </div>
                     </div>
 
