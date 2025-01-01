@@ -84,6 +84,7 @@ import ElectronUtils from "../../js/ElectronUtils";
 import Interface from "./Interface.vue";
 import Utils from "../../js/Utils";
 import ImportInterfacesModal from "./ImportInterfacesModal.vue";
+import DownloadUtils from "../../js/DownloadUtils";
 
 export default {
     name: 'InterfacesPage',
@@ -250,17 +251,16 @@ export default {
         },
         async exportInterfaces() {
             try {
+
+                // fetch exported interfaces
                 const response = await window.axios.get('/api/v1/reticulum/interfaces/export', {
                     responseType: 'blob'
                 });
-                
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', 'reticulum_interfaces');
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
+
+                // download file to browser
+                const blob = new Blob([response.data]);
+                DownloadUtils.downloadFile("meshchat_interfaces", blob);
+
             } catch(e) {
                 DialogUtils.alert("Failed to export interfaces");
                 console.error(e);
