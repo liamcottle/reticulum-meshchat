@@ -33,7 +33,7 @@
                                 <button @click="deselectAllInterfaces" class="text-sm text-blue-500 hover:underline">Deselect All</button>
                             </div>
                         </div>
-                        <div class="bg-gray-200 p-2 space-y-2 max-h-72 overflow-y-auto dark:bg-zinc-800">
+                        <div class="bg-gray-200 p-2 space-y-2 max-h-80 overflow-y-auto dark:bg-zinc-800">
                             <div @click="toggleSelectedInterface(iface.name)" v-for="iface in importableInterfaces" :key="iface.name" class="bg-white cursor-pointer flex items-center p-2 border rounded shadow dark:bg-zinc-900 dark:border-zinc-700">
                                 <div class="mr-auto text-sm">
                                     <div class="font-semibold text-gray-700 dark:text-zinc-100">{{ iface.name }}</div>
