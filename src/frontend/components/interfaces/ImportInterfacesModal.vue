@@ -40,32 +40,42 @@
                                     <div class="text-sm text-gray-500 dark:text-zinc-100">
 
                                         <!-- auto interface -->
-                                        <span v-if="iface.type === 'AutoInterface'">
-                                            {{ iface.type }} • Ethernet and WiFi
-                                        </span>
+                                        <div v-if="iface.type === 'AutoInterface'">
+                                            <div>{{ iface.type }}</div>
+                                            <div>Ethernet and WiFi</div>
+                                        </div>
 
                                         <!-- tcp client interface -->
-                                        <span v-else-if="iface.type === 'TCPClientInterface'">
-                                            {{ iface.type }} • {{ iface.target_host }}:{{ iface.target_port }}
-                                        </span>
+                                        <div v-else-if="iface.type === 'TCPClientInterface'">
+                                            <div>{{ iface.type }}</div>
+                                            <div>{{ iface.target_host }}:{{ iface.target_port }}</div>
+                                        </div>
 
                                         <!-- tcp server interface -->
-                                        <span v-else-if="iface.type === 'TCPServerInterface'">
-                                            {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }}
-                                        </span>
+                                        <div v-else-if="iface.type === 'TCPServerInterface'">
+                                            <div>{{ iface.type }}</div>
+                                            <div>{{ iface.listen_ip }}:{{ iface.listen_port }}</div>
+                                        </div>
 
                                         <!-- udp interface -->
-                                        <span v-else-if="iface.type === 'UDPInterface'">
-                                            {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }} • {{ iface.forward_ip }}:{{ iface.forward_port }}
-                                        </span>
+                                        <div v-else-if="iface.type === 'UDPInterface'">
+                                            <div>{{ iface.type }}</div>
+                                            <div>Listen: {{ iface.listen_ip }}:{{ iface.listen_port }}</div>
+                                            <div>Forward: {{ iface.forward_ip }}:{{ iface.forward_port }}</div>
+                                        </div>
 
                                         <!-- rnode interface details -->
-                                        <span v-else-if="iface.type === 'RNodeInterface'">
-                                           {{ iface.type }} • freq={{ iface.frequency }} • bw={{ iface.bandwidth }} • sf={{ iface.spreadingfactor }}
-                                        </span>
+                                        <div v-else-if="iface.type === 'RNodeInterface'">
+                                            <div>{{ iface.type }}</div>
+                                            <div>Frequency: {{ formatFrequency(iface.frequency) }}</div>
+                                            <div>Bandwidth: {{ formatFrequency(iface.bandwidth) }}</div>
+                                            <div>Spreading Factor: {{ iface.spreadingfactor }}</div>
+                                            <div>Coding Rate: {{ iface.codingrate }}</div>
+                                            <div>Power: {{ iface.txpower }}dBm</div>
+                                        </div>
 
                                         <!-- other interface types -->
-                                        <span v-else>{{ iface.type }}</span>
+                                        <div v-else>{{ iface.type }}</div>
 
                                     </div>
                                 </div>
@@ -92,6 +102,7 @@
 
 <script>
 import DialogUtils from "../../js/DialogUtils";
+import Utils from "../../js/Utils";
 
 export default {
     name: "ImportInterfacesModal",
@@ -219,6 +230,9 @@ export default {
                 DialogUtils.alert(message);
                 console.error(e);
             }
+        },
+        formatFrequency(hz) {
+            return Utils.formatFrequency(hz);
         },
     },
 }
