@@ -593,6 +593,8 @@ class ReticulumMeshChat:
         @routes.get("/api/v1/reticulum/interfaces/export")
         async def export_interfaces(request):
             try:
+
+                # format interfaces for export
                 output = []
                 for interface_name, interface in self.reticulum.config["interfaces"].items():
                     output.append(f"[[{interface_name}]]")
@@ -607,8 +609,8 @@ class ReticulumMeshChat:
                         "Content-Disposition": "attachment; filename=meshchat_interfaces"
                     }
                 )
+
             except Exception as e:
-                print(f"Export error: {str(e)}")
                 return web.json_response({
                     "message": f"Failed to export interfaces: {str(e)}"
                 }, status=500)
@@ -622,7 +624,7 @@ class ReticulumMeshChat:
                 data = await request.json()
                 config = data.get('config')
 
-                # parse config
+                # parse interfaces from config
                 interfaces = InterfaceConfigParser.parse(config)
                     
                 return web.json_response({
@@ -630,7 +632,6 @@ class ReticulumMeshChat:
                 })
                 
             except Exception as e:
-                print(f"Preview error: {str(e)}")
                 return web.json_response({
                     "message": f"Failed to parse config file: {str(e)}"
                 }, status=500)
@@ -642,75 +643,47 @@ class ReticulumMeshChat:
 
                 # get request data
                 data = await request.json()
-                config_text = data.get('config')
-                selected_interfaces = data.get('selected_interfaces')
-                
-                print(f"Selected interfaces: {selected_interfaces}")
-                current_interface = None
+                config = data.get('config')
+                selected_interface_names = data.get('selected_interface_names')
+
+                # parse interfaces from config
+                interfaces = InterfaceConfigParser.parse(config)
+
+                # find selected interfaces
+                selected_interfaces = []
+                for interface in interfaces:
+                    if interface["name"] in selected_interface_names:
+                        selected_interfaces.append(interface)
+
+                # convert interfaces to object
                 interface_config = {}
-                
-                for line in config_text.splitlines():
-                    line = line.strip()
-                    if not line: 
-                        continue
-                    
-                    if line.startswith("[[") and line.endswith("]]"):
-                        if current_interface and current_interface["name"] in selected_interfaces:
-                            name = current_interface["name"]
-                            interface_config[name] = {
-                                "type": current_interface.get("type"),
-                                "interface_enabled": "true",
-                                "target_host": current_interface.get("target_host"),
-                                "target_port": current_interface.get("target_port"),
-                                "listen_ip": current_interface.get("listen_ip"),
-                                "listen_port": current_interface.get("listen_port"),
-                                "forward_ip": current_interface.get("forward_ip"),
-                                "forward_port": current_interface.get("forward_port"),
-                                "port": current_interface.get("port"),
-                                "frequency": current_interface.get("frequency"),
-                                "bandwidth": current_interface.get("bandwidth"),
-                                "txpower": current_interface.get("txpower"),
-                                "spreadingfactor": current_interface.get("spreadingfactor"),
-                                "codingrate": current_interface.get("codingrate")
-                            }
-                            interface_config[name] = {k: v for k, v in interface_config[name].items() if v is not None}
-                        
-                        name = line[2:-2]
-                        current_interface = {"name": name}
-                    elif current_interface is not None and "=" in line:
-                        key, value = [x.strip() for x in line.split("=", 1)]
-                        value = value.strip('"').strip("'")
-                        current_interface[key] = value
-                
-                if current_interface and current_interface["name"] in selected_interfaces:
-                    name = current_interface["name"]
-                    interface_config[name] = {
-                        "type": current_interface.get("type"),
-                        "interface_enabled": "true",
-                        "target_host": current_interface.get("target_host"),
-                        "target_port": current_interface.get("target_port"),
-                        "listen_ip": current_interface.get("listen_ip"),
-                        "listen_port": current_interface.get("listen_port"),
-                        "forward_ip": current_interface.get("forward_ip"),
-                        "forward_port": current_interface.get("forward_port"),
-                        "port": current_interface.get("port"),
-                        "frequency": current_interface.get("frequency"),
-                        "bandwidth": current_interface.get("bandwidth"),
-                        "txpower": current_interface.get("txpower"),
-                        "spreadingfactor": current_interface.get("spreadingfactor"),
-                        "codingrate": current_interface.get("codingrate")
-                    }
-                    interface_config[name] = {k: v for k, v in interface_config[name].items() if v is not None}
-                
+                for interface in selected_interfaces:
+
+                    # add interface and keys/values
+                    interface_name = interface["name"]
+                    interface_config[interface_name] = {}
+                    for key, value in interface.items():
+                        interface_config[interface_name][key] = value
+
+                    # unset name which isn't part of the config
+                    del interface_config[interface_name]["name"]
+
+                    # force imported interface to be enabled by default
+                    interface_config[interface_name]["interface_enabled"] = "true"
+
+                    # remove enabled config value in favour of interface_enabled
+                    if "enabled" in interface_config[interface_name]:
+                        del interface_config[interface_name]["enabled"]
+
                 # update reticulum config with new interfaces
                 self.reticulum.config["interfaces"].update(interface_config)
-                print("Final interfaces config:", self.reticulum.config["interfaces"])
                 self.reticulum.config.write()
-                return web.json_response({"message": "Interfaces imported successfully"})
+
+                return web.json_response({
+                    "message": "Interfaces imported successfully",
+                })
                 
             except Exception as e:
-                print(f"Import error: {str(e)}")
-                print(f"Config text: {config_text}")
                 return web.json_response({
                     "message": f"Failed to import interfaces: {str(e)}"
                 }, status=500)

@@ -26,14 +26,21 @@ class InterfaceConfigParser:
                 interface_name = line[2:-2]
                 current_interface = {
                     "name": interface_name,
-                    "type": None
                 }
 
             # we found a key=value line, so we will set these values on the interface
             elif current_interface is not None and "=" in line:
+
+                # parse key and value
                 line_parts = line.split("=", 1)
                 key = line_parts[0].strip()
-                value = line_parts[1].strip()
+                value = line_parts[1].strip().strip('"').strip("'")
+
+                # skip empty values or values equal to "None"
+                if value is None or value == "None":
+                    continue
+
+                # set key/value on interface
                 current_interface[key] = value
 
         # add the final interface to the list

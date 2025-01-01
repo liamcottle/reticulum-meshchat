@@ -177,7 +177,7 @@ export default {
                 // import interfaces
                 await window.axios.post('/api/v1/reticulum/interfaces/import', {
                     config: await this.selectedFile.text(),
-                    selected_interfaces: this.selectedInterfaces,
+                    selected_interface_names: this.selectedInterfaces,
                 });
 
                 // dismiss modal
