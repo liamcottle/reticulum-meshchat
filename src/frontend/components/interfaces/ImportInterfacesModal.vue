@@ -33,12 +33,12 @@
                         </div>
                     </div>
                     <div class="space-y-2 max-h-60 overflow-y-auto">
-                        <div v-for="iface in importableInterfaces" :key="iface.name" class="flex items-center p-2 border rounded dark:border-zinc-700">
-                            <input type="checkbox" v-model="selectedInterfaces" :value="iface.name" class="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-zinc-600">
-                            <div class="ml-2 text-sm text-gray-700 dark:text-zinc-200">
+                        <div @click="toggleSelectedInterface(iface.name)" v-for="iface in importableInterfaces" :key="iface.name" class="cursor-pointer flex items-center p-2 border rounded dark:border-zinc-700">
+                            <div class="mr-auto text-sm text-gray-700 dark:text-zinc-200">
                                 <div class="font-semibold">{{ iface.name }}</div>
                                 <div class="text-sm text-gray-500">{{ iface.type }}</div>
                             </div>
+                            <input @click.stop type="checkbox" v-model="selectedInterfaces" :value="iface.name" class="mx-2 h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-zinc-600">
                         </div>
                     </div>
                 </div>
@@ -126,6 +126,26 @@ export default {
                 this.clearSelectedFile();
                 DialogUtils.alert("Failed to parse configuration file");
                 console.error(e);
+            }
+        },
+        isInterfaceSelected(name) {
+            return this.selectedInterfaces.includes(name);
+        },
+        selectInterface(name) {
+            if(!this.isInterfaceSelected(name)){
+                this.selectedInterfaces.push(name);
+            }
+        },
+        deselectInterface(name) {
+            this.selectedInterfaces = this.selectedInterfaces.filter((selectedInterfaceName) => {
+                return selectedInterfaceName !== name;
+            });
+        },
+        toggleSelectedInterface(name) {
+            if(this.isInterfaceSelected(name)){
+                this.deselectInterface(name);
+            } else {
+                this.selectInterface(name);
             }
         },
         selectAllInterfaces() {
