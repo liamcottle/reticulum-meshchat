@@ -48,34 +48,22 @@
                 <div class="text-sm flex space-x-1 dark:text-zinc-100">
 
                     <!-- auto interface -->
-                    <span v-if="iface.type === 'AutoInterface'">
+                    <div v-if="iface.type === 'AutoInterface'">
                         {{ iface.type }} • Ethernet and WiFi
-                    </span>
+                    </div>
 
                     <!-- tcp client interface -->
-                    <span v-else-if="iface.type === 'TCPClientInterface'">
+                    <div v-else-if="iface.type === 'TCPClientInterface'">
                         {{ iface.type }} • {{ iface.target_host }}:{{ iface.target_port }}
-                    </span>
+                    </div>
 
                     <!-- tcp server interface -->
-                    <span v-else-if="iface.type === 'TCPServerInterface'">
+                    <div v-else-if="iface.type === 'TCPServerInterface'">
                         {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }}
-                    </span>
+                    </div>
 
-                    <!-- udp interface -->
-                    <span v-else-if="iface.type === 'UDPInterface'">
-                        {{ iface.type }} • {{ iface.listen_ip }}:{{ iface.listen_port }} • {{ iface.forward_ip }}:{{ iface.forward_port }}
-                    </span>
-
-                    <!-- rnode interface details -->
-                    <span v-else-if="iface.type === 'RNodeInterface'">
-                       {{ iface.type }} • {{ iface.port }} • freq={{ iface.frequency }} • bw={{ iface.bandwidth }} • power={{ iface.txpower }}dBm • sf={{ iface.spreadingfactor }} • cr={{ iface.codingrate }}
-                    </span>
-
-                    <!-- unknown interface types -->
-                    <span v-else>
-                       {{ iface.type ?? 'Unknown Interface Type' }}
-                    </span>
+                    <!-- other interface types -->
+                    <div v-else>{{ iface.type }}</div>
 
                 </div>
             </div>
@@ -167,6 +155,29 @@
 
         </div>
 
+        <!-- extra interface details -->
+        <div v-if="['UDPInterface', 'RNodeInterface'].includes(iface.type)" class="flex p-2 border-t dark:border-zinc-700">
+            <div class="text-sm flex space-x-1 dark:text-zinc-100">
+
+                <!-- udp interface -->
+                <div v-if="iface.type === 'UDPInterface'">
+                    <div>Listen: {{ iface.listen_ip }}:{{ iface.listen_port }}</div>
+                    <div>Forward: {{ iface.forward_ip }}:{{ iface.forward_port }}</div>
+                </div>
+
+                <!-- rnode interface details -->
+                <div v-else-if="iface.type === 'RNodeInterface'">
+                    <div>Port: {{ iface.port }}</div>
+                    <div>Frequency: {{ formatFrequency(iface.frequency) }}</div>
+                    <div>Bandwidth: {{ formatFrequency(iface.bandwidth) }}</div>
+                    <div>Spreading Factor: {{ iface.spreadingfactor }}</div>
+                    <div>Coding Rate: {{ iface.codingrate }}</div>
+                    <div>Transmit Power: {{ iface.txpower }}dBm</div>
+                </div>
+
+            </div>
+        </div>
+
         <div class="flex bg-gray-50 p-1 text-sm text-gray-500 space-x-1 border-t rounded-b dark:bg-zinc-800 dark:text-white dark:border-zinc-700">
 
             <!-- status -->
@@ -233,6 +244,9 @@ export default {
         },
         formatBytes: function(bytes) {
             return Utils.formatBytes(bytes);
+        },
+        formatFrequency(hz) {
+            return Utils.formatFrequency(hz);
         },
     },
 }
