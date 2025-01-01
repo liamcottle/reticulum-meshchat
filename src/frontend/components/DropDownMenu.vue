@@ -14,7 +14,7 @@
             leave-active-class="transition ease-in duration-75"
             leave-from-class="transform opacity-100 scale-100"
             leave-to-class="transform opacity-0 scale-95">
-            <div v-if="isShowingMenu" @click.stop="hideMenu" class="overflow-hidden absolute right-0 z-10 mr-4 w-56 rounded-md bg-white shadow-md border border-gray-200 focus:outline-none" :class="[ dropdownClass ]">
+            <div v-if="isShowingMenu" @click.stop="hideMenu" class="overflow-hidden absolute right-0 z-10 mr-4 w-56 rounded-md bg-white shadow-md border border-gray-200 focus:outline-none dark:border-zinc-700" :class="[ dropdownClass ]">
                 <slot name="items"/>
             </div>
         </Transition>

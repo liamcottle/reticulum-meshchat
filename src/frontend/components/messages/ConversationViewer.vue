@@ -72,15 +72,11 @@
 
             <!-- close button -->
             <div class="my-auto mr-2">
-                <div @click="close" class="cursor-pointer">
-                    <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full">
-                        <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+                <IconButton @click="close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                </IconButton>
             </div>
 
         </div>
@@ -395,10 +391,12 @@ import SendMessageButton from "./SendMessageButton.vue";
 import MaterialDesignIcon from "../MaterialDesignIcon.vue";
 import ConversationDropDownMenu from "./ConversationDropDownMenu.vue";
 import AddImageButton from "./AddImageButton.vue";
+import IconButton from "../IconButton.vue";
 
 export default {
     name: 'ConversationViewer',
     components: {
+        IconButton,
         AddImageButton,
         ConversationDropDownMenu,
         MaterialDesignIcon,

@@ -96,7 +96,7 @@
                     </span>
                 </button>
                 <button v-else @click="enableInterface" type="button" class="cursor-pointer">
-                    <span class="flex text-gray-700 bg-gray-100 dark:bg-zinc-600 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500 hover:bg-gray-200 p-2 dark:bg-zinc-600 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500 rounded-full">
+                    <span class="flex text-gray-700 bg-gray-100 dark:bg-zinc-600 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500 hover:bg-gray-200 p-2 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
                         </svg>
@@ -116,7 +116,7 @@
                     <template v-slot:items>
 
                         <!-- enable/disable interface button -->
-                        <div class="border-b">
+                        <div class="border-b dark:border-zinc-700">
 
                             <!-- enable interface button -->
                             <DropDownMenuItem v-if="isInterfaceEnabled(iface)" @click="disableInterface">
@@ -152,7 +152,7 @@
                         </DropDownMenuItem>
 
                         <!-- delete interface button -->
-                        <div class="border-t">
+                        <div class="border-t dark:border-zinc-700">
                             <DropDownMenuItem @click="deleteInterface">
                                 <svg class="size-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
@@ -167,7 +167,7 @@
 
         </div>
 
-        <div class="flex bg-gray-50 p-1 text-sm text-gray-500 space-x-1 border-t dark:bg-zinc-800 dark:text-white dark:border-zinc-700">
+        <div class="flex bg-gray-50 p-1 text-sm text-gray-500 space-x-1 border-t rounded-b dark:bg-zinc-800 dark:text-white dark:border-zinc-700">
 
             <!-- status -->
             <div v-if="iface._stats?.status === true" class="text-sm text-green-500">Connected</div>
