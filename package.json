@@ -1,6 +1,6 @@
 {
   "name": "reticulum-meshchat",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "description": "",
   "main": "electron/main.js",
   "scripts": {
