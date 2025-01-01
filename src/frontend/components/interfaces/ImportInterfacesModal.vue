@@ -1,7 +1,7 @@
 <template>
     <div v-if="isShowing" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity flex items-center justify-center">
         <div class="flex w-full h-full p-4 overflow-y-auto">
-            <div class="my-auto mx-auto w-full bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-2xl">
+            <div v-click-outside="dismiss" class="my-auto mx-auto w-full bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-2xl">
 
                 <!-- title -->
                 <div class="p-4 border-b dark:border-zinc-700">
