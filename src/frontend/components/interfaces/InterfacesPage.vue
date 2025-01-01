@@ -17,7 +17,9 @@
                 </button>
             </div>
 
-            <div>
+            <div class="flex space-x-1">
+
+                <!-- Add Interface button -->
                 <RouterLink :to="{ name: 'interfaces.add' }">
                     <button type="button" 
                         class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-700 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-700">
@@ -27,6 +29,27 @@
                         <span>Add Interface</span>
                     </button>
                 </RouterLink>
+
+                <!-- Import button -->
+                <div class="my-auto">
+                    <button @click="showImportInterfacesModal" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-700 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        <span>Import</span>
+                    </button>
+                </div>
+
+                <!-- Export button -->
+                <div class="my-auto">
+                    <button @click="exportInterfaces" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 dark:bg-zinc-700 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 dark:hover:bg-zinc-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 dark:focus-visible:outline-zinc-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        <span>Export</span>
+                    </button>
+                </div>
+
             </div>
 
             <!-- enabled interfaces -->
@@ -49,6 +72,10 @@
                 @delete="deleteInterface(iface._name)"/>
         </div>
     </div>
+
+    <!-- Import Dialog -->
+    <ImportInterfacesModal ref="import-interfaces-modal" @dismissed="onImportInterfacesModalDismissed"/>
+
 </template>
 
 <script>
@@ -56,10 +83,12 @@ import DialogUtils from "../../js/DialogUtils";
 import ElectronUtils from "../../js/ElectronUtils";
 import Interface from "./Interface.vue";
 import Utils from "../../js/Utils";
+import ImportInterfacesModal from "./ImportInterfacesModal.vue";
 
 export default {
     name: 'InterfacesPage',
     components: {
+        ImportInterfacesModal,
         Interface,
     },
     data() {
@@ -218,6 +247,31 @@ export default {
             // reload interfaces
             await this.loadInterfaces();
 
+        },
+        async exportInterfaces() {
+            try {
+                const response = await window.axios.get('/api/v1/reticulum/interfaces/export', {
+                    responseType: 'blob'
+                });
+                
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'reticulum_interfaces');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            } catch(e) {
+                DialogUtils.alert("Failed to export interfaces");
+                console.error(e);
+            }
+        },
+        showImportInterfacesModal() {
+            this.$refs["import-interfaces-modal"].show();
+        },
+        onImportInterfacesModalDismissed() {
+            // reload interfaces as something may have been imported
+            this.loadInterfaces();
         },
     },
     computed: {

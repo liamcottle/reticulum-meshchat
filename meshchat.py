@@ -587,6 +587,173 @@ class ReticulumMeshChat:
                 return web.json_response({
                     "message": "Interface has been added",
                 })
+        
+        # export interfaces
+        @routes.get("/api/v1/reticulum/interfaces/export")
+        async def export_interfaces(request):
+            try:
+                output = []
+                for name, interface in self.reticulum.config["interfaces"].items():
+                    output.append(f"[[{name}]]")
+                    for key, value in interface.items():
+                        output.append(f"    {key} = {value}")
+                    output.append("")
+                
+                return web.Response(
+                    text="\n".join(output),
+                    content_type="text/plain",
+                    headers={
+                        "Content-Disposition": "attachment; filename=reticulum_interfaces"
+                    }
+                )
+            except Exception as e:
+                print(f"Export error: {str(e)}")
+                return web.json_response({
+                    "message": f"Failed to export interfaces: {str(e)}"
+                }, status=500)
+
+        # preview importable interfaces
+        @routes.post("/api/v1/reticulum/interfaces/preview")
+        async def preview_interfaces(request):
+            try:
+                reader = await request.multipart()
+                
+                field = await reader.next()
+                if field.name == 'config':
+                    config_text = ''
+                    while True:
+                        chunk = await field.read_chunk()
+                        if not chunk:
+                            break
+                        config_text += chunk.decode('utf-8')
+                
+                interfaces = []
+                current_interface = None
+                
+                for line in config_text.splitlines():
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                        
+                    if line.startswith("[[") and line.endswith("]]"):
+                        if current_interface:
+                            interfaces.append(current_interface)
+                        name = line[2:-2]
+                        current_interface = {
+                            "name": name,
+                            "type": None
+                        }
+                    elif current_interface is not None and "=" in line:
+                        key, value = [x.strip() for x in line.split("=", 1)]
+                        if key == "type":
+                            current_interface["type"] = value
+                
+                if current_interface:
+                    interfaces.append(current_interface)
+                    
+                return web.json_response({
+                    "interfaces": interfaces
+                })
+                
+            except Exception as e:
+                print(f"Preview error: {str(e)}")
+                return web.json_response({
+                    "message": f"Failed to parse config file: {str(e)}"
+                }, status=500)
+        # import interfaces from config
+        @routes.post("/api/v1/reticulum/interfaces/import")
+        async def import_interfaces(request):
+            try:
+                reader = await request.multipart()
+                config_text = None
+                selected_interfaces = None
+                
+                while True:
+                    field = await reader.next()
+                    if field is None:
+                        break
+                        
+                    if field.name == 'config':
+                        config_text = ''
+                        while True:
+                            chunk = await field.read_chunk()
+                            if not chunk:
+                                break
+                            config_text += chunk.decode('utf-8')
+                    elif field.name == 'selected_interfaces':
+                        data = await field.read(decode=True)
+                        selected_interfaces = json.loads(data)
+                
+                print(f"Selected interfaces: {selected_interfaces}")
+                current_interface = None
+                interface_config = {}
+                
+                for line in config_text.splitlines():
+                    line = line.strip()
+                    if not line: 
+                        continue
+                    
+                    if line.startswith("[[") and line.endswith("]]"):
+                        if current_interface and current_interface["name"] in selected_interfaces:
+                            name = current_interface["name"]
+                            interface_config[name] = {
+                                "type": current_interface.get("type"),
+                                "interface_enabled": "true",
+                                "target_host": current_interface.get("target_host"),
+                                "target_port": current_interface.get("target_port"),
+                                "listen_ip": current_interface.get("listen_ip"),
+                                "listen_port": current_interface.get("listen_port"),
+                                "forward_ip": current_interface.get("forward_ip"),
+                                "forward_port": current_interface.get("forward_port"),
+                                "port": current_interface.get("port"),
+                                "frequency": current_interface.get("frequency"),
+                                "bandwidth": current_interface.get("bandwidth"),
+                                "txpower": current_interface.get("txpower"),
+                                "spreadingfactor": current_interface.get("spreadingfactor"),
+                                "codingrate": current_interface.get("codingrate")
+                            }
+                            interface_config[name] = {k: v for k, v in interface_config[name].items() if v is not None}
+                        
+                        name = line[2:-2]
+                        current_interface = {"name": name}
+                    elif current_interface is not None and "=" in line:
+                        key, value = [x.strip() for x in line.split("=", 1)]
+                        value = value.strip('"').strip("'")
+                        current_interface[key] = value
+                
+                if current_interface and current_interface["name"] in selected_interfaces:
+                    name = current_interface["name"]
+                    interface_config[name] = {
+                        "type": current_interface.get("type"),
+                        "interface_enabled": "true",
+                        "target_host": current_interface.get("target_host"),
+                        "target_port": current_interface.get("target_port"),
+                        "listen_ip": current_interface.get("listen_ip"),
+                        "listen_port": current_interface.get("listen_port"),
+                        "forward_ip": current_interface.get("forward_ip"),
+                        "forward_port": current_interface.get("forward_port"),
+                        "port": current_interface.get("port"),
+                        "frequency": current_interface.get("frequency"),
+                        "bandwidth": current_interface.get("bandwidth"),
+                        "txpower": current_interface.get("txpower"),
+                        "spreadingfactor": current_interface.get("spreadingfactor"),
+                        "codingrate": current_interface.get("codingrate")
+                    }
+                    interface_config[name] = {k: v for k, v in interface_config[name].items() if v is not None}
+                
+                # update reticulum config with new interfaces
+                self.reticulum.config["interfaces"].update(interface_config)
+                print("Final interfaces config:", self.reticulum.config["interfaces"])
+                self.reticulum.config.write()
+                return web.json_response({"message": "Interfaces imported successfully"})
+                
+            except Exception as e:
+                print(f"Import error: {str(e)}")
+                print(f"Config text: {config_text}")
+                return web.json_response({
+                    "message": f"Failed to import interfaces: {str(e)}"
+                }, status=500)
+
 
         # handle websocket clients
         @routes.get("/ws")
