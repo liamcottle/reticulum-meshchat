@@ -613,8 +613,8 @@ class ReticulumMeshChat:
                 }, status=500)
 
         # preview importable interfaces
-        @routes.post("/api/v1/reticulum/interfaces/preview")
-        async def preview_interfaces(request):
+        @routes.post("/api/v1/reticulum/interfaces/import-preview")
+        async def import_interfaces_preview(request):
             try:
                 reader = await request.multipart()
                 
@@ -660,6 +660,7 @@ class ReticulumMeshChat:
                 return web.json_response({
                     "message": f"Failed to parse config file: {str(e)}"
                 }, status=500)
+
         # import interfaces from config
         @routes.post("/api/v1/reticulum/interfaces/import")
         async def import_interfaces(request):
@@ -753,7 +754,6 @@ class ReticulumMeshChat:
                 return web.json_response({
                     "message": f"Failed to import interfaces: {str(e)}"
                 }, status=500)
-
 
         # handle websocket clients
         @routes.get("/ws")

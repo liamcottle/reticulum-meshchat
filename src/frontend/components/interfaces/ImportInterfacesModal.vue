@@ -111,7 +111,7 @@ export default {
                 // fetch preview of interfaces to import
                 const formData = new FormData();
                 formData.append('config', file);
-                const response = await window.axios.post('/api/v1/reticulum/interfaces/preview', formData);
+                const response = await window.axios.post('/api/v1/reticulum/interfaces/import-preview', formData);
 
                 // ensure there are some interfaces available to import
                 if(!response.data.interfaces || response.data.interfaces.length === 0){
