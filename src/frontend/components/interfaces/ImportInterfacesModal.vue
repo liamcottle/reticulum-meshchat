@@ -109,9 +109,9 @@ export default {
             try {
 
                 // fetch preview of interfaces to import
-                const formData = new FormData();
-                formData.append('config', file);
-                const response = await window.axios.post('/api/v1/reticulum/interfaces/import-preview', formData);
+                const response = await window.axios.post('/api/v1/reticulum/interfaces/import-preview', {
+                    config: await file.text(),
+                });
 
                 // ensure there are some interfaces available to import
                 if(!response.data.interfaces || response.data.interfaces.length === 0){
@@ -172,15 +172,13 @@ export default {
                 return;
             }
 
-            // create form data to send to server
-            const formData = new FormData();
-            formData.append('config', this.selectedFile);
-            formData.append('selected_interfaces', JSON.stringify(this.selectedInterfaces));
-
             try {
 
                 // import interfaces
-                await window.axios.post('/api/v1/reticulum/interfaces/import', formData);
+                await window.axios.post('/api/v1/reticulum/interfaces/import', {
+                    config: await this.selectedFile.text(),
+                    selected_interfaces: this.selectedInterfaces,
+                });
 
                 // dismiss modal
                 this.dismiss();

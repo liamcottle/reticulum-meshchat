@@ -616,16 +616,10 @@ class ReticulumMeshChat:
         @routes.post("/api/v1/reticulum/interfaces/import-preview")
         async def import_interfaces_preview(request):
             try:
-                reader = await request.multipart()
-                
-                field = await reader.next()
-                if field.name == 'config':
-                    config_text = ''
-                    while True:
-                        chunk = await field.read_chunk()
-                        if not chunk:
-                            break
-                        config_text += chunk.decode('utf-8')
+
+                # get request data
+                data = await request.json()
+                config_text = data.get('config')
                 
                 interfaces = []
                 current_interface = None
@@ -665,25 +659,11 @@ class ReticulumMeshChat:
         @routes.post("/api/v1/reticulum/interfaces/import")
         async def import_interfaces(request):
             try:
-                reader = await request.multipart()
-                config_text = None
-                selected_interfaces = None
-                
-                while True:
-                    field = await reader.next()
-                    if field is None:
-                        break
-                        
-                    if field.name == 'config':
-                        config_text = ''
-                        while True:
-                            chunk = await field.read_chunk()
-                            if not chunk:
-                                break
-                            config_text += chunk.decode('utf-8')
-                    elif field.name == 'selected_interfaces':
-                        data = await field.read(decode=True)
-                        selected_interfaces = json.loads(data)
+
+                # get request data
+                data = await request.json()
+                config_text = data.get('config')
+                selected_interfaces = data.get('selected_interfaces')
                 
                 print(f"Selected interfaces: {selected_interfaces}")
                 current_interface = None
