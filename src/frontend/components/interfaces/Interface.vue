@@ -1,5 +1,5 @@
 <template>
-    <div class="border rounded bg-white shadow overflow-hidden dark:bg-zinc-800 dark:border-zinc-700">
+    <div class="border rounded bg-white shadow dark:bg-zinc-800 dark:border-zinc-700">
 
         <!-- IFAC info -->
         <div v-if="iface._stats?.ifac_signature != null" class="bg-gray-50 p-1 text-sm text-gray-500 space-x-1 border-b dark:bg-zinc-800  dark:border-zinc-700">
@@ -104,37 +104,45 @@
                 </button>
             </div>
 
-            <!-- edit interface button -->
-            <div class="my-auto mr-1">
-                <button @click="editInterface" type="button" class="cursor-pointer">
-                    <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 dark:bg-zinc-600 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500 rounded-full ">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                        </svg>
-                    </span>
-                </button>
-            </div>
-
-            <!-- export interface button -->
-            <div class="my-auto mr-1">
-                <button @click="exportInterface" type="button" class="cursor-pointer">
-                    <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 dark:bg-zinc-600 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500 rounded-full ">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                        </svg>
-                    </span>
-                </button>
-            </div>
-
-            <!-- delete interface button -->
             <div class="my-auto mr-2">
-                <button @click="deleteInterface" type="button" class="cursor-pointer">
-                    <span class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 dark:bg-zinc-600 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
-                    </span>
-                </button>
+                <DropDownMenu>
+                    <template v-slot:button>
+                        <IconButton>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                            </svg>
+                        </IconButton>
+                    </template>
+                    <template v-slot:items>
+
+                        <!-- edit interface button -->
+                        <DropDownMenuItem @click="editInterface">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5">
+                                <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32L19.513 8.2Z" />
+                            </svg>
+                            <span>Edit Interface</span>
+                        </DropDownMenuItem>
+
+                        <!-- export interface button -->
+                        <DropDownMenuItem @click="exportInterface">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5">
+                                <path fill-rule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V3a.75.75 0 0 1 .75-.75Zm-9 13.5a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Export Interface</span>
+                        </DropDownMenuItem>
+
+                        <!-- delete interface button -->
+                        <div class="border-t">
+                            <DropDownMenuItem @click="deleteInterface">
+                                <svg class="size-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-red-500">Delete Interface</span>
+                            </DropDownMenuItem>
+                        </div>
+
+                    </template>
+                </DropDownMenu>
             </div>
 
         </div>
@@ -159,9 +167,17 @@
 <script>
 import DialogUtils from "../../js/DialogUtils";
 import Utils from "../../js/Utils";
+import DropDownMenuItem from "../DropDownMenuItem.vue";
+import IconButton from "../IconButton.vue";
+import DropDownMenu from "../DropDownMenu.vue";
 
 export default {
     name: 'Interface',
+    components: {
+        DropDownMenu,
+        IconButton,
+        DropDownMenuItem,
+    },
     props: {
         iface: Object,
     },
