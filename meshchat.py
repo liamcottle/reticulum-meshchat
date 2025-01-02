@@ -779,6 +779,30 @@ class ReticulumMeshChat:
                 "config": self.get_config_dict(),
             })
 
+        # enable transport mode
+        @routes.post("/api/v1/reticulum/enable-transport")
+        async def index(request):
+
+            # enable transport mode
+            self.reticulum.config["reticulum"]["enable_transport"] = True
+            self.reticulum.config.write()
+
+            return web.json_response({
+                "message": "Transport has been enabled. MeshChat must be restarted for this change to take effect.",
+            })
+
+        # disable transport mode
+        @routes.post("/api/v1/reticulum/disable-transport")
+        async def index(request):
+
+            # disable transport mode
+            self.reticulum.config["reticulum"]["enable_transport"] = False
+            self.reticulum.config.write()
+
+            return web.json_response({
+                "message": "Transport has been disabled. MeshChat must be restarted for this change to take effect.",
+            })
+
         # get calls
         @routes.get("/api/v1/calls")
         async def index(request):
@@ -2006,6 +2030,7 @@ class ReticulumMeshChat:
             "identity_hash": self.identity.hexhash,
             "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             "audio_call_address_hash": self.audio_call_manager.audio_call_receiver.destination.hexhash,
+            "is_transport_enabled": self.reticulum.transport_enabled(),
             "auto_announce_enabled": self.config.auto_announce_enabled.get(),
             "auto_announce_interval_seconds": self.config.auto_announce_interval_seconds.get(),
             "last_announced_at": self.config.last_announced_at.get(),
