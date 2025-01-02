@@ -19,24 +19,6 @@
                 </div>
             </div>
 
-            <!-- interfaces -->
-            <div class="bg-white dark:bg-zinc-800 rounded shadow">
-                <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Interfaces</div>
-                <div class="divide-y divide-gray-300 dark:divide-zinc-700 text-gray-900 dark:text-gray-100">
-
-                    <div class="p-2">
-                        <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <input v-model="config.show_suggested_community_interfaces" @change="onShowSuggestedCommunityInterfacesChange" type="checkbox" class="w-4 h-4 border border-gray-300 dark:border-zinc-600 rounded bg-gray-50 dark:bg-zinc-700 focus:ring-3 focus:ring-blue-300 dark:focus:ring-blue-600">
-                            </div>
-                            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Show Community Interfaces</label>
-                        </div>
-                        <div class="text-sm text-gray-700 dark:text-gray-300">When enabled, community interfaces will be shown on the Add Interface page.</div>
-                    </div>
-
-                </div>
-            </div>
-
             <!-- transport mode -->
             <div class="bg-white dark:bg-zinc-800 rounded shadow">
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Transport Mode</div>
@@ -51,6 +33,24 @@
                         </div>
                         <div class="text-sm text-gray-700 dark:text-gray-300">When enabled, MeshChat will route traffic for other peers, respond to path requests and pass announces over your interfaces.</div>
                         <div class="text-sm text-gray-700 dark:text-gray-300">Changing this setting requires you to restart MeshChat.</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- interfaces -->
+            <div class="bg-white dark:bg-zinc-800 rounded shadow">
+                <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Interfaces</div>
+                <div class="divide-y divide-gray-300 dark:divide-zinc-700 text-gray-900 dark:text-gray-100">
+
+                    <div class="p-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input v-model="config.show_suggested_community_interfaces" @change="onShowSuggestedCommunityInterfacesChange" type="checkbox" class="w-4 h-4 border border-gray-300 dark:border-zinc-600 rounded bg-gray-50 dark:bg-zinc-700 focus:ring-3 focus:ring-blue-300 dark:focus:ring-blue-600">
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Show Community Interfaces</label>
+                        </div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">When enabled, community interfaces will be shown on the Add Interface page.</div>
                     </div>
 
                 </div>
