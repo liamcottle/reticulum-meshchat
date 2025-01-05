@@ -27,6 +27,7 @@ from src.backend.colour_utils import ColourUtils
 from src.backend.interface_config_parser import InterfaceConfigParser
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.backend.audio_call_manager import AudioCall, AudioCallManager
+from src.backend.sideband_commands import SidebandCommands
 
 
 # NOTE: this is required to be able to pack our app with cxfreeze as an exe, otherwise it can't access bundled assets
@@ -2326,6 +2327,19 @@ class ReticulumMeshChat:
     # NOTE: cant be async, as Reticulum doesn't await it
     def on_lxmf_delivery(self, lxmf_message: LXMF.LXMessage):
         try:
+
+            # check if this lxmf message contains a telemetry request command from sideband
+            is_sideband_telemetry_request = False
+            lxmf_fields = lxmf_message.get_fields()
+            if LXMF.FIELD_COMMANDS in lxmf_fields:
+                for command in lxmf_fields[LXMF.FIELD_COMMANDS]:
+                    if SidebandCommands.TELEMETRY_REQUEST in command:
+                        is_sideband_telemetry_request = True
+
+            # ignore telemetry requests from sideband
+            if is_sideband_telemetry_request:
+                print("Ignoring received LXMF message as it is a telemetry request command")
+                return
 
             # upsert lxmf message to database
             self.db_upsert_lxmf_message(lxmf_message)
