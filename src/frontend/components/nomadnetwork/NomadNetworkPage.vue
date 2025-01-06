@@ -93,6 +93,13 @@
         </div>
         <div class="font-semibold">No Active Node</div>
         <div>Select a Node to start browsing!</div>
+        <div class="mx-auto mt-2">
+            <button @click.stop="openUrl" type="button"
+                class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500
+                dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                Open a Nomadnet URL
+            </button>
+        </div>
     </div>
 </div>
 
@@ -288,6 +295,18 @@ export default {
         },
         updateNodeFromAnnounce: function(announce) {
             this.nodes[announce.destination_hash] = announce;
+        },
+        async openUrl() {
+
+            // ask for url
+            const url = await DialogUtils.prompt("Enter a Nomadnet URL");
+            if(!url){
+                return;
+            }
+
+            // navigate to the url
+            await this.onNodePageUrlClick(url);
+
         },
         async loadNodePage(destinationHash, pagePath, fieldData = null, addToHistory = true, loadFromCache = true) {
 
