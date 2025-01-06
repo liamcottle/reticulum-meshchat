@@ -375,6 +375,13 @@
         </div>
         <div class="font-semibold dark:text-white">No Active Chat</div>
         <div class='dark:text-zinc-300'>Select a Peer to start chatting!</div>
+        <div class="mx-auto mt-2">
+            <button @click.stop="openLXMFAddress" type="button"
+                    class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500
+                dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                Enter an LXMF Address
+            </button>
+        </div>
     </div>
 
 </template>
@@ -392,6 +399,7 @@ import MaterialDesignIcon from "../MaterialDesignIcon.vue";
 import ConversationDropDownMenu from "./ConversationDropDownMenu.vue";
 import AddImageButton from "./AddImageButton.vue";
 import IconButton from "../IconButton.vue";
+import GlobalEmitter from "../../js/GlobalEmitter";
 
 export default {
     name: 'ConversationViewer',
@@ -593,6 +601,9 @@ export default {
                     break;
                 }
             }
+        },
+        openLXMFAddress() {
+            GlobalEmitter.emit("compose-new-message");
         },
         onLxmfMessageReceived(lxmfMessage) {
 
