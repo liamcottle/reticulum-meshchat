@@ -88,6 +88,11 @@ export default {
                 }
             }
 
+            // if user provided an address with an "lxmf@" prefix, lets remove that to get the raw destination hash
+            if(destinationHash.startsWith("lxmf@")){
+                destinationHash = destinationHash.replace("lxmf@", "");
+            }
+
             // attempt to find existing peer so we can show their name
             const existingPeer = this.peers[destinationHash];
             if(existingPeer){
