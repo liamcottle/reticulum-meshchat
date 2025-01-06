@@ -583,11 +583,11 @@ class ReticulumMeshChat:
 
             if allow_overwriting_interface:
                 return web.json_response({
-                    "message": "Interface has been saved",
+                    "message": "Interface has been saved. Please restart MeshChat for these changes to take effect.",
                 })
             else:
                 return web.json_response({
-                    "message": "Interface has been added",
+                    "message": "Interface has been added. Please restart MeshChat for these changes to take effect.",
                 })
         
         # export interfaces
