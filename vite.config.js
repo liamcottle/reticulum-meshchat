@@ -1,13 +1,40 @@
 import path from "path";
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
+import { VitePWA } from 'vite-plugin-pwa'
+
 
 export default {
+  plugins: [
+    vue(),
+    vuetify(),
+    VitePWA({
+        workbox: {
+            maximumFileSizeToCacheInBytes: 3000000,
+      },
+      registerType: 'autoUpdate', // Automatically update the service worker when a new version is available
+      manifest: {
+        name: 'Reticulum MeshChat',
+        short_name: 'MeshChat',
+        description: 'A simple mesh network communications app powered by the Reticulum Network Stack.',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: '/logo/logo-192.png',  // Reference the icon in the public folder
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/logo/icon-512.png',  // Larger icon for better resolution
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
+  ],
 
-    plugins: [
-        vue(),
-        vuetify(),
-    ],
+
 
     // vite app is loaded from /src/frontend
     root: path.join(__dirname, "src", "frontend"),
@@ -32,3 +59,4 @@ export default {
     },
 
 }
+
