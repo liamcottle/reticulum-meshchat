@@ -89,7 +89,7 @@
                 <div v-for="chatItem of selectedPeerChatItemsReversed" :key="chatItem.lxmf_message.hash" class="flex flex-col max-w-xl mt-3" :class="{ 'ml-auto pl-4 md:pl-16 items-end': chatItem.is_outbound, 'mr-auto pr-4 md:pr-16 items-start': !chatItem.is_outbound }">
 
                     <!-- message content -->
-                    <div @click="onChatItemClick(chatItem)" class="border border-gray-300 dark:border-zinc-800 rounded-xl shadow overflow-hidden" :class="[ chatItem.lxmf_message.state === 'failed' ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
+                    <div @click="onChatItemClick(chatItem)" class="border border-gray-300 dark:border-zinc-800 rounded-xl shadow overflow-hidden" :class="[ ['cancelled', 'failed'].includes(chatItem.lxmf_message.state) ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
 
                         <div class="w-full space-y-0.5 px-2.5 py-1">
 
@@ -163,7 +163,7 @@
                     </div>
 
                     <!-- message state -->
-                    <div v-if="chatItem.is_outbound" class="flex text-right" :class="[ chatItem.lxmf_message.state === 'failed' ? 'text-red-500' : 'text-gray-500' ]">
+                    <div v-if="chatItem.is_outbound" class="flex text-right" :class="[ ['cancelled', 'failed'].includes(chatItem.lxmf_message.state) ? 'text-red-500' : 'text-gray-500' ]">
                         <div class="flex ml-auto space-x-1">
 
                             <!-- state label -->
@@ -183,6 +183,13 @@
                             <div v-if="chatItem.lxmf_message.state === 'delivered'" class="my-auto">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                                     <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+
+                            <!-- cancelled icon -->
+                            <div v-else-if="chatItem.lxmf_message.state === 'cancelled'" class="my-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5">
+                                    <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
                                 </svg>
                             </div>
 
