@@ -2190,6 +2190,10 @@ class ReticulumMeshChat:
             lxmf_message_state = "sent"
         elif lxmf_message.state == LXMF.LXMessage.DELIVERED:
             lxmf_message_state = "delivered"
+        elif lxmf_message.state == LXMF.LXMessage.REJECTED:
+            lxmf_message_state = "rejected"
+        elif lxmf_message.state == LXMF.LXMessage.CANCELLED:
+            lxmf_message_state = "cancelled"
         elif lxmf_message.state == LXMF.LXMessage.FAILED:
             lxmf_message_state = "failed"
 
