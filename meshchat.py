@@ -1536,6 +1536,30 @@ class ReticulumMeshChat:
                     "message": "Sending Failed: {}".format(str(e)),
                 }, status=503)
 
+        # cancel sending lxmf message
+        @routes.post("/api/v1/lxmf-messages/{hash}/cancel")
+        async def index(request):
+
+            # get path params
+            hash = request.match_info.get("hash", None)
+
+            # convert hash to bytes
+            hash_as_bytes = bytes.fromhex(hash)
+
+            # cancel outbound message by lxmf message hash
+            self.message_router.cancel_outbound(hash_as_bytes)
+
+            # get lxmf message from database
+            lxmf_message = None
+            db_lxmf_message = database.LxmfMessage.get_or_none(database.LxmfMessage.hash == hash)
+            if db_lxmf_message is not None:
+                lxmf_message = self.convert_db_lxmf_message_to_dict(db_lxmf_message)
+
+            return web.json_response({
+                "message": "ok",
+                "lxmf_message": lxmf_message,
+            })
+
         # delete lxmf message
         @routes.delete("/api/v1/lxmf-messages/{hash}")
         async def index(request):

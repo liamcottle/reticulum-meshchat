@@ -175,6 +175,7 @@
                                     <span v-if="chatItem.lxmf_message.state === 'sent' && chatItem.lxmf_message.method === 'propagated'">to propagation node</span>
                                     <span v-if="chatItem.lxmf_message.state === 'sending'">{{ chatItem.lxmf_message.progress.toFixed(0) }}%</span>
                                 </span>
+                                <a v-if="chatItem.lxmf_message.state === 'outbound' || chatItem.lxmf_message.state === 'sending' || chatItem.lxmf_message.state === 'sent'" @click="cancelSendingMessage(chatItem)" class="ml-1 cursor-pointer underline text-blue-500">cancel?</a>
                                 <a v-if="chatItem.lxmf_message.state === 'failed'" @click="retrySendingMessage(chatItem)" class="ml-1 cursor-pointer underline text-blue-500">retry?</a>
                             </div>
 
@@ -1113,6 +1114,38 @@ export default {
 
             } finally {
                 this.isSendingMessage = false;
+            }
+
+        },
+        async cancelSendingMessage(chatItem) {
+
+            // get lxmf message hash else do nothing
+            const lxmfMessageHash = chatItem.lxmf_message.hash;
+            if(!lxmfMessageHash){
+                return;
+            }
+
+            try {
+
+                // cancel sending lxmf message
+                const response = await window.axios.post(`/api/v1/lxmf-messages/${lxmfMessageHash}/cancel`);
+
+                // get lxmf message from response
+                const lxmfMessage = response.data.lxmf_message;
+                if(!lxmfMessage){
+                    return;
+                }
+
+                // update lxmf message in ui
+                this.onLxmfMessageUpdated(lxmfMessage);
+
+            } catch(e) {
+
+                // show error
+                const message = e.response?.data?.message ?? "failed to cancel message";
+                DialogUtils.alert(message);
+                console.log(e);
+
             }
 
         },
