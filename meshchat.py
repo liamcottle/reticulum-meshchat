@@ -1863,6 +1863,7 @@ class ReticulumMeshChat:
                 else:
                     print(f"unhandled field: {field}")
         return data
+
     def convert_nomadnet_field_data_to_map(self, field_data):
         data = {}
         if field_data is not None or "{}":
@@ -1877,9 +1878,6 @@ class ReticulumMeshChat:
                 print(f"skipping invalid field data: {e}")
         
         return data
-
-
-
 
     # handle data received from websocket client
     async def on_websocket_data_received(self, client, data):
