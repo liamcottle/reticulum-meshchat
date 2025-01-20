@@ -23,6 +23,7 @@ from serial.tools import list_ports
 
 import database
 from src.backend.announce_handler import AnnounceHandler
+from src.backend.async_utils import AsyncUtils
 from src.backend.colour_utils import ColourUtils
 from src.backend.interface_config_parser import InterfaceConfigParser
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
@@ -2408,7 +2409,7 @@ class ReticulumMeshChat:
         self.db_upsert_lxmf_message(lxmf_message)
 
         # send lxmf message state to all websocket clients
-        asyncio.run(self.websocket_broadcast(json.dumps({
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
             "type": "lxmf_message_state_updated",
             "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
         })))
