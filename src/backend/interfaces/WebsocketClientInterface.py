@@ -104,6 +104,12 @@ class WebsocketClientInterface(Interface):
 
         self.online = False
 
+    # todo implement
+    def detach(self):
+        # todo mark as offline
+        # todo close websocket
+        # todo mark as detached
+        pass
 
 # set interface class RNS should use when importing this external interface
 interface_class = WebsocketClientInterface

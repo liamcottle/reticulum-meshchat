@@ -128,6 +128,12 @@ class WebsocketServerInterface(Interface):
         self.online = False
         await self.serve()
 
+    # todo implement
+    def detach(self):
+        # todo mark as offline
+        # todo stop websocket server and all existing connections
+        # todo mark as detached
+        pass
 
 # set interface class RNS should use when importing this external interface
 interface_class = WebsocketServerInterface
