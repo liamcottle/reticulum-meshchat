@@ -15,7 +15,7 @@
             :my-lxmf-address-hash="config?.lxmf_address_hash"
             :selected-peer="selectedPeer"
             :conversations="conversations"
-            @close="selectedPeer = null"
+            @close="onCloseConversationViewer"
             @reload-conversations="getConversations"/>
 
     </div>
@@ -211,7 +211,18 @@ export default {
             this.peers[announce.destination_hash] = announce;
         },
         onPeerClick: function(peer) {
+
+            // update selected peer
             this.selectedPeer = peer;
+
+            // update current route
+            this.$router.replace({
+                name: "messages",
+                params: {
+                    destinationHash: peer.destination_hash,
+                },
+            });
+
         },
         onConversationClick: function(conversation) {
 
@@ -220,6 +231,17 @@ export default {
 
             // mark conversation as read
             this.$refs["conversation-viewer"].markConversationAsRead(conversation);
+
+        },
+        onCloseConversationViewer: function() {
+
+            // clear selected peer
+            this.selectedPeer = null;
+
+            // update current route
+            this.$router.replace({
+                name: "messages",
+            });
 
         },
     },
