@@ -202,6 +202,19 @@ export default {
 
                     }
 
+                    // handle double click on nomadnetwork.node node
+                    if(announce.aspect === "nomadnetwork.node"){
+
+                        // go to nomadnetwork page for this destination hash
+                        this.$router.push({
+                            name: "nomadnetwork",
+                            params: {
+                                destinationHash: announce.destination_hash,
+                            },
+                        });
+
+                    }
+
                 }
 
             });

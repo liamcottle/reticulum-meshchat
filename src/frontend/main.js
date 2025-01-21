@@ -57,7 +57,8 @@ const router = createRouter({
         },
         {
             name: "nomadnetwork",
-            path: '/nomadnetwork',
+            path: '/nomadnetwork/:destinationHash?',
+            props: true,
             component: defineAsyncComponent(() => import("./components/nomadnetwork/NomadNetworkPage.vue")),
         },
         {
