@@ -344,6 +344,14 @@ export default {
         },
         async loadNodePage(destinationHash, pagePath, fieldData = null, addToHistory = true, loadFromCache = true) {
 
+            // update current route
+            this.$router.replace({
+                name: "nomadnetwork",
+                params: {
+                    destinationHash: destinationHash,
+                },
+            });
+
             // get new sequence for this page load
             const seq = ++this.nodePageRequestSequence;
 
@@ -676,14 +684,6 @@ export default {
 
             // update selected node
             this.selectedNode = node;
-
-            // update current route
-            this.$router.replace({
-                name: "nomadnetwork",
-                params: {
-                    destinationHash: node.destination_hash,
-                },
-            });
 
             // load default node page
             this.loadNodePage(node.destination_hash, this.defaultNodePagePath);
