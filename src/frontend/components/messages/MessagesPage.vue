@@ -38,6 +38,9 @@ export default {
         ConversationViewer,
         MessagesSidebar,
     },
+    props: {
+        destinationHash: String,
+    },
     data() {
         return {
 
@@ -76,6 +79,11 @@ export default {
             this.getConversations();
         }, 5000);
 
+        // compose message if a destination hash was provided on page load
+        if(this.destinationHash){
+            this.onComposeNewMessage(this.destinationHash);
+        }
+
     },
     methods: {
         async onComposeNewMessage(destinationHash) {
@@ -92,6 +100,9 @@ export default {
             if(destinationHash.startsWith("lxmf@")){
                 destinationHash = destinationHash.replace("lxmf@", "");
             }
+
+            // fetch updated announce as we might be composing new message before we loaded the announces list
+            await this.getLxmfDeliveryAnnounce(destinationHash);
 
             // attempt to find existing peer so we can show their name
             const existingPeer = this.peers[destinationHash];
@@ -162,6 +173,28 @@ export default {
 
             } catch(e) {
                 // do nothing if failed to load announces
+                console.log(e);
+            }
+        },
+        async getLxmfDeliveryAnnounce(destinationHash) {
+            try {
+
+                // fetch announce for destination hash
+                const response = await window.axios.get(`/api/v1/announces`, {
+                    params: {
+                        destination_hash: destinationHash,
+                        limit: 1,
+                    },
+                });
+
+                // update ui
+                const lxmfDeliveryAnnounces = response.data.announces;
+                for(const lxmfDeliveryAnnounce of lxmfDeliveryAnnounces){
+                    this.updatePeerFromAnnounce(lxmfDeliveryAnnounce);
+                }
+
+            } catch(e) {
+                // do nothing if failed to load announce
                 console.log(e);
             }
         },

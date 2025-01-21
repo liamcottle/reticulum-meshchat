@@ -46,7 +46,8 @@ const router = createRouter({
         },
         {
             name: "messages",
-            path: '/messages',
+            path: '/messages/:destinationHash?',
+            props: true,
             component: defineAsyncComponent(() => import("./components/messages/MessagesPage.vue")),
         },
         {

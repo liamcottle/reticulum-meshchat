@@ -165,6 +165,47 @@ export default {
                 },
             });
 
+            // handle double click on a node
+            this.network.on("doubleClick", (params) => {
+
+                // get clicked node id
+                const clickedNodeId = params.nodes[0];
+                if(!clickedNodeId){
+                    return;
+                }
+
+                // find node by id
+                const node = this.network.body.nodes[clickedNodeId];
+                if(!node){
+                    return;
+                }
+
+                // handle double click on an announce node
+                if(node.options.group === "announce"){
+
+                    // get announce
+                    const announce = node.options._announce;
+                    if(!announce) {
+                        return;
+                    }
+
+                    // handle double click on lxmf.delivery node
+                    if(announce.aspect === "lxmf.delivery"){
+
+                        // go to messages page for this destination hash
+                        this.$router.push({
+                            name: "messages",
+                            params: {
+                                destinationHash: announce.destination_hash,
+                            },
+                        });
+
+                    }
+
+                }
+
+            });
+
             // update network
             await this.update();
 
@@ -357,6 +398,9 @@ export default {
                     ].filter((line) => line != null).join("\n");
 
                 }
+
+                // attach announce to this node
+                node._announce = announce;
 
                 // add node
                 nodes.push(node);
