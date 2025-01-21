@@ -581,8 +581,12 @@ export default {
             if(url.startsWith("lxmf@")){
                 const destinationHash = url.replace("lxmf@", "");
                 if(destinationHash.length === 32){
-                    await this.$router.push({ name: "messages" });
-                    GlobalEmitter.emit("compose-new-message", destinationHash);
+                    await this.$router.push({
+                        name: "messages",
+                        params: {
+                            destinationHash: destinationHash,
+                        },
+                    });
                     return;
                 }
             }
