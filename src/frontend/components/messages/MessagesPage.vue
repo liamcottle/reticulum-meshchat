@@ -15,7 +15,7 @@
             :my-lxmf-address-hash="config?.lxmf_address_hash"
             :selected-peer="selectedPeer"
             :conversations="conversations"
-            @close="selectedPeer = null"
+            @close="onCloseConversationViewer"
             @reload-conversations="getConversations"/>
 
     </div>
@@ -37,6 +37,9 @@ export default {
     components: {
         ConversationViewer,
         MessagesSidebar,
+    },
+    props: {
+        destinationHash: String,
     },
     data() {
         return {
@@ -76,6 +79,11 @@ export default {
             this.getConversations();
         }, 5000);
 
+        // compose message if a destination hash was provided on page load
+        if(this.destinationHash){
+            this.onComposeNewMessage(this.destinationHash);
+        }
+
     },
     methods: {
         async onComposeNewMessage(destinationHash) {
@@ -92,6 +100,9 @@ export default {
             if(destinationHash.startsWith("lxmf@")){
                 destinationHash = destinationHash.replace("lxmf@", "");
             }
+
+            // fetch updated announce as we might be composing new message before we loaded the announces list
+            await this.getLxmfDeliveryAnnounce(destinationHash);
 
             // attempt to find existing peer so we can show their name
             const existingPeer = this.peers[destinationHash];
@@ -165,6 +176,28 @@ export default {
                 console.log(e);
             }
         },
+        async getLxmfDeliveryAnnounce(destinationHash) {
+            try {
+
+                // fetch announce for destination hash
+                const response = await window.axios.get(`/api/v1/announces`, {
+                    params: {
+                        destination_hash: destinationHash,
+                        limit: 1,
+                    },
+                });
+
+                // update ui
+                const lxmfDeliveryAnnounces = response.data.announces;
+                for(const lxmfDeliveryAnnounce of lxmfDeliveryAnnounces){
+                    this.updatePeerFromAnnounce(lxmfDeliveryAnnounce);
+                }
+
+            } catch(e) {
+                // do nothing if failed to load announce
+                console.log(e);
+            }
+        },
         async getConversations() {
             try {
                 const response = await window.axios.get(`/api/v1/lxmf/conversations`);
@@ -178,7 +211,18 @@ export default {
             this.peers[announce.destination_hash] = announce;
         },
         onPeerClick: function(peer) {
+
+            // update selected peer
             this.selectedPeer = peer;
+
+            // update current route
+            this.$router.replace({
+                name: "messages",
+                params: {
+                    destinationHash: peer.destination_hash,
+                },
+            });
+
         },
         onConversationClick: function(conversation) {
 
@@ -187,6 +231,17 @@ export default {
 
             // mark conversation as read
             this.$refs["conversation-viewer"].markConversationAsRead(conversation);
+
+        },
+        onCloseConversationViewer: function() {
+
+            // clear selected peer
+            this.selectedPeer = null;
+
+            // update current route
+            this.$router.replace({
+                name: "messages",
+            });
 
         },
     },

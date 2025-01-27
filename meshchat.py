@@ -23,6 +23,7 @@ from serial.tools import list_ports
 
 import database
 from src.backend.announce_handler import AnnounceHandler
+from src.backend.async_utils import AsyncUtils
 from src.backend.colour_utils import ColourUtils
 from src.backend.interface_config_parser import InterfaceConfigParser
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
@@ -1177,6 +1178,7 @@ class ReticulumMeshChat:
             # get query params
             aspect = request.query.get("aspect", None)
             identity_hash = request.query.get("identity_hash", None)
+            destination_hash = request.query.get("destination_hash", None)
             limit = request.query.get("limit", None)
 
             # build announces database query
@@ -1189,6 +1191,10 @@ class ReticulumMeshChat:
             # filter by provided identity hash
             if identity_hash is not None:
                 query = query.where(database.Announce.identity_hash == identity_hash)
+
+            # filter by provided destination hash
+            if destination_hash is not None:
+                query = query.where(database.Announce.destination_hash == destination_hash)
 
             # limit results
             if limit is not None:
@@ -1710,6 +1716,30 @@ class ReticulumMeshChat:
                 return web.json_response({
                     "message": "Sending Failed: {}".format(str(e)),
                 }, status=503)
+
+        # cancel sending lxmf message
+        @routes.post("/api/v1/lxmf-messages/{hash}/cancel")
+        async def index(request):
+
+            # get path params
+            hash = request.match_info.get("hash", None)
+
+            # convert hash to bytes
+            hash_as_bytes = bytes.fromhex(hash)
+
+            # cancel outbound message by lxmf message hash
+            self.message_router.cancel_outbound(hash_as_bytes)
+
+            # get lxmf message from database
+            lxmf_message = None
+            db_lxmf_message = database.LxmfMessage.get_or_none(database.LxmfMessage.hash == hash)
+            if db_lxmf_message is not None:
+                lxmf_message = self.convert_db_lxmf_message_to_dict(db_lxmf_message)
+
+            return web.json_response({
+                "message": "ok",
+                "lxmf_message": lxmf_message,
+            })
 
         # delete lxmf message
         @routes.delete("/api/v1/lxmf-messages/{hash}")
@@ -2369,6 +2399,10 @@ class ReticulumMeshChat:
             lxmf_message_state = "sent"
         elif lxmf_message.state == LXMF.LXMessage.DELIVERED:
             lxmf_message_state = "delivered"
+        elif lxmf_message.state == LXMF.LXMessage.REJECTED:
+            lxmf_message_state = "rejected"
+        elif lxmf_message.state == LXMF.LXMessage.CANCELLED:
+            lxmf_message_state = "cancelled"
         elif lxmf_message.state == LXMF.LXMessage.FAILED:
             lxmf_message_state = "failed"
 
@@ -2563,7 +2597,7 @@ class ReticulumMeshChat:
         self.db_upsert_lxmf_message(lxmf_message)
 
         # send lxmf message state to all websocket clients
-        asyncio.run(self.websocket_broadcast(json.dumps({
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
             "type": "lxmf_message_state_updated",
             "lxmf_message": self.convert_lxmf_message_to_dict(lxmf_message),
         })))
@@ -2838,9 +2872,10 @@ class ReticulumMeshChat:
             has_delivered = lxmf_message.state == LXMF.LXMessage.DELIVERED
             has_propagated = lxmf_message.state == LXMF.LXMessage.SENT and lxmf_message.method == LXMF.LXMessage.PROPAGATED
             has_failed = lxmf_message.state == LXMF.LXMessage.FAILED
+            is_cancelled = lxmf_message.state == LXMF.LXMessage.CANCELLED
 
             # check if we should stop updating
-            if has_delivered or has_propagated or has_failed:
+            if has_delivered or has_propagated or has_failed or is_cancelled:
                 should_update_message = False
 
     # handle an announce received from reticulum, for an audio call address

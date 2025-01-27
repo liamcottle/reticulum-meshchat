@@ -1,11 +1,11 @@
 <template>
-    <RouterLink :to="to" v-slot="{ href, route, navigate, isActive, isExactActive }" custom>
+    <RouterLink :to="to" v-slot="{ href, route, navigate, isActive }" custom>
         <a 
             :href="href" 
             @click="handleNavigate($event, navigate)" 
             type="button" 
             :class="[ 
-                isExactActive 
+                isActive
                     ? 'bg-blue-100 text-blue-800 group:text-blue-800 dark:bg-zinc-800 dark:text-blue-300' 
                     : 'hover:bg-gray-100 dark:hover:bg-zinc-700'
             ]" 

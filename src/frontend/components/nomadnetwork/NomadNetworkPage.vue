@@ -23,7 +23,7 @@
 
         <!-- close button -->
         <div class="my-auto ml-auto mr-2">
-          <div @click="selectedNode = null" class="cursor-pointer">
+          <div @click="onCloseNodeViewer" class="cursor-pointer">
             <div
                 class="flex text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 p-1 rounded-full">
               <div>
@@ -39,7 +39,7 @@
 
       <!-- browser navigation -->
       <div class="flex w-full border-gray-300 dark:border-zinc-800 border-b p-2">
-        <button @click="loadNodePage(selectedNode.destination_hash, '/page/index.mu')" type="button"
+        <button @click="loadNodePage(selectedNode.destination_hash, defaultNodePagePath)" type="button"
                 class="my-auto text-gray-500 dark:text-gray-300 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 rounded p-1 cursor-pointer">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
             <path fill-rule="evenodd"
@@ -80,7 +80,7 @@
       </div>
 
       <!-- page content -->
-      <div class="h-full overflow-y-scroll p-3 bg-black text-white max-w-fullnodeContainer">
+      <div class="h-full overflow-y-scroll p-3 bg-black text-white nodeContainer">
         <div class="flex" v-if="isLoadingNodePage">
           <div class="my-auto">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -168,6 +168,9 @@ export default {
   components: {
     NomadNetworkSidebar,
   },
+  props: {
+    destinationHash: String,
+  },
   data() {
     return {
 
@@ -176,6 +179,7 @@ export default {
       selectedNodePath: null,
 
       isLoadingNodePage: false,
+      defaultNodePagePath: "/page/index.mu",
       nodePageRequestSequence: 0,
       nodePagePath: null,
       nodePagePathUrlInput: null,
@@ -183,7 +187,6 @@ export default {
       nodePageProgress: 0,
       nodePagePathHistory: [],
       nodePageCache: {},
-
 
       isDownloadingNodeFile: false,
       nodeFilePath: null,
@@ -207,6 +210,15 @@ export default {
     window.onNodePageUrlClick = (url, options = null) => {
       this.onNodePageUrlClick(url, options);
     };
+
+    // load nomadnetwork node if a destination hash was provided on page load
+    if (this.destinationHash) {
+      (async () => {
+        // fetch updated announce as we are probably loading node page before we loaded the announces list
+        await this.getNomadnetworkNodeAnnounce(this.destinationHash);
+        await this.onNodePageUrlClick(`${this.destinationHash}:${this.defaultNodePagePath}`);
+      })();
+    }
 
     this.getNomadnetworkNodeAnnounces();
 
@@ -320,6 +332,28 @@ export default {
         console.log(e);
       }
     },
+    async getNomadnetworkNodeAnnounce(destinationHash) {
+      try {
+
+        // fetch announces for "nomadnetwork.node" aspect
+        const response = await window.axios.get(`/api/v1/announces`, {
+          params: {
+            destination_hash: destinationHash,
+            limit: 1,
+          },
+        });
+
+        // update ui
+        const nodeAnnounces = response.data.announces;
+        for (const nodeAnnounce of nodeAnnounces) {
+          this.updateNodeFromAnnounce(nodeAnnounce);
+        }
+
+      } catch (e) {
+        // do nothing if failed to load announce
+        console.log(e);
+      }
+    },
     updateNodeFromAnnounce: function (announce) {
       this.nodes[announce.destination_hash] = announce;
     },
@@ -336,6 +370,14 @@ export default {
 
     },
     async loadNodePage(destinationHash, pagePath, fieldData = null, addToHistory = true, loadFromCache = true) {
+
+      // update current route
+      this.$router.replace({
+        name: "nomadnetwork",
+        params: {
+          destinationHash: destinationHash,
+        },
+      });
 
       // get new sequence for this page load
       const seq = ++this.nodePageRequestSequence;
@@ -462,9 +504,9 @@ export default {
         // remove leading ":"
         var path = url.substring(1);
 
-        // if page path is empty we should load "/page/index.mu"
+        // if page path is empty we should load default page path
         if (path === "") {
-          path = "/page/index.mu";
+          path = this.defaultNodePagePath;
         }
 
         return {
@@ -494,7 +536,7 @@ export default {
       if (url.length === 32) {
         return {
           destination_hash: url,
-          path: "/page/index.mu",
+          path: this.defaultNodePagePath,
         };
       }
 
@@ -566,8 +608,12 @@ export default {
       if (url.startsWith("lxmf@")) {
         const destinationHash = url.replace("lxmf@", "");
         if (destinationHash.length === 32) {
-          await this.$router.push({name: "messages"});
-          GlobalEmitter.emit("compose-new-message", destinationHash);
+          await this.$router.push({
+            name: "messages",
+            params: {
+              destinationHash: destinationHash,
+            },
+          });
           return;
         }
       }
@@ -666,8 +712,24 @@ export default {
 
     },
     onNodeClick: function (node) {
+
+      // update selected node
       this.selectedNode = node;
-      this.loadNodePage(node.destination_hash, "/page/index.mu");
+
+      // load default node page
+      this.loadNodePage(node.destination_hash, this.defaultNodePagePath);
+
+    },
+    onCloseNodeViewer: function () {
+
+      // clear selected node
+      this.selectedNode = null;
+
+      // update current route
+      this.$router.replace({
+        name: "nomadnetwork",
+      });
+
     },
     getNomadnetPageDownloadCallbackKey: function (destinationHash, pagePath) {
       return `${destinationHash}:${pagePath}`;
