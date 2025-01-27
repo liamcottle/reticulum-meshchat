@@ -100,6 +100,11 @@ class WebsocketServerInterface(Interface):
             spawned_interface.parent_interface = self
             spawned_interface.online = True
 
+            # todo implement?
+            spawned_interface.announce_rate_target = None
+            spawned_interface.announce_rate_grace = None
+            spawned_interface.announce_rate_penalty = None
+
             # todo ifac?
             # todo announce rates?
 
