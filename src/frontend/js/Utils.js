@@ -4,7 +4,7 @@ class Utils {
 
     static formatBytes(bytes) {
 
-        if (bytes === 0) {
+        if(bytes === 0){
             return '0 Bytes';
         }
 
@@ -36,31 +36,31 @@ class Utils {
 
         const parsedSeconds = this.parseSeconds(seconds);
 
-        if (parsedSeconds.days > 0) {
-            if (parsedSeconds.days === 1) {
+        if(parsedSeconds.days > 0){
+            if(parsedSeconds.days === 1){
                 return "1 day ago";
             } else {
                 return parsedSeconds.days + " days ago";
             }
         }
 
-        if (parsedSeconds.hours > 0) {
-            if (parsedSeconds.hours === 1) {
+        if(parsedSeconds.hours > 0){
+            if(parsedSeconds.hours === 1){
                 return "1 hour ago";
             } else {
                 return parsedSeconds.hours + " hours ago";
             }
         }
 
-        if (parsedSeconds.minutes > 0) {
-            if (parsedSeconds.minutes === 1) {
+        if(parsedSeconds.minutes > 0){
+            if(parsedSeconds.minutes === 1){
                 return "1 min ago";
             } else {
                 return parsedSeconds.minutes + " mins ago";
             }
         }
 
-        if (parsedSeconds.seconds <= 1) {
+        if(parsedSeconds.seconds <= 1){
             return "a second ago";
         } else {
             return parsedSeconds.seconds + " seconds ago";
@@ -98,7 +98,7 @@ class Utils {
         var binary = '';
         var bytes = new Uint8Array(arrayBuffer);
         var len = bytes.byteLength;
-        for (var i = 0; i < len; i++) {
+        for(var i = 0; i < len; i++){
             binary += String.fromCharCode(bytes[i]);
         }
         return window.btoa(binary);
@@ -106,7 +106,7 @@ class Utils {
 
     static formatBitsPerSecond(bits) {
 
-        if (bits === 0) {
+        if(bits === 0){
             return '0 bps';
         }
 
@@ -122,7 +122,7 @@ class Utils {
 
     static formatFrequency(hz) {
 
-        if (hz === 0 || hz == null) {
+        if(hz === 0 || hz == null){
             return '0 Hz';
         }
 
@@ -136,19 +136,19 @@ class Utils {
 
     static decodeBase64ToUtf8String(base64) {
         // support for decoding base64 as a utf8 string to support emojis and cyrillic characters etc
-        return decodeURIComponent(atob(base64).split('').map(function (c) {
+        return decodeURIComponent(atob(base64).split('').map(function(c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
     }
 
     static isInterfaceEnabled(iface) {
         const rawValue = iface.enabled ?? iface.interface_enabled;
-        if (rawValue == true) {
+        if (rawValue === true) {
             // when enabled or interface_enabled is True it needs to return true.
             return true;
         }
         const value = rawValue?.toLowerCase();
-        return value === "on" || value === "yes" || value === "true" || value == true;
+        return value === "on" || value === "yes" || value === "true";
     }
 
 }

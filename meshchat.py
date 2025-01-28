@@ -1226,7 +1226,8 @@ class ReticulumMeshChat:
                 "propagation_node_status": {
                     "state": self.convert_propagation_node_state_to_string(
                         self.message_router.propagation_transfer_state),
-                    "progress": self.message_router.propagation_transfer_progress * 100,  # convert to percentage
+                    "progress": self.message_router.propagation_transfer_progress * 100,
+                    # convert to percentage
                     "messages_received": self.message_router.propagation_transfer_last_result,
                 },
             })
@@ -1596,7 +1597,8 @@ class ReticulumMeshChat:
 
             # get lxmf stamp cost from announce in database
             lxmf_stamp_cost = None
-            announce = database.Announce.get_or_none(database.Announce.destination_hash == destination_hash.hex())
+            announce = database.Announce.get_or_none(
+                database.Announce.destination_hash == destination_hash.hex())
             if announce is not None:
                 lxmf_stamp_cost = self.parse_lxmf_stamp_cost(announce.app_data)
 
@@ -1839,21 +1841,21 @@ class ReticulumMeshChat:
 
             # sql query to fetch unique source/destination hash pairs ordered by the most recently updated message
             query = """
-                WITH NormalizedMessages AS (
-                    SELECT
-                        CASE WHEN source_hash < destination_hash THEN source_hash ELSE destination_hash END AS normalized_source,
-                        CASE WHEN source_hash < destination_hash THEN destination_hash ELSE source_hash END AS normalized_destination,
-                        MAX(created_at) AS most_recent_created_at
-                    FROM lxmf_messages
-                    GROUP BY normalized_source, normalized_destination
-                )
+            WITH NormalizedMessages AS (
                 SELECT
-                    normalized_source AS source_hash,
-                    normalized_destination AS destination_hash,
-                    most_recent_created_at
-                FROM NormalizedMessages
-                ORDER BY most_recent_created_at DESC;
-                """
+                    CASE WHEN source_hash < destination_hash THEN source_hash ELSE destination_hash END AS normalized_source,
+                    CASE WHEN source_hash < destination_hash THEN destination_hash ELSE source_hash END AS normalized_destination,
+                    MAX(created_at) AS most_recent_created_at
+                FROM lxmf_messages
+                GROUP BY normalized_source, normalized_destination
+            )
+            SELECT
+                normalized_source AS source_hash,
+                normalized_destination AS destination_hash,
+                most_recent_created_at
+            FROM NormalizedMessages
+            ORDER BY most_recent_created_at DESC;
+            """
 
             # execute sql query
             cursor = database.database.execute_sql(query)
@@ -2584,7 +2586,8 @@ class ReticulumMeshChat:
                 pass
 
             # find message from database
-            db_lxmf_message = database.LxmfMessage.get_or_none(database.LxmfMessage.hash == lxmf_message.hash.hex())
+            db_lxmf_message = database.LxmfMessage.get_or_none(
+                database.LxmfMessage.hash == lxmf_message.hash.hex())
             if db_lxmf_message is None:
                 return
 
@@ -2992,7 +2995,8 @@ class ReticulumMeshChat:
                     file_attachments = []
                     for file_attachment in fields["file_attachments"]:
                         file_attachments.append(LxmfFileAttachment(file_attachment["file_name"],
-                                                                   base64.b64decode(file_attachment["file_bytes"])))
+                                                                   base64.b64decode(
+                                                                       file_attachment["file_bytes"])))
                     file_attachments_field = LxmfFileAttachmentsField(file_attachments)
 
                 # don't resend message with attachments if not allowed
@@ -3011,7 +3015,8 @@ class ReticulumMeshChat:
                 )
 
                 # remove original failed message from database
-                database.LxmfMessage.delete().where((database.LxmfMessage.hash == failed_message.hash)).execute()
+                database.LxmfMessage.delete().where(
+                    (database.LxmfMessage.hash == failed_message.hash)).execute()
 
                 # tell all websocket clients that old failed message was deleted so it can remove from ui
                 await self.websocket_broadcast(json.dumps({
@@ -3388,8 +3393,9 @@ class NomadnetDownloader:
 class NomadnetPageDownloader(NomadnetDownloader):
 
     def __init__(self, destination_hash: bytes, page_path: str, data: str | None,
-                 on_page_download_success: Callable[[str], None], on_page_download_failure: Callable[[str], None],
-                 on_progress_update: Callable[[float], None], timeout: int | None = None):
+                 on_page_download_success: Callable[[str], None],
+                 on_page_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None],
+                 timeout: int | None = None):
         self.on_page_download_success = on_page_download_success
         self.on_page_download_failure = on_page_download_failure
         super().__init__(destination_hash, page_path, data, self.on_download_success, self.on_download_failure,
@@ -3482,8 +3488,8 @@ def main():
     if args.identity_file is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load(args.identity_file)
-        print(
-            "Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), args.identity_file))
+        print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(),
+                                                                             args.identity_file))
     elif args.identity_base64 is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load_private_key(base64.b64decode(args.identity_base64))
@@ -3502,8 +3508,8 @@ def main():
             identity = RNS.Identity(create_keys=True)
             with open(default_identity_file, "wb") as file:
                 file.write(identity.get_private_key())
-            print("Reticulum Identity <{}> has been randomly generated and saved to {}.".format(identity.hash.hex(),
-                                                                                                default_identity_file))
+            print("Reticulum Identity <{}> has been randomly generated and saved to {}.".format(
+                identity.hash.hex(), default_identity_file))
 
         # default identity file exists, load it
         identity = RNS.Identity(create_keys=False)
