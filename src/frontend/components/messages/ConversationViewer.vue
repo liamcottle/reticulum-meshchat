@@ -316,6 +316,7 @@
 
                     <!-- text input -->
                     <textarea
+                        ref="message-input"
                         id="message-input"
                         :readonly="isSendingMessage"
                         v-model="newMessageText"
@@ -1402,7 +1403,22 @@ export default {
             });
         },
         addNewLine: function() {
-            this.newMessageText += "\n";
+
+            // get cursor position for message input
+            const input = this.$refs["message-input"];
+            const cursorPosition = input.selectionStart;
+
+            // insert a newline character after the cursor position
+            const text = this.newMessageText;
+            this.newMessageText = text.slice(0, cursorPosition) + '\n' + text.slice(cursorPosition);
+
+            // move cursor to the position after the added newline
+            const newCursorPosition = cursorPosition + 1;
+            this.$nextTick(() => {
+                input.selectionStart = newCursorPosition;
+                input.selectionEnd = newCursorPosition;
+            });
+
         },
         onEnterPressed: function() {
 
