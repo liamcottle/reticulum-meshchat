@@ -489,7 +489,6 @@ class ReticulumMeshChat:
 
                 interface_details["target_host"] = data.get('target_host')
                 interface_details["target_port"] = data.get('target_port')
-                print(interface_kiss_framing, interface_i2p_tunneled)
 
                 interface_details["kiss_framing"] = interface_kiss_framing
                 interface_details["i2p_tunneled"] = interface_i2p_tunneled
@@ -504,7 +503,8 @@ class ReticulumMeshChat:
 
                 interface_listen_ip = data.get('listen_ip')
                 interface_listen_port = data.get('listen_port')
-
+                interface_network_device = data.get('device')
+                interface_prefer_ipv6 = data.get('prefer_ipv6')
                 # ensure listen ip provided
                 if interface_listen_ip is None or interface_listen_ip == "":
                     return web.json_response({
@@ -519,6 +519,10 @@ class ReticulumMeshChat:
 
                 interface_details["listen_ip"] = data.get('listen_ip')
                 interface_details["listen_port"] = data.get('listen_port')
+                if interface_network_device is not None and interface_network_device != "":
+                    interface_details["device"] = interface_network_device
+                if interface_prefer_ipv6 is not None and interface_prefer_ipv6 != "" and interface_prefer_ipv6 != False:
+                    interface_details["prefer_ipv6"] = True
 
             # handle udp interface
             if interface_type == "UDPInterface":
@@ -527,6 +531,7 @@ class ReticulumMeshChat:
                 interface_listen_port = data.get('listen_port')
                 interface_forward_ip = data.get('forward_ip')
                 interface_forward_port = data.get('forward_port')
+                interface_network_device = data.get('device')
 
                 # ensure listen ip provided
                 if interface_listen_ip is None or interface_listen_ip == "":
@@ -556,6 +561,8 @@ class ReticulumMeshChat:
                 interface_details["listen_port"] = data.get('listen_port')
                 interface_details["forward_ip"] = data.get('forward_ip')
                 interface_details["forward_port"] = data.get('forward_port')
+                if interface_network_device is not None and interface_network_device != "":
+                    interface_details["network_device"] = interface_network_device
 
             # handle rnode interface
             if interface_type == "RNodeInterface":
@@ -1405,7 +1412,8 @@ class ReticulumMeshChat:
 
             # get latest lxmf message from database sent to us from the provided destination hash
             latest_lxmf_message = (database.LxmfMessage.select()
-                                   .where(database.LxmfMessage.destination_hash == self.local_lxmf_destination.hexhash)
+                                   .where(
+                database.LxmfMessage.destination_hash == self.local_lxmf_destination.hexhash)
                                    .where(database.LxmfMessage.source_hash == destination_hash)
                                    .order_by(database.LxmfMessage.id.desc())
                                    .get_or_none())
@@ -1776,11 +1784,11 @@ class ReticulumMeshChat:
 
             # get lxmf messages from db where "source to destination" or "destination to source" and ordered by oldest to newest
             db_lxmf_messages = (database.LxmfMessage.select()
-            .where((database.LxmfMessage.source_hash == source_hash) & (
-                    database.LxmfMessage.destination_hash == destination_hash))
-            .orwhere((database.LxmfMessage.destination_hash == source_hash) & (
-                    database.LxmfMessage.source_hash == destination_hash))
-            .order_by(
+                                .where((database.LxmfMessage.source_hash == source_hash) & (
+                        database.LxmfMessage.destination_hash == destination_hash))
+                                .orwhere((database.LxmfMessage.destination_hash == source_hash) & (
+                        database.LxmfMessage.source_hash == destination_hash))
+                                .order_by(
                 database.LxmfMessage.id.asc() if order == "asc" else database.LxmfMessage.id.desc()))
 
             # limit how many messages to return
@@ -1816,9 +1824,9 @@ class ReticulumMeshChat:
             # delete lxmf messages from db where "source to destination" or "destination to source"
             (database.LxmfMessage.delete()
              .where((database.LxmfMessage.source_hash == source_hash) & (
-                    database.LxmfMessage.destination_hash == destination_hash))
+                        database.LxmfMessage.destination_hash == destination_hash))
              .orwhere((database.LxmfMessage.destination_hash == source_hash) & (
-                    database.LxmfMessage.source_hash == destination_hash))
+                        database.LxmfMessage.source_hash == destination_hash))
              .execute())
 
             return web.json_response({
@@ -1831,21 +1839,21 @@ class ReticulumMeshChat:
 
             # sql query to fetch unique source/destination hash pairs ordered by the most recently updated message
             query = """
-            WITH NormalizedMessages AS (
+                WITH NormalizedMessages AS (
+                    SELECT
+                        CASE WHEN source_hash < destination_hash THEN source_hash ELSE destination_hash END AS normalized_source,
+                        CASE WHEN source_hash < destination_hash THEN destination_hash ELSE source_hash END AS normalized_destination,
+                        MAX(created_at) AS most_recent_created_at
+                    FROM lxmf_messages
+                    GROUP BY normalized_source, normalized_destination
+                )
                 SELECT
-                    CASE WHEN source_hash < destination_hash THEN source_hash ELSE destination_hash END AS normalized_source,
-                    CASE WHEN source_hash < destination_hash THEN destination_hash ELSE source_hash END AS normalized_destination,
-                    MAX(created_at) AS most_recent_created_at
-                FROM lxmf_messages
-                GROUP BY normalized_source, normalized_destination
-            )
-            SELECT
-                normalized_source AS source_hash,
-                normalized_destination AS destination_hash,
-                most_recent_created_at
-            FROM NormalizedMessages
-            ORDER BY most_recent_created_at DESC;
-            """
+                    normalized_source AS source_hash,
+                    normalized_destination AS destination_hash,
+                    most_recent_created_at
+                FROM NormalizedMessages
+                ORDER BY most_recent_created_at DESC;
+                """
 
             # execute sql query
             cursor = database.database.execute_sql(query)
@@ -2704,7 +2712,8 @@ class ReticulumMeshChat:
 
         # upsert to database
         query = database.CustomDestinationDisplayName.insert(data)
-        query = query.on_conflict(conflict_target=[database.CustomDestinationDisplayName.destination_hash], update=data)
+        query = query.on_conflict(conflict_target=[database.CustomDestinationDisplayName.destination_hash],
+                                  update=data)
         query.execute()
 
     # upserts lxmf conversation read state to the database
@@ -2719,7 +2728,8 @@ class ReticulumMeshChat:
 
         # upsert to database
         query = database.LxmfConversationReadState.insert(data)
-        query = query.on_conflict(conflict_target=[database.LxmfConversationReadState.destination_hash], update=data)
+        query = query.on_conflict(conflict_target=[database.LxmfConversationReadState.destination_hash],
+                                  update=data)
         query.execute()
 
     # handle sending an lxmf message to reticulum
@@ -2752,8 +2762,8 @@ class ReticulumMeshChat:
             raise Exception("Could not find path to destination. Try again later.")
 
         # create destination for recipients lxmf delivery address
-        lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf",
-                                           "delivery")
+        lxmf_destination = RNS.Destination(destination_identity, RNS.Destination.OUT, RNS.Destination.SINGLE,
+                                           "lxmf", "delivery")
 
         # determine how the user wants to send the message
         desired_delivery_method = None
@@ -2769,8 +2779,8 @@ class ReticulumMeshChat:
 
             # send messages over a direct link by default
             desired_delivery_method = LXMF.LXMessage.DIRECT
-            if not self.message_router.delivery_link_available(destination_hash) and RNS.Identity.current_ratchet_id(
-                    destination_hash) != None:
+            if not self.message_router.delivery_link_available(
+                    destination_hash) and RNS.Identity.current_ratchet_id(destination_hash) != None:
                 # since there's no link established to the destination, it's faster to send opportunistically
                 # this is because it takes several packets to establish a link, and then we still have to send the message over it
                 # oppotunistic mode will send the message in a single packet (if the message is small enough, otherwise it falls back to a direct link)
@@ -2902,7 +2912,8 @@ class ReticulumMeshChat:
 
     # handle an announce received from reticulum, for an lxmf address
     # NOTE: cant be async, as Reticulum doesn't await it
-    def on_lxmf_announce_received(self, aspect, destination_hash, announced_identity, app_data, announce_packet_hash):
+    def on_lxmf_announce_received(self, aspect, destination_hash, announced_identity, app_data,
+                                  announce_packet_hash):
 
         # log received announce
         print("Received an announce from " + RNS.prettyhexrep(destination_hash) + " for [lxmf.delivery]")
@@ -3086,7 +3097,8 @@ class ReticulumMeshChat:
             return None
 
     # reads the nomadnetwork node display name from the provided base64 app data
-    def parse_nomadnetwork_node_display_name(self, app_data_base64: str, default_value: str | None = "Anonymous Node"):
+    def parse_nomadnetwork_node_display_name(self, app_data_base64: str,
+                                             default_value: str | None = "Anonymous Node"):
         try:
             app_data_bytes = base64.b64decode(app_data_base64)
             return app_data_bytes.decode("utf-8")
@@ -3111,7 +3123,8 @@ class ReticulumMeshChat:
 
         # get lxmf conversation read state from database for the provided destination hash
         lxmf_conversation_read_state = (database.LxmfConversationReadState.select()
-                                        .where(database.LxmfConversationReadState.destination_hash == destination_hash)
+                                        .where(
+            database.LxmfConversationReadState.destination_hash == destination_hash)
                                         .get_or_none())
 
         # get most recent incoming message from destination hash
@@ -3150,7 +3163,6 @@ class ReticulumMeshChat:
                 return interface
 
         return None
-
 
 # class to manage config stored in database
 class Config:
@@ -3257,23 +3269,24 @@ class Config:
         "auto_resend_failed_messages_when_announce_received", True)
     allow_auto_resending_failed_messages_with_attachments = BoolConfig(
         "allow_auto_resending_failed_messages_with_attachments", False)
-    auto_send_failed_messages_to_propagation_node = BoolConfig("auto_send_failed_messages_to_propagation_node", False)
+    auto_send_failed_messages_to_propagation_node = BoolConfig("auto_send_failed_messages_to_propagation_node",
+                                                               False)
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
-    lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
-    lxmf_preferred_propagation_node_destination_hash = StringConfig("lxmf_preferred_propagation_node_destination_hash",
-                                                                    None)
+    lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes",
+                                                      1000 * 1000 * 10)  # 10MB
+    lxmf_preferred_propagation_node_destination_hash = StringConfig(
+        "lxmf_preferred_propagation_node_destination_hash", None)
     lxmf_preferred_propagation_node_auto_sync_interval_seconds = IntConfig(
         "lxmf_preferred_propagation_node_auto_sync_interval_seconds", 0)
-    lxmf_preferred_propagation_node_last_synced_at = IntConfig("lxmf_preferred_propagation_node_last_synced_at", None)
+    lxmf_preferred_propagation_node_last_synced_at = IntConfig("lxmf_preferred_propagation_node_last_synced_at",
+                                                               None)
     lxmf_local_propagation_node_enabled = BoolConfig("lxmf_local_propagation_node_enabled", False)
     lxmf_user_icon_name = StringConfig("lxmf_user_icon_name", None)
     lxmf_user_icon_foreground_colour = StringConfig("lxmf_user_icon_foreground_colour", None)
     lxmf_user_icon_background_colour = StringConfig("lxmf_user_icon_background_colour", None)
 
-
 # FIXME: we should probably set this as an instance variable of ReticulumMeshChat so it has a proper home, and pass it in to the constructor?
 nomadnet_cached_links = {}
-
 
 class NomadnetDownloader:
 
@@ -3372,7 +3385,6 @@ class NomadnetDownloader:
     def on_progress(self, request_receipt):
         self.on_progress_update(request_receipt.progress)
 
-
 class NomadnetPageDownloader(NomadnetDownloader):
 
     def __init__(self, destination_hash: bytes, page_path: str, data: str | None,
@@ -3392,10 +3404,10 @@ class NomadnetPageDownloader(NomadnetDownloader):
     def on_download_failure(self, failure_reason):
         self.on_page_download_failure(failure_reason)
 
-
 class NomadnetFileDownloader(NomadnetDownloader):
 
-    def __init__(self, destination_hash: bytes, page_path: str, on_file_download_success: Callable[[str, bytes], None],
+    def __init__(self, destination_hash: bytes, page_path: str,
+                 on_file_download_success: Callable[[str, bytes], None],
                  on_file_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None],
                  timeout: int | None = None):
         self.on_file_download_success = on_file_download_success
@@ -3413,13 +3425,14 @@ class NomadnetFileDownloader(NomadnetDownloader):
     def on_download_failure(self, failure_reason):
         self.on_file_download_failure(failure_reason)
 
-
 def main():
+
     # parse command line args
     parser = argparse.ArgumentParser(description="ReticulumMeshChat")
     parser.add_argument("--host", nargs='?', default="127.0.0.1", type=str,
                         help="The address the web server should listen on.")
-    parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
+    parser.add_argument("--port", nargs='?', default="8000", type=int,
+                        help="The port the web server should listen on.")
     parser.add_argument("--headless", action='store_true',
                         help="Web browser will not automatically launch when this flag is passed.")
     parser.add_argument("--identity-file", type=str,
@@ -3469,7 +3482,8 @@ def main():
     if args.identity_file is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load(args.identity_file)
-        print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), args.identity_file))
+        print(
+            "Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), args.identity_file))
     elif args.identity_base64 is not None:
         identity = RNS.Identity(create_keys=False)
         identity.load_private_key(base64.b64decode(args.identity_base64))
@@ -3494,13 +3508,12 @@ def main():
         # default identity file exists, load it
         identity = RNS.Identity(create_keys=False)
         identity.load(default_identity_file)
-        print(
-            "Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), default_identity_file))
+        print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(),
+                                                                             default_identity_file))
 
     # init app
     reticulum_meshchat = ReticulumMeshChat(identity, args.storage_dir, args.reticulum_config_dir)
     reticulum_meshchat.run(args.host, args.port, launch_browser=args.headless is False)
-
 
 if __name__ == "__main__":
     main()

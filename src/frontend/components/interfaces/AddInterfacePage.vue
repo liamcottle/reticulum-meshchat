@@ -228,6 +228,7 @@
                 <input
                     id="prefer-ipv6"
                     type="checkbox"
+                    value="1"
                     v-model="newInterfacePreferIPV6"
                     class="ml-auto h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"
                 />
@@ -1123,11 +1124,13 @@ export default {
         if (iface.i2p_tunneled) {
           this.newInterfaceI2PTunnelingEnabled = true;
         }
+        if (iface.prefer_ipv6) {
+          this.newInterfacePreferIPV6 = true;
+        }
 
 
         // tcp server interface & udp interface
         this.newInterfaceNetworkDevice = iface.device;
-        this.newInterfacePreferIPV6 = iface.prefer_ipv6;
         this.newInterfaceListenIp = iface.listen_ip;
         this.newInterfaceListenPort = iface.listen_port;
 
@@ -1226,6 +1229,8 @@ export default {
           listen_ip: this.newInterfaceListenIp,
           listen_port: this.newInterfaceListenPort,
           device: this.newInterfaceNetworkDevice,
+          prefer_ipv6: this.newInterfacePreferIPV6,
+
 
           // udp interface
           forward_ip: this.newInterfaceForwardIp,
