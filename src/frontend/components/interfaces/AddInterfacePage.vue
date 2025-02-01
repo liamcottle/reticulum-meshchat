@@ -110,28 +110,6 @@
                         <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
-                    <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-4">
-                        <ExpandingSectionHeader @click="toggleAllSettings" :is-expanded="showAllSettings">
-                            Additional TCP Client Interface settings
-                        </ExpandingSectionHeader>
-                        <div v-show="showAllSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
-                            <div class="flex items-start">
-                                <div class="flex flex-col">
-                                    <label for="kiss-framing" class="text-sm font-medium text-gray-900 dark:text-zinc-100">Enable KISS Framing</label>
-                                    <span class="text-sm text-gray-500 dark:text-zinc-300">ⓘ Enabled when connecting to software that uses KISS framing such as packet radio sound modems. For KISS connections through serial hardware select "KISS Interface" as the interface type.</span>
-                                </div>
-                                <input id="kiss-framing" type="checkbox" v-model="newInterfaceKISSFramingEnabled" class="ml-auto h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"/>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="flex flex-col">
-                                    <label for="i2p-tunneled" class="text-sm font-medium text-gray-900 dark:text-zinc-100">Enable I2P tunneling</label>
-                                    <span class="text-sm text-gray-500 dark:text-zinc-300">ⓘ Enables tunnelling through an I2P Connection using the TCPClientInterface</span>
-                                </div>
-                                <input id="i2p-tunneled" type="checkbox" v-model="newInterfaceI2PTunnelingEnabled" class="ml-auto h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"/>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- TCPServerInterface -->
                     <!-- interface listen ip -->
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
@@ -697,6 +675,32 @@
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                                 />
                             </div>
+                        </div>
+
+                    </div>
+                </template>
+            </ExpandingSection>
+
+            <!-- optional TCPClientInterface settings -->
+            <ExpandingSection v-if="newInterfaceType === 'TCPClientInterface'">
+                <template v-slot:title>Optional TCPClientInterface Settings</template>
+                <template v-slot:content>
+                    <div class="p-2 space-y-3">
+
+                        <div class="flex">
+                            <div class="flex flex-col mr-auto">
+                                <label for="kiss-framing" class="text-sm font-medium text-gray-900 dark:text-zinc-100">Enable KISS Framing</label>
+                                <span class="text-sm text-gray-500 dark:text-zinc-300">ⓘ Enabled when connecting to software that uses KISS framing such as packet radio sound modems. For KISS connections through serial hardware select "KISS Interface" as the interface type.</span>
+                            </div>
+                            <input id="kiss-framing" type="checkbox" v-model="newInterfaceKISSFramingEnabled" class="my-auto mx-2 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"/>
+                        </div>
+
+                        <div class="flex">
+                            <div class="flex flex-col mr-auto">
+                                <label for="i2p-tunneled" class="text-sm font-medium text-gray-900 dark:text-zinc-100">Enable I2P tunneling</label>
+                                <span class="text-sm text-gray-500 dark:text-zinc-300">ⓘ Enables tunnelling through an I2P Connection using the TCPClientInterface</span>
+                            </div>
+                            <input id="i2p-tunneled" type="checkbox" v-model="newInterfaceI2PTunnelingEnabled" class="my-auto mx-2 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"/>
                         </div>
 
                     </div>
