@@ -570,34 +570,6 @@
                         <input type="number" placeholder="5" v-model="newInterfaceRespawnDelay" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
-                    <!-- Shared interface setings -->
-                    <ExpandingSectionHeader v-if="newInterfaceType" @click="toggleSharedInterfaceSettings" :is-expanded="showSharedInterfaceSettings">
-                        Shared Interface Settings
-                    </ExpandingSectionHeader>
-
-                    <div v-show="showSharedInterfaceSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
-                        <p class="text-sm text-gray-600 dark:text-gray-400">ⓘ These settings are optional.</p>
-                        <div v-show="transportEnabled" class="mb-4">
-                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Interface Mode</label>
-                            <select v-model="sharedInterfaceSettings.mode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
-                                <option value="full">Full</option>
-                                <option value="gateway">Gateway</option>
-                                <option value="access_point">Access Point</option>
-                                <option value="roaming">Roaming</option>
-                                <option value="boundary">Boundary</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Inferred Interface Bitrate</label>
-                            <input
-                                v-model="sharedInterfaceSettings.bitrate"
-                                type="number"
-                                placeholder="Enter inferred bitrate"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                            />
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
@@ -707,6 +679,37 @@
                 </template>
             </ExpandingSection>
 
+            <!-- common interface settings -->
+            <ExpandingSection>
+                <template v-slot:title>Common Interface Settings</template>
+                <template v-slot:content>
+                    <div class="p-2 space-y-3">
+
+                        <div v-show="transportEnabled">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Interface Mode</label>
+                            <select v-model="sharedInterfaceSettings.mode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
+                                <option value="full">Full</option>
+                                <option value="gateway">Gateway</option>
+                                <option value="access_point">Access Point</option>
+                                <option value="roaming">Roaming</option>
+                                <option value="boundary">Boundary</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Inferred Interface Bitrate</label>
+                            <input
+                                v-model="sharedInterfaceSettings.bitrate"
+                                type="number"
+                                placeholder="Enter inferred bitrate"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                            />
+                        </div>
+
+                    </div>
+                </template>
+            </ExpandingSection>
+
             <!-- ifac settings -->
             <ExpandingSection>
                 <template v-slot:title>IFAC Settings</template>
@@ -777,7 +780,6 @@ export default {
 
             isEditingInterface: false,
             showAllSettings: false, // more interface settings, used for TCPInterface and RNodeInterface
-            showSharedInterfaceSettings: false, // shared interface settings like IFAC, bitrate
             showRNodeLoRaParameters: false, // accordion for displaying RNode physical LoRa parameters
             showRNodeSubInterfaces: false, // accordion for adding multiple RNode interfaces
 
@@ -1263,9 +1265,6 @@ export default {
         },
         toggleAllSettings() {
             this.showAllSettings = !this.showAllSettings;
-        },
-        toggleSharedInterfaceSettings() {
-            this.showSharedInterfaceSettings = !this.showSharedInterfaceSettings;
         },
         toggleRNodeLoRaParameters() {
             this.showRNodeLoRaParameters = !this.showRNodeLoRaParameters;
