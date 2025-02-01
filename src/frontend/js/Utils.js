@@ -143,6 +143,10 @@ class Utils {
 
     static isInterfaceEnabled(iface) {
         const rawValue = iface.enabled ?? iface.interface_enabled;
+        if (rawValue === true) {
+            // when enabled or interface_enabled is True it needs to return true.
+            return true;
+        }
         const value = rawValue?.toLowerCase();
         return value === "on" || value === "yes" || value === "true";
     }

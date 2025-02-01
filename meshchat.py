@@ -329,8 +329,30 @@ class ReticulumMeshChat:
             if "interfaces" in self.reticulum.config:
                 interfaces = self.reticulum.config["interfaces"]
 
+            processed_interfaces = {}
+            for interface_name, interface in interfaces.items():
+                interface_data = interface.copy()
+
+                # handle sub-interfaces for RNodeMultiInterface
+                if interface_data.get("type") == "RNodeMultiInterface":
+                    sub_interfaces = []
+                    for sub_name, sub_config in interface_data.items():
+                        if sub_name not in {"type", "port", "interface_enabled", "selected_interface_mode",
+                                            "configured_bitrate"}:
+                            if isinstance(sub_config, dict):
+                                sub_config["name"] = sub_name
+                                sub_interfaces.append(sub_config)
+
+                    # add sub-interfaces to the main interface data
+                    interface_data["sub_interfaces"] = sub_interfaces
+
+                    for sub in sub_interfaces:
+                        del interface_data[sub["name"]]
+
+                processed_interfaces[interface_name] = interface_data
+
             return web.json_response({
-                "interfaces": interfaces,
+                "interfaces": processed_interfaces,
             })
 
         # enable reticulum interface
@@ -443,11 +465,32 @@ class ReticulumMeshChat:
             if "enabled" not in interface_details and "interface_enabled" not in interface_details:
                 interface_details["interface_enabled"] = "true"
 
+            # additional AutoInterface options
+            if interface_type == "AutoInterface":
+                if data.get("group_id"):
+                    interface_details["group_id"] = data.get("group_id")
+                if data.get("multicast_address_type"):
+                    interface_details["multicast_address_type"] = data.get("multicast_address_type")
+                if data.get("devices"):
+                    interface_details["devices"] = data.get("devices")
+                if data.get("ignored_devices"):
+                    interface_details["ignored_devices"] = data.get("ignored_devices")
+                if data.get("discovery_scope"):
+                    interface_details["discovery_scope"] = data.get("discovery_scope")
+                if data.get("discovery_port"):
+                    interface_details["discovery_port"] = data.get("discovery_port")
+                if data.get("data_port"):
+                    interface_details["data_port"] = data.get("data_port")
+
+
             # handle tcp client interface
             if interface_type == "TCPClientInterface":
 
                 interface_target_host = data.get('target_host')
                 interface_target_port = data.get('target_port')
+                # optional parameters for kiss_framing and i2p tunnelling
+                interface_kiss_framing = data.get('kiss_framing')
+                interface_i2p_tunneled = data.get('i2p_tunneled')
 
                 # ensure target host provided
                 if interface_target_host is None or interface_target_host == "":
@@ -463,12 +506,22 @@ class ReticulumMeshChat:
 
                 interface_details["target_host"] = data.get('target_host')
                 interface_details["target_port"] = data.get('target_port')
+                interface_details["kiss_framing"] = interface_kiss_framing
+                interface_details["i2p_tunneled"] = interface_i2p_tunneled
+
+                # handle I2P interface
+            if interface_type == "I2PInterface":
+                interface_details['connectable'] = "True"
+                interface_details["peers"] = data.get('peers')
 
             # handle tcp server interface
             if interface_type == "TCPServerInterface":
 
                 interface_listen_ip = data.get('listen_ip')
                 interface_listen_port = data.get('listen_port')
+
+                interface_network_device = data.get('device')
+                interface_prefer_ipv6 = data.get('prefer_ipv6')
 
                 # ensure listen ip provided
                 if interface_listen_ip is None or interface_listen_ip == "":
@@ -485,6 +538,11 @@ class ReticulumMeshChat:
                 interface_details["listen_ip"] = data.get('listen_ip')
                 interface_details["listen_port"] = data.get('listen_port')
 
+                if interface_network_device is not None and interface_network_device != "":
+                    interface_details["device"] = interface_network_device
+                if interface_prefer_ipv6 is not None and interface_prefer_ipv6 != "" and interface_prefer_ipv6 != False:
+                    interface_details["prefer_ipv6"] = True
+
             # handle udp interface
             if interface_type == "UDPInterface":
 
@@ -492,6 +550,7 @@ class ReticulumMeshChat:
                 interface_listen_port = data.get('listen_port')
                 interface_forward_ip = data.get('forward_ip')
                 interface_forward_port = data.get('forward_port')
+                interface_network_device = data.get('device')
 
                 # ensure listen ip provided
                 if interface_listen_ip is None or interface_listen_ip == "":
@@ -521,6 +580,9 @@ class ReticulumMeshChat:
                 interface_details["listen_port"] = data.get('listen_port')
                 interface_details["forward_ip"] = data.get('forward_ip')
                 interface_details["forward_port"] = data.get('forward_port')
+
+                if interface_network_device is not None and interface_network_device != "":
+                    interface_details["network_device"] = interface_network_device
 
             # handle rnode interface
             if interface_type == "RNodeInterface":
@@ -575,6 +637,132 @@ class ReticulumMeshChat:
                 interface_details["spreadingfactor"] = interface_spreadingfactor
                 interface_details["codingrate"] = interface_codingrate
 
+            # Handle RNode Multi Interface
+            if interface_type == "RNodeMultiInterface":
+                interface_port = data.get("port")
+                sub_interfaces = data.get("sub_interfaces", [])
+
+                if not interface_port:
+                    return web.json_response({"message": "Port is required"}, status=422)
+
+                if not isinstance(sub_interfaces, list) or not sub_interfaces:
+                    return web.json_response({"message": "At least one sub-interface is required"}, status=422)
+
+                interface_details["type"] = interface_type
+                interface_details["interface_enabled"] = True
+                interface_details["port"] = interface_port
+
+                for idx, sub in enumerate(sub_interfaces):
+                    # validate required fields for each sub-interface
+                    required_subinterface_fields = ["name", "frequency", "bandwidth", "txpower", "spreadingfactor",
+                                                    "codingrate",
+                                                    "vport"]
+                    missing_fields = [field for field in required_subinterface_fields if not sub.get(field)]
+                    if missing_fields:
+                        return web.json_response({
+                            "message": f"Sub-interface {idx + 1} is missing required field(s): {', '.join(missing_fields)}"
+                        }, status=422)
+
+                    sub_interface_name = sub.get("name")
+                    interface_details[sub_interface_name] = {
+                        "interface_enabled": "true",
+                        "frequency": int(sub["frequency"]),
+                        "bandwidth": int(sub["bandwidth"]),
+                        "txpower": int(sub["txpower"]),
+                        "spreadingfactor": int(sub["spreadingfactor"]),
+                        "codingrate": int(sub["codingrate"]),
+                        "vport": int(sub["vport"]),
+                    }
+
+                interfaces[interface_name] = interface_details
+
+            # Handle Serial, KISS, and AX25KISS
+            if interface_type == "SerialInterface" or interface_type == "KISSInterface" or interface_type == "AX25KISSInterface":
+                interface_port = data.get('port')
+                interface_speed = data.get('speed')
+
+                required_fields = {
+                    interface_port: "Port is required",
+                    interface_speed: "Serial speed is required",
+                }
+
+                for field, error_message in required_fields.items():
+                    if field is None or field == "":
+                        return web.json_response({
+                            "message": error_message,
+                        }, status=422)
+
+                interface_details["port"] = interface_port
+                interface_details['connectable'] = "True"
+                interface_details["type"] = interface_type
+                interface_details["interface_enabled"] = True
+
+                interface_details["speed"] = interface_speed
+                interface_details["databits"] = data.get('databits')
+                interface_details['parity'] = data.get('parity')
+                interface_details['stopbits'] = data.get('stopbits')
+
+                # Handle KISS and AX25KISS specific options
+                if (interface_type == "KISSInterface" or interface_type == "AX25KISSInterface"):
+                    interface_details["preamble"] = data.get('preamble')
+                    interface_details["txtail"] = data.get('txtail')
+                    interface_details['persistence'] = data.get('persistence')
+                    interface_details['slottime'] = data.get('slottime')
+                    interface_details['callsign'] = data.get('callsign')
+                    interface_details['ssid'] = data.get('ssid')
+
+            # RNode Airtime limits and station ID
+            callsign = data.get('callsign')
+            id_interval = data.get('id_interval')
+            airtime_limit_long = data.get('airtime_limit_long')
+            airtime_limit_short = data.get('airtime_limit_short')
+
+            if callsign is not None and callsign != "":
+                interface_details["callsign"] = callsign
+            if id_interval is not None and id_interval != "":
+                interface_details["id_interval"] = id_interval
+            if airtime_limit_long is not None and airtime_limit_long != "":
+                interface_details["airtime_limit_long"] = airtime_limit_long
+            if airtime_limit_short is not None and airtime_limit_short != "":
+                interface_details["airtime_limit_short"] = airtime_limit_short
+
+            # Handle Pipe Interface
+            if interface_type == "PipeInterface":
+                interface_command = data.get('command')
+                interface_respawn_delay = data.get('respawn_delay')
+
+                required_fields = {
+                    interface_command: "Command is required",
+                    interface_respawn_delay: "Respawn delay is required",
+                }
+
+                for field, error_message in required_fields.items():
+                    if field is None or field == "":
+                        return web.json_response({
+                            "message": error_message,
+                        }, status=422)
+
+                interface_details["command"] = interface_command
+                interface_details["respawn_delay"] = interface_respawn_delay
+
+            # Common interface options
+            inferred_bitrate = data.get('bitrate')
+            transport_mode = data.get('mode')
+            network_name = data.get('network_name')
+            ifac_passphrase = data.get('passphrase')
+            ifac_size = data.get('ifac_size')
+
+            if inferred_bitrate is not None and inferred_bitrate != "":
+                interface_details["bitrate"] = inferred_bitrate
+            if transport_mode is not None and transport_mode != "":
+                interface_details["mode"] = transport_mode
+            if network_name is not None and network_name != "":
+                interface_details["network_name"] = network_name
+            if ifac_passphrase is not None and ifac_passphrase != "":
+                interface_details["passphrase"] = ifac_passphrase
+            if ifac_size is not None and ifac_size != "":
+                interface_details["ifac_size"] = ifac_size
+
             # merge new interface into existing interfaces
             interfaces[interface_name] = interface_details
             self.reticulum.config["interfaces"] = interfaces
@@ -619,7 +807,19 @@ class ReticulumMeshChat:
                     for key, value in interface.items():
                         output.append(f"    {key} = {value}")
                     output.append("")
-                
+
+                    # Handle sub-interfaces for RNodeMultiInterface
+                    if interface.get("type") == "RNodeMultiInterface":
+                        for sub_name, sub_config in interface.items():
+                            if sub_name in {"type", "port", "interface_enabled"}:
+                                continue
+                            if isinstance(sub_config, dict):
+                                output.append(f"  [[[ {sub_name} ]]]")
+                                for sub_key, sub_value in sub_config.items():
+                                    output.append(f"      {sub_key} = {sub_value}")
+                                output.append("")
+
+
                 return web.Response(
                     text="\n".join(output),
                     content_type="text/plain",
