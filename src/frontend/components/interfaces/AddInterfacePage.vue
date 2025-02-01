@@ -53,7 +53,7 @@
             </div>
 
             <!-- add interface form -->
-            <div class="bg-white rounded shadow divide-y divide-gray-200 dark:bg-zinc-900">
+            <div class="bg-white rounded shadow divide-y divide-gray-300 dark:divide-zinc-700 dark:bg-zinc-900">
                 <div class="p-2 font-bold dark:text-white">
                     <span v-if="isEditingInterface">Edit Interface</span>
                     <span v-else>Add Interface</span>
