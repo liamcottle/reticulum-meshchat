@@ -97,85 +97,6 @@
                         </div>
                     </div>
 
-                    <div v-if="newInterfaceType === 'AutoInterface'" class="mb-4">
-                        <ExpandingSectionHeader @click="toggleAllSettings" :is-expanded="showAllSettings">
-                            Additional AutoInterface Settings
-                        </ExpandingSectionHeader>
-                        <div v-show="showAllSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
-
-                            <p class="text-sm text-gray-600 dark:text-gray-400">ⓘ These settings are optional</p>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Group ID</label>
-                                <input
-                                    type="text"
-                                    v-model="newInterfaceGroupID"
-                                    placeholder="reticulum"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                />
-                            </div>
-
-                            <div class="flex-1">
-                                <label class="text-sm dark:text-zinc-100">Multicast Address Type</label>
-                                <select v-model="newInterfaceMulticastAddressType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
-                                    <option value="permanent">Permanent</option>
-                                    <option value="temporary">Temporary</option>
-                                </select>
-                            </div>
-
-                            <div class="flex items-center space-x-4 mt-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network devices</label>
-                                    <input
-                                        type="text"
-                                        v-model="newInterfaceDevices"
-                                        placeholder="wlan0,eth1"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Ignored Devices</label>
-                                    <input
-                                        type="text"
-                                        v-model="newInterfaceIgnoredDevices"
-                                        placeholder="tun0,eth0"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="flex items-center space-x-4 mt-4">
-                                <div class="flex-1">
-                                    <label class="text-sm dark:text-zinc-100">Discovery Scope</label>
-                                    <select v-model="newInterfaceDiscoveryScope" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
-                                        <option value="global">Global</option>
-                                        <option value="admin">Admin</option>
-                                        <option value="organisation">Organisation</option>
-                                        <option value="site">Site</option>
-                                        <option value="link">Link</option>
-                                    </select>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Discovery Port</label>
-                                    <input
-                                        type="number"
-                                        v-model="newInterfaceDiscoveryPort"
-                                        placeholder="48555"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Data Port</label>
-                                    <input
-                                        type="number"
-                                        v-model="newInterfaceDataPort"
-                                        placeholder="49555"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- TCPClientInterface -->
                     <!-- interface target host -->
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
@@ -701,6 +622,86 @@
 
                 </div>
             </div>
+
+            <!-- optional AutoInterface settings -->
+            <ExpandingSection v-if="newInterfaceType === 'AutoInterface'">
+                <template v-slot:title>Optional AutoInterface Settings</template>
+                <template v-slot:content>
+                    <div class="p-2 space-y-3">
+
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Group ID</label>
+                            <input
+                                type="text"
+                                v-model="newInterfaceGroupID"
+                                placeholder="reticulum"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                            />
+                        </div>
+
+                        <div class="flex-1">
+                            <label class="text-sm dark:text-zinc-100">Multicast Address Type</label>
+                            <select v-model="newInterfaceMulticastAddressType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                                <option value="permanent">Permanent</option>
+                                <option value="temporary">Temporary</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center space-x-4 mt-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network devices</label>
+                                <input
+                                    type="text"
+                                    v-model="newInterfaceDevices"
+                                    placeholder="wlan0,eth1"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Ignored Devices</label>
+                                <input
+                                    type="text"
+                                    v-model="newInterfaceIgnoredDevices"
+                                    placeholder="tun0,eth0"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4 mt-4">
+                            <div class="flex-1">
+                                <label class="text-sm dark:text-zinc-100">Discovery Scope</label>
+                                <select v-model="newInterfaceDiscoveryScope" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                                    <option value="global">Global</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="organisation">Organisation</option>
+                                    <option value="site">Site</option>
+                                    <option value="link">Link</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Discovery Port</label>
+                                <input
+                                    type="number"
+                                    v-model="newInterfaceDiscoveryPort"
+                                    placeholder="48555"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Data Port</label>
+                                <input
+                                    type="number"
+                                    v-model="newInterfaceDataPort"
+                                    placeholder="49555"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+            </ExpandingSection>
 
             <!-- ifac settings -->
             <ExpandingSection>
