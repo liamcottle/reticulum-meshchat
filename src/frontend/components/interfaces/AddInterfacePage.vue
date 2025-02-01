@@ -1007,13 +1007,17 @@
 
         </div>
 
+          <div class="p-2">
 
-        <!-- add button -->
-        <button @click="addInterface" type="button"
-                class="mb-4 bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
-          <span v-if="isEditingInterface">Save Interface</span>
-          <span v-else>Add Interface</span>
-        </button>
+              <!-- add button -->
+              <button @click="addInterface" type="button"
+                      class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                  <span v-if="isEditingInterface">Save Interface</span>
+                  <span v-else>Add Interface</span>
+              </button>
+
+          </div>
+
       </div>
 
     </div>
