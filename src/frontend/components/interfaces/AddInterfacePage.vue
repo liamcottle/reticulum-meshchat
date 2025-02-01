@@ -98,12 +98,9 @@
                     </div>
 
                     <div v-if="newInterfaceType === 'AutoInterface'" class="mb-4">
-
-                        <div @click="toggleAllSettings" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">Additional AutoInterface Settings</span>
-                            <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200" :class="{ 'rotate-180': showAllSettings }">▲</span>
-                        </div>
-
+                        <ExpandingSectionHeader @click="toggleAllSettings" :is-expanded="showAllSettings">
+                            Additional AutoInterface Settings
+                        </ExpandingSectionHeader>
                         <div v-show="showAllSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
 
                             <p class="text-sm text-gray-600 dark:text-gray-400">ⓘ These settings are optional</p>
@@ -193,10 +190,9 @@
                     </div>
 
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-4">
-                        <div @click="toggleAllSettings" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">Additional TCP Client Interface settings</span>
-                            <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200" :class="{ 'rotate-180': showAllSettings }">▲</span>
-                        </div>
+                        <ExpandingSectionHeader @click="toggleAllSettings" :is-expanded="showAllSettings">
+                            Additional TCP Client Interface settings
+                        </ExpandingSectionHeader>
                         <div v-show="showAllSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
                             <div class="flex items-start">
                                 <div class="flex flex-col">
@@ -229,10 +225,9 @@
                     </div>
 
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-4">
-                        <div @click="toggleAllSettings" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">Additional Server Interface settings</span>
-                            <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200 " :class="{ 'rotate-180': showAllSettings }">▲</span>
-                        </div>
+                        <ExpandingSectionHeader @click="toggleAllSettings" :is-expanded="showAllSettings">
+                            Additional Server Interface settings
+                        </ExpandingSectionHeader>
                         <div v-show="showAllSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
                             <div class="mb-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-zinc-100">Network device</label>
@@ -272,10 +267,9 @@
                     <div v-if="newInterfaceType === 'I2PInterface'" class="mb-4">
                         <span class="text-sm text-gray-500 dark:text-zinc-300">ⓘ To use the I2P interface, you must have an I2P router running on your system. When the I2P Interface is added for the first time Reticulum will generate a new I2P address for the interface and begin listening for inbound traffic.</span>
                         <div class="mt-4">
-                            <div @click="toggleI2PPeerAccordion" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                                <span class="font-semibold text-gray-900 dark:text-gray-100">Manage Peers</span>
-                                <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200" :class="{ 'rotate-180': I2PSettings.showPeerAccordion }">▲</span>
-                            </div>
+                            <ExpandingSectionHeader @click="toggleI2PPeerAccordion" :is-expanded="I2PSettings.showPeerAccordion">
+                                Manage Peers
+                            </ExpandingSectionHeader>
                             <div v-show="I2PSettings.showPeerAccordion" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
                                 <div v-for="(peer, index) in I2PSettings.newInterfacePeers" :key="index" class="flex items-center space-x-2">
                                     <input
@@ -384,10 +378,10 @@
                     <!-- RNode LoRa parameters -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-4">
 
-                        <div @click="toggleRNodeLoRaParameters" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">Show on-air RNode bitrate & link budget</span>
-                            <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200" :class="{ 'rotate-180': showRNodeLoRaParameters }">▲</span>
-                        </div>
+                        <!-- Shared interface setings -->
+                        <ExpandingSectionHeader @click="toggleRNodeLoRaParameters" :is-expanded="showRNodeLoRaParameters">
+                            Show on-air RNode bitrate & link budget
+                        </ExpandingSectionHeader>
 
                         <div v-show="showRNodeLoRaParameters" class="mt-3 space-y-6 p-6 border border-gray-300 rounded-lg bg-gray-50 dark:bg-zinc-900 dark:border-zinc-700">
 
@@ -430,10 +424,9 @@
 
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-4">
 
-                        <div @click="toggleAllSettings" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">Additional RNode Interface Settings</span>
-                            <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200" :class="{ 'rotate-180': showAllSettings }">▲</span>
-                        </div>
+                        <ExpandingSectionHeader @click="toggleAllSettings" :is-expanded="showAllSettings">
+                            Additional RNode Interface Settings
+                        </ExpandingSectionHeader>
 
                         <div v-show="showAllSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
 
@@ -492,10 +485,9 @@
                     </div>
 
                     <div v-if="newInterfaceType === 'RNodeMultiInterface'" class="mb-4">
-                        <div @click="toggleRNodeSubInterfaces" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">Manage RNode Subinterfaces</span>
-                            <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200" :class="{ 'rotate-180': showRNodeSubInterfaces }">▲</span>
-                        </div>
+                        <ExpandingSectionHeader @click="toggleRNodeSubInterfaces" :is-expanded="showRNodeSubInterfaces">
+                            Manage RNode Sub-Interfaces
+                        </ExpandingSectionHeader>
                         <div v-show="showRNodeSubInterfaces" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
                             <div :key="idx" v-for="(sub, idx) in RNodeMultiInterface.subInterfaces" class="space-y-2 border-b border-gray-200 dark:border-zinc-700 pb-4 mb-4">
                                 <input
@@ -681,10 +673,9 @@
                     </div>
 
                     <!-- Shared interface setings -->
-                    <div v-if="newInterfaceType" @click="toggleSharedInterfaceSettings" class="flex items-center justify-between cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                        <span class="font-semibold text-gray-900 dark:text-gray-100">Shared Interface Settings</span>
-                        <span class="w-5 h-5 text-gray-600 dark:text-gray-300 transform transition-transform duration-200" :class="{ 'rotate-180': showSharedInterfaceSettings }">▲</span>
-                    </div>
+                    <ExpandingSectionHeader v-if="newInterfaceType" @click="toggleSharedInterfaceSettings" :is-expanded="showSharedInterfaceSettings">
+                        Shared Interface Settings
+                    </ExpandingSectionHeader>
 
                     <div v-show="showSharedInterfaceSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
                         <p class="text-sm text-gray-600 dark:text-gray-400">ⓘ These settings are optional.</p>
@@ -765,9 +756,13 @@
 <script>
 import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
+import ExpandingSectionHeader from "./ExpandingSectionHeader.vue";
 
 export default {
     name: 'AddInterfacePage',
+    components: {
+        ExpandingSectionHeader,
+    },
     data() {
         return {
 
