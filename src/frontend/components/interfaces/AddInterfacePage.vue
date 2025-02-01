@@ -320,59 +320,6 @@
 
                     </div>
 
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-4">
-
-                        <ExpandingSectionHeader @click="toggleAllSettings" :is-expanded="showAllSettings">
-                            Additional RNode Interface Settings
-                        </ExpandingSectionHeader>
-
-                        <div v-show="showAllSettings" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
-
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign</label>
-                                    <input
-                                        type="text"
-                                        v-model="newInterfaceCallsign"
-                                        placeholder="Enter callsign"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign ID Interval</label>
-                                    <input
-                                        type="number"
-                                        v-model="newInterfaceIDInterval"
-                                        placeholder="Enter interval (seconds)"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Airtime Limit (Short)</label>
-                                    <input
-                                        type="number"
-                                        v-model="newInterfaceAirtimeLimitShort"
-                                        placeholder="Enter short airtime limit (seconds)"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Airtime Limit (Long)</label>
-                                    <input
-                                        type="number"
-                                        v-model="newInterfaceAirtimeLimitLong"
-                                        placeholder="Enter long airtime limit (seconds)"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
                     <!-- RNodeMultiInterface -->
                     <div v-if="newInterfaceType === 'RNodeMultiInterface'" class="mb-2">
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">ⓘ The RNode Multi Interface is used for custom devices with multiple LoRa transceivers such as the openCom XL.</p>
@@ -673,6 +620,58 @@
                                 <span class="text-sm text-gray-500 dark:text-zinc-300">ⓘ Enables tunnelling through an I2P Connection using the TCPClientInterface</span>
                             </div>
                             <input id="i2p-tunneled" type="checkbox" v-model="newInterfaceI2PTunnelingEnabled" class="my-auto mx-2 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"/>
+                        </div>
+
+                    </div>
+                </template>
+            </ExpandingSection>
+
+            <!-- optional RNodeInterface settings -->
+            <ExpandingSection v-if="newInterfaceType === 'RNodeInterface'">
+                <template v-slot:title>Optional RNodeInterface Settings</template>
+                <template v-slot:content>
+                    <div class="p-2 space-y-3">
+
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign</label>
+                                <input
+                                    type="text"
+                                    v-model="newInterfaceCallsign"
+                                    placeholder="Enter callsign"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign ID Interval</label>
+                                <input
+                                    type="number"
+                                    v-model="newInterfaceIDInterval"
+                                    placeholder="Enter interval (seconds)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Airtime Limit (Short)</label>
+                                <input
+                                    type="number"
+                                    v-model="newInterfaceAirtimeLimitShort"
+                                    placeholder="Enter short airtime limit (seconds)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Airtime Limit (Long)</label>
+                                <input
+                                    type="number"
+                                    v-model="newInterfaceAirtimeLimitLong"
+                                    placeholder="Enter long airtime limit (seconds)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
                         </div>
 
                     </div>
