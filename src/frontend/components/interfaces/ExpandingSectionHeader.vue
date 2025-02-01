@@ -15,7 +15,7 @@
 export default {
     name: 'ExpandingSectionHeader',
     props: {
-        isExpanded: false,
+        isExpanded: Boolean,
     },
 }
 </script>

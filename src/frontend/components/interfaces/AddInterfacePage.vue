@@ -697,55 +697,58 @@
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                             />
                         </div>
-                        <div class="mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-zinc-100 mb-2">IFAC Settings</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">ⓘ IFAC (Interface Access Code) settings are used for creating private networks and can be configured on the interface level.</p>
-                            <div class="grid grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network Name</label>
-                                    <input
-                                        v-model="sharedInterfaceSettings.network_name"
-                                        type="text"
-                                        placeholder="Enter network name"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Passphrase</label>
-                                    <input
-                                        v-model="sharedInterfaceSettings.passphrase"
-                                        type="text"
-                                        placeholder="Enter passphrase"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">IFAC Size</label>
-                                    <input
-                                        v-model="sharedInterfaceSettings.ifac_size"
-                                        type="number"
-                                        min="8"
-                                        max="512"
-                                        placeholder="Enter size (8-512)"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                 </div>
+            </div>
 
-                <div class="p-2">
+            <!-- ifac settings -->
+            <ExpandingSection>
+                <template v-slot:title>IFAC Settings</template>
+                <template v-slot:subtitle>Interface Access Code settings are used for creating private networks and can be configured on the interface level.</template>
+                <template v-slot:content>
+                    <div class="p-2">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network Name</label>
+                                <input
+                                    v-model="sharedInterfaceSettings.network_name"
+                                    type="text"
+                                    placeholder="Enter network name"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Passphrase</label>
+                                <input
+                                    v-model="sharedInterfaceSettings.passphrase"
+                                    type="text"
+                                    placeholder="Enter passphrase"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">IFAC Size</label>
+                                <input
+                                    v-model="sharedInterfaceSettings.ifac_size"
+                                    type="number"
+                                    min="8"
+                                    max="512"
+                                    placeholder="Enter size (8-512)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </ExpandingSection>
 
-                    <!-- add/save interface button -->
-                    <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
-                        <span v-if="isEditingInterface">Save Interface</span>
-                        <span v-else>Add Interface</span>
-                    </button>
-
-                </div>
-
+            <!-- add/save interface button -->
+            <div class="p-2 bg-white rounded shadow divide-y divide-gray-200 dark:bg-zinc-900">
+                <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                    <span v-if="isEditingInterface">Save Interface</span>
+                    <span v-else>Add Interface</span>
+                </button>
             </div>
 
         </div>
@@ -756,10 +759,12 @@
 import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
 import ExpandingSectionHeader from "./ExpandingSectionHeader.vue";
+import ExpandingSection from "./ExpandingSection.vue";
 
 export default {
     name: 'AddInterfacePage',
     components: {
+        ExpandingSection,
         ExpandingSectionHeader,
     },
     data() {
