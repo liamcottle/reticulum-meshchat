@@ -378,7 +378,6 @@
                     <!-- RNode LoRa parameters -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-4">
 
-                        <!-- Shared interface setings -->
                         <ExpandingSectionHeader @click="toggleRNodeLoRaParameters" :is-expanded="showRNodeLoRaParameters">
                             Show on-air RNode bitrate & link budget
                         </ExpandingSectionHeader>
