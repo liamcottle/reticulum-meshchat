@@ -712,9 +712,9 @@
             <!-- ifac settings -->
             <ExpandingSection>
                 <template v-slot:title>IFAC Settings</template>
-                <template v-slot:subtitle>Interface Access Code settings are used for creating private networks and can be configured on the interface level.</template>
                 <template v-slot:content>
                     <div class="p-2">
+                        <div class="text-sm text-gray-500 dark:text-zinc-300 mb-2">ⓘ Interface Access Code settings are used for creating private networks and can be configured on the interface level.</div>
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-y-2 lg:gap-x-2">
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network Name</label>
