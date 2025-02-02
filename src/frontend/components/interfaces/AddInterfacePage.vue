@@ -63,7 +63,7 @@
                     <!-- iGeneric interface settings -->
                     <!-- interface name -->
                     <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Name</label>
+                        <FormLabel class="mb-1">Name</FormLabel>
                         <input type="text" :disabled="isEditingInterface" placeholder="New Interface Name"
                                v-model="newInterfaceName"
                                class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
@@ -73,7 +73,7 @@
 
                     <!-- interface type -->
                     <div class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Type</label>
+                        <FormLabel class="mb-1">Type</FormLabel>
                         <select v-model="newInterfaceType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                             <option disabled selected>--</option>
                             <option value="AutoInterface">Auto Interface</option>
@@ -100,39 +100,39 @@
                     <!-- TCPClientInterface -->
                     <!-- interface target host -->
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Target Host</label>
+                        <FormLabel class="mb-1">Target Host</FormLabel>
                         <input type="text" placeholder="e.g: example.com" v-model="newInterfaceTargetHost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface target port -->
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Target Port</label>
+                        <FormLabel class="mb-1">Target Port</FormLabel>
                         <input type="text" placeholder="e.g: 1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- TCPServerInterface -->
                     <!-- interface listen ip -->
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Listen IP</label>
+                        <FormLabel class="mb-1">Listen IP</FormLabel>
                         <input type="text" placeholder="e.g: 0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface listen port -->
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Listen Port</label>
+                        <FormLabel class="mb-1">Listen Port</FormLabel>
                         <input type="text" placeholder="e.g: 1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- UDPInterface -->
                     <!-- interface forward ip -->
                     <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Forward IP</label>
+                        <FormLabel class="mb-1">Forward IP</FormLabel>
                         <input type="text" placeholder="e.g: 255.255.255.255" v-model="newInterfaceForwardIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface listen port -->
                     <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Forward Port</label>
+                        <FormLabel class="mb-1">Forward Port</FormLabel>
                         <input type="text" placeholder="e.g: 1234" v-model="newInterfaceForwardPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
@@ -140,7 +140,7 @@
                     <!-- peers -->
                     <div v-if="newInterfaceType === 'I2PInterface'">
                         <div class="mb-2 text-sm text-gray-500 dark:text-zinc-300">ⓘ To use the I2P interface, you must have an I2P router running on your system. When the I2P Interface is added for the first time Reticulum will generate a new I2P address for the interface and begin listening for inbound traffic.</div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Peers</label>
+                        <FormLabel class="mb-1">Peers</FormLabel>
                         <div class="space-y-2">
                             <div v-for="(peer, index) in I2PSettings.newInterfacePeers" :key="index" class="flex items-center space-x-2">
                                 <input
@@ -158,7 +158,7 @@
                     <!-- RNode interface -->
                     <!-- interface port -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Port</label>
+                        <FormLabel class="mb-1">Port</FormLabel>
                         <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                         </select>
@@ -166,9 +166,9 @@
 
                     <!-- interface Frequency -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">
+                        <FormLabel class="mb-1">
                             <span>Frequency</span><span v-if="formattedFrequency">: {{ formattedFrequency }}</span>
-                        </label>
+                        </FormLabel>
                         <div class="flex items-center">
                             <div class="flex flex-col">
                                 <input
@@ -205,7 +205,7 @@
 
                     <!-- interface bandwidth -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Bandwidth</label>
+                        <FormLabel class="mb-1">Bandwidth</FormLabel>
                         <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
                         </select>
@@ -213,7 +213,7 @@
 
                     <!-- interface txpower -->
                     <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Transmit Power (dBm)</label>
+                        <FormLabel class="mb-1">Transmit Power (dBm)</FormLabel>
                         <input v-model="newInterfaceTxpower" type="number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                     </div>
 
@@ -221,7 +221,7 @@
 
                         <!-- interface spreading factor -->
                         <div class="flex-1">
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Spreading Factor</label>
+                            <FormLabel class="mb-1">Spreading Factor</FormLabel>
                             <select v-model="newInterfaceSpreadingFactor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                                 <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
                             </select>
@@ -229,7 +229,7 @@
 
                         <!-- interface coding rate -->
                         <div class="flex-1">
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Coding Rate</label>
+                            <FormLabel class="mb-1">Coding Rate</FormLabel>
                             <select v-model="newInterfaceCodingRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                                 <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">{{ codingrate }}</option>
                             </select>
@@ -240,7 +240,7 @@
                     <!-- RNodeMultiInterface -->
                     <div v-if="newInterfaceType === 'RNodeMultiInterface'" class="mb-2">
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">ⓘ The RNode Multi Interface is used for custom devices with multiple LoRa transceivers such as the openCom XL.</p>
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Port</label>
+                        <FormLabel class="mb-1">Port</FormLabel>
                         <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                         </select>
@@ -248,7 +248,7 @@
 
                     <!-- RNodeMultiInterface: Sub Interfaces -->
                     <div v-if="newInterfaceType === 'RNodeMultiInterface'" class="mb-2">
-                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Sub-Interfaces</label>
+                        <FormLabel class="mb-1">Sub-Interfaces</FormLabel>
                         <div class="space-y-3">
                             <div :key="idx" v-for="(sub, idx) in RNodeMultiInterface.subInterfaces" class="p-2 space-y-2 border border-gray-200 rounded-lg dark:border-zinc-700">
 
@@ -260,14 +260,14 @@
 
                                 <div class="flex gap-2">
                                     <div class="flex-1">
-                                        <label class="text-sm dark:text-zinc-100">Frequency (Hz)</label>
+                                        <FormLabel class="mb-1">Frequency (Hz)</FormLabel>
                                         <input
                                             v-model.number="sub.frequency"
                                             type="number"
                                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                                     </div>
                                     <div class="flex-1">
-                                        <label class="text-sm dark:text-zinc-100">Bandwidth</label>
+                                        <FormLabel class="mb-1">Bandwidth</FormLabel>
                                         <select v-model="sub.bandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                                             <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
                                         </select>
@@ -276,13 +276,13 @@
 
                                 <div class="flex gap-2">
                                     <div class="flex-1">
-                                        <label class="text-sm dark:text-zinc-100">Spreading Factor</label>
+                                        <FormLabel class="mb-1">Spreading Factor</FormLabel>
                                         <select v-model.number="sub.spreadingfactor" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                                             <option :key="sf" v-for="sf in RNodeInterfaceDefaults.spreadingfactors" :value="sf">{{ sf }}</option>
                                         </select>
                                     </div>
                                     <div class="flex-1">
-                                        <label class="text-sm dark:text-zinc-100">Coding Rate</label>
+                                        <FormLabel class="mb-1">Coding Rate</FormLabel>
                                         <select v-model.number="sub.codingrate" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                                             <option :key="cr" v-for="cr in RNodeInterfaceDefaults.codingrates" :value="cr">{{ cr }}</option>
                                         </select>
@@ -291,14 +291,14 @@
 
                                 <div class="flex gap-2 items-center">
                                     <div class="flex-1">
-                                        <label class="text-sm dark:text-zinc-100">TX Power (dBm)</label>
+                                        <FormLabel class="mb-1">TX Power (dBm)</FormLabel>
                                         <input
                                             v-model.number="sub.txpower"
                                             type="number"
                                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                                     </div>
                                     <div class="flex-1">
-                                        <label class="text-sm dark:text-zinc-100">Virtual Port</label>
+                                        <FormLabel class="mb-1">Virtual Port</FormLabel>
                                         <input
                                             v-model.number="sub.vport"
                                             type="number"
@@ -317,29 +317,29 @@
                     <div v-if="['SerialInterface', 'KISSInterface', 'AX25KISSInterface'].includes(newInterfaceType)" class="mb-4">
 
                         <div class="mb-2">
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Port</label>
+                            <FormLabel class="mb-1">Port</FormLabel>
                             <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                                 <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                             </select>
                         </div>
 
                         <div class="mb-2">
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Serial connection baud rate (bps)</label>
+                            <FormLabel class="mb-1">Serial connection baud rate (bps)</FormLabel>
                             <input v-model="newInterfaceSpeed" placeholder="115200" type="number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                         </div>
 
                         <div class="mb-2">
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Databits</label>
+                            <FormLabel class="mb-1">Databits</FormLabel>
                             <input v-model="newInterfaceDatabits" type="number" placeholder="8" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                         </div>
 
                         <div class="mb-2">
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Parity </label>
+                            <FormLabel class="mb-1">Parity</FormLabel>
                             <input v-model="newInterfaceParity" type="number" placeholder="" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                         </div>
 
                         <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Stopbits</label>
+                            <FormLabel class="mb-1">Stopbits</FormLabel>
                             <input v-model="newInterfaceStopbits" type="number" placeholder="1" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                         </div>
 
@@ -356,12 +356,12 @@
                                 @click="useKISSAX25"
                                 class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"
                             />
-                            <label for="use-ax25" class="ml-2 text-sm font-medium text-gray-900 dark:text-zinc-100">Enable AX.25 Framing</label>
+                            <FormLabel for="use-ax25" class="ml-2">Enable AX.25 Framing</FormLabel>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Preamble (milliseconds)</label>
+                                <FormLabel class="mb-1">Preamble (milliseconds)</FormLabel>
                                 <input
                                     v-model="this.newInterfacePreamble"
                                     type="number"
@@ -370,7 +370,7 @@
                                 />
                             </div>
                             <div>
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">TX Tail (milliseconds)</label>
+                                <FormLabel class="mb-1">TX Tail (milliseconds)</FormLabel>
                                 <input
                                     v-model="this.newInterfaceTXTail"
                                     type="number"
@@ -379,7 +379,7 @@
                                 />
                             </div>
                             <div>
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">CDMA Persistence (milliseconds)</label>
+                                <FormLabel class="mb-1">CDMA Persistence (milliseconds)</FormLabel>
                                 <input
                                     v-model="this.newInterfacePersistence"
                                     type="number"
@@ -388,7 +388,7 @@
                                 />
                             </div>
                             <div>
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">CDMA Slot Time (milliseconds)</label>
+                                <FormLabel class="mb-1">CDMA Slot Time (milliseconds)</FormLabel>
                                 <input
                                     v-model="this.newInterfaceSlotTime"
                                     type="number"
@@ -400,7 +400,7 @@
 
                         <div class="flex items-center space-x-4 mt-4">
                             <div class="flex-1">
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">SSID</label>
+                                <FormLabel class="mb-1">SSID</FormLabel>
                                 <input
                                     type="text"
                                     value="0"
@@ -410,7 +410,7 @@
                                 />
                             </div>
                             <div class="flex-1">
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign</label>
+                                <FormLabel class="mb-1">Callsign</FormLabel>
                                 <input
                                     type="text"
                                     v-model="newInterfaceCallsign"
@@ -419,7 +419,7 @@
                                 />
                             </div>
                             <div class="flex-1">
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign ID Interval</label>
+                                <FormLabel class="mb-1">Callsign ID Interval</FormLabel>
                                 <input
                                     type="number"
                                     v-model="newInterfaceIDInterval"
@@ -437,12 +437,12 @@
                         <div class="text-sm text-gray-500 dark:text-zinc-300 mb-3">ⓘ Using this interface, Reticulum can use any program as an interface via stdin and stdout. This can be usedto easily create virtual interfaces, or to interface with custom hardware or other systems.</div>
 
                         <div class="mb-2">
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Command</label>
+                            <FormLabel class="mb-1">Command</FormLabel>
                             <input type="text" placeholder="e.g: netcat -l 5757" v-model="newInterfaceCommand" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                         </div>
 
                         <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Respawn Delay (seconds)</label>
+                            <FormLabel class="mb-1">Respawn Delay (seconds)</FormLabel>
                             <input type="number" placeholder="5" v-model="newInterfaceRespawnDelay" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                         </div>
 
@@ -458,7 +458,7 @@
                     <div class="p-2 space-y-3">
 
                         <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-800 dark:text-white">Antenna Gain (dBi)</label>
+                            <FormLabel class="mb-1">Antenna Gain (dBi)</FormLabel>
                             <input
                                 type="number"
                                 v-model.number="RNodeInterfaceLoRaParameters.antennaGain"
@@ -469,7 +469,7 @@
                         </div>
 
                         <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-800 dark:text-white">On-Air Calculations</label>
+                            <FormLabel class="mb-1">On-Air Calculations</FormLabel>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-center">
                                 <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800 dark:border-zinc-600">
                                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Sensitivity</div>
@@ -497,7 +497,7 @@
                     <div class="p-2 space-y-3">
 
                         <div class="flex-1">
-                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Group ID</label>
+                            <FormLabel class="mb-1">Group ID</FormLabel>
                             <input
                                 type="text"
                                 v-model="newInterfaceGroupID"
@@ -507,7 +507,7 @@
                         </div>
 
                         <div class="flex-1">
-                            <label class="text-sm dark:text-zinc-100">Multicast Address Type</label>
+                            <FormLabel class="mb-1">Multicast Address Type</FormLabel>
                             <select v-model="newInterfaceMulticastAddressType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                                 <option value="permanent">Permanent</option>
                                 <option value="temporary">Temporary</option>
@@ -516,7 +516,7 @@
 
                         <div class="flex items-center space-x-4 mt-4">
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network devices</label>
+                                <FormLabel class="mb-1">Network devices</FormLabel>
                                 <input
                                     type="text"
                                     v-model="newInterfaceDevices"
@@ -525,7 +525,7 @@
                                 />
                             </div>
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Ignored Devices</label>
+                                <FormLabel class="mb-1">Ignored Devices</FormLabel>
                                 <input
                                     type="text"
                                     v-model="newInterfaceIgnoredDevices"
@@ -537,7 +537,7 @@
 
                         <div class="flex items-center space-x-4 mt-4">
                             <div class="flex-1">
-                                <label class="text-sm dark:text-zinc-100">Discovery Scope</label>
+                                <FormLabel class="mb-1">Discovery Scope</FormLabel>
                                 <select v-model="newInterfaceDiscoveryScope" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                                     <option value="global">Global</option>
                                     <option value="admin">Admin</option>
@@ -547,7 +547,7 @@
                                 </select>
                             </div>
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Discovery Port</label>
+                                <FormLabel class="mb-1">Discovery Port</FormLabel>
                                 <input
                                     type="number"
                                     v-model="newInterfaceDiscoveryPort"
@@ -556,7 +556,7 @@
                                 />
                             </div>
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Data Port</label>
+                                <FormLabel class="mb-1">Data Port</FormLabel>
                                 <input
                                     type="number"
                                     v-model="newInterfaceDataPort"
@@ -578,7 +578,7 @@
 
                         <div class="flex">
                             <div class="flex flex-col mr-auto">
-                                <label for="kiss-framing" class="text-sm font-medium text-gray-900 dark:text-zinc-100">Enable KISS Framing</label>
+                                <FormLabel for="kiss-framing">Enable KISS Framing</FormLabel>
                                 <span class="text-sm text-gray-500 dark:text-zinc-300">Enable this when connecting to software that uses KISS framing such as packet radio sound modems. For KISS connections through serial hardware select "KISS Interface" as the interface type.</span>
                             </div>
                             <input id="kiss-framing" type="checkbox" v-model="newInterfaceKISSFramingEnabled" class="my-auto mx-2 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"/>
@@ -586,7 +586,7 @@
 
                         <div class="flex">
                             <div class="flex flex-col mr-auto">
-                                <label for="i2p-tunneled" class="text-sm font-medium text-gray-900 dark:text-zinc-100">Enable I2P tunneling</label>
+                                <FormLabel for="i2p-tunneled">Enable I2P tunneling</FormLabel>
                                 <span class="text-sm text-gray-500 dark:text-zinc-300">Enables tunnelling through an I2P Connection using the TCPClientInterface</span>
                             </div>
                             <input id="i2p-tunneled" type="checkbox" v-model="newInterfaceI2PTunnelingEnabled" class="my-auto mx-2 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:focus:ring-blue-600"/>
@@ -603,14 +603,14 @@
                     <div class="p-2 space-y-3">
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network device</label>
+                            <FormLabel>Network device</FormLabel>
                             <span class="text-sm text-gray-500 dark:text-zinc-300">Binds the interface to a specific network interface</span>
                             <input type="text" placeholder="e.g: eth0" v-model="newInterfaceNetworkDevice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                         </div>
 
                         <div class="flex items-start">
                             <div class="flex flex-col mr-auto">
-                                <label for="prefer-ipv6" class="text-sm font-medium text-gray-900 dark:text-zinc-100">Prefer IPv6</label>
+                                <FormLabel for="prefer-ipv6">Prefer IPv6</FormLabel>
                                 <span class="text-sm text-gray-500 dark:text-zinc-300">Binds the TCP Server Interface to an IPv6 address</span>
                             </div>
                             <input
@@ -634,7 +634,7 @@
 
                         <div class="flex items-center space-x-4">
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign</label>
+                                <FormLabel class="mb-1">Callsign</FormLabel>
                                 <input
                                     type="text"
                                     v-model="newInterfaceCallsign"
@@ -643,7 +643,7 @@
                                 />
                             </div>
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Callsign ID Interval</label>
+                                <FormLabel class="mb-1">Callsign ID Interval</FormLabel>
                                 <input
                                     type="number"
                                     v-model="newInterfaceIDInterval"
@@ -655,7 +655,7 @@
 
                         <div class="flex items-center space-x-4">
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Airtime Limit (Short)</label>
+                                <FormLabel class="mb-1">Airtime Limit (Short)</FormLabel>
                                 <input
                                     type="number"
                                     v-model="newInterfaceAirtimeLimitShort"
@@ -664,7 +664,7 @@
                                 />
                             </div>
                             <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Airtime Limit (Long)</label>
+                                <FormLabel class="mb-1">Airtime Limit (Long)</FormLabel>
                                 <input
                                     type="number"
                                     v-model="newInterfaceAirtimeLimitLong"
@@ -685,7 +685,7 @@
                     <div class="p-2 space-y-3">
 
                         <div v-show="transportEnabled">
-                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Interface Mode</label>
+                            <FormLabel class="mb-1">Interface Mode</FormLabel>
                             <select v-model="sharedInterfaceSettings.mode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                                 <option value="full">Full</option>
                                 <option value="gateway">Gateway</option>
@@ -696,7 +696,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Inferred Interface Bitrate</label>
+                            <FormLabel class="mb-1">Inferred Interface Bitrate</FormLabel>
                             <input
                                 v-model="sharedInterfaceSettings.bitrate"
                                 type="number"
@@ -717,7 +717,7 @@
                         <div class="text-sm text-gray-500 dark:text-zinc-300 mb-2">ⓘ Interface Access Code settings are used for creating private networks and can be configured on the interface level.</div>
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-y-2 lg:gap-x-2">
                             <div>
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Network Name</label>
+                                <FormLabel class="mb-1">Network Name</FormLabel>
                                 <input
                                     v-model="sharedInterfaceSettings.network_name"
                                     type="text"
@@ -726,7 +726,7 @@
                                 />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">Passphrase</label>
+                                <FormLabel class="mb-1">Passphrase</FormLabel>
                                 <input
                                     v-model="sharedInterfaceSettings.passphrase"
                                     type="text"
@@ -735,7 +735,7 @@
                                 />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-900 dark:text-zinc-100">IFAC Size</label>
+                                <FormLabel class="mb-1">IFAC Size</FormLabel>
                                 <input
                                     v-model="sharedInterfaceSettings.ifac_size"
                                     type="number"
@@ -766,10 +766,12 @@
 import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
 import ExpandingSection from "./ExpandingSection.vue";
+import FormLabel from "../forms/FormLabel.vue";
 
 export default {
     name: 'AddInterfacePage',
     components: {
+        FormLabel,
         ExpandingSection,
     },
     data() {
