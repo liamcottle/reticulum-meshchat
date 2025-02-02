@@ -507,8 +507,12 @@ class ReticulumMeshChat:
 
                 interface_details["target_host"] = interface_target_host
                 interface_details["target_port"] = interface_target_port
-                interface_details["kiss_framing"] = interface_kiss_framing
-                interface_details["i2p_tunneled"] = interface_i2p_tunneled
+
+                if interface_kiss_framing is not None:
+                    interface_details["kiss_framing"] = interface_kiss_framing
+
+                if interface_i2p_tunneled is not None:
+                    interface_details["i2p_tunneled"] = interface_i2p_tunneled
 
             # handle I2P interface
             if interface_type == "I2PInterface":
