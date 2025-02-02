@@ -659,8 +659,11 @@ class ReticulumMeshChat:
                 for idx, sub_interface in enumerate(sub_interfaces):
 
                     # ensure required fields for sub-interface provided
+                    missing_fields = []
                     required_subinterface_fields = ["name", "frequency", "bandwidth", "txpower", "spreadingfactor", "codingrate", "vport"]
-                    missing_fields = [field for field in required_subinterface_fields if field not in sub_interface or sub_interface.get(field) == ""]
+                    for field in required_subinterface_fields:
+                        if field not in sub_interface or sub_interface.get(field) == "":
+                            missing_fields.append(field)
                     if missing_fields:
                         return web.json_response({
                             "message": f"Sub-interface {idx + 1} is missing required field(s): {', '.join(missing_fields)}"
