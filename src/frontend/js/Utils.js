@@ -143,7 +143,7 @@ class Utils {
 
     static isInterfaceEnabled(iface) {
         const rawValue = iface.enabled ?? iface.interface_enabled;
-        const value = rawValue?.toLowerCase();
+        const value = rawValue?.toString()?.toLowerCase();
         return value === "on" || value === "yes" || value === "true";
     }
 

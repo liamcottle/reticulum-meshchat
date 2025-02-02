@@ -69,7 +69,7 @@
                 </div>
                 <div class="my-auto">Loading {{ nodePageProgress }}%</div>
             </div>
-            <pre v-else v-html="nodePageContent" class="h-full text-wrap"></pre>
+            <pre v-else v-html="nodePageContent" class="h-full break-words whitespace-pre-wrap"></pre>
         </div>
 
         <!-- file download bottom bar -->
