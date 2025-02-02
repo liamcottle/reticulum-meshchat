@@ -768,14 +768,12 @@
 <script>
 import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
-import ExpandingSectionHeader from "./ExpandingSectionHeader.vue";
 import ExpandingSection from "./ExpandingSection.vue";
 
 export default {
     name: 'AddInterfacePage',
     components: {
         ExpandingSection,
-        ExpandingSectionHeader,
     },
     data() {
         return {
