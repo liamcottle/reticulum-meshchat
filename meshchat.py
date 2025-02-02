@@ -26,6 +26,7 @@ from src.backend.announce_handler import AnnounceHandler
 from src.backend.async_utils import AsyncUtils
 from src.backend.colour_utils import ColourUtils
 from src.backend.interface_config_parser import InterfaceConfigParser
+from src.backend.interface_editor import InterfaceEditor
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.backend.audio_call_manager import AudioCall, AudioCallManager
 from src.backend.sideband_commands import SidebandCommands
@@ -337,8 +338,7 @@ class ReticulumMeshChat:
                 if interface_data.get("type") == "RNodeMultiInterface":
                     sub_interfaces = []
                     for sub_name, sub_config in interface_data.items():
-                        if sub_name not in {"type", "port", "interface_enabled", "selected_interface_mode",
-                                            "configured_bitrate"}:
+                        if sub_name not in {"type", "port", "interface_enabled", "selected_interface_mode", "configured_bitrate"}:
                             if isinstance(sub_config, dict):
                                 sub_config["name"] = sub_name
                                 sub_interfaces.append(sub_config)
@@ -465,54 +465,42 @@ class ReticulumMeshChat:
             if "enabled" not in interface_details and "interface_enabled" not in interface_details:
                 interface_details["interface_enabled"] = "true"
 
-            # additional AutoInterface options
+            # handle AutoInterface
             if interface_type == "AutoInterface":
-                if data.get("group_id"):
-                    interface_details["group_id"] = data.get("group_id")
-                if data.get("multicast_address_type"):
-                    interface_details["multicast_address_type"] = data.get("multicast_address_type")
-                if data.get("devices"):
-                    interface_details["devices"] = data.get("devices")
-                if data.get("ignored_devices"):
-                    interface_details["ignored_devices"] = data.get("ignored_devices")
-                if data.get("discovery_scope"):
-                    interface_details["discovery_scope"] = data.get("discovery_scope")
-                if data.get("discovery_port"):
-                    interface_details["discovery_port"] = data.get("discovery_port")
-                if data.get("data_port"):
-                    interface_details["data_port"] = data.get("data_port")
 
-            # handle tcp client interface
+                # set optional AutoInterface options
+                InterfaceEditor.update_value(interface_details, data, "group_id")
+                InterfaceEditor.update_value(interface_details, data, "multicast_address_type")
+                InterfaceEditor.update_value(interface_details, data, "devices")
+                InterfaceEditor.update_value(interface_details, data, "ignored_devices")
+                InterfaceEditor.update_value(interface_details, data, "discovery_scope")
+                InterfaceEditor.update_value(interface_details, data, "discovery_port")
+                InterfaceEditor.update_value(interface_details, data, "data_port")
+
+            # handle TCPClientInterface
             if interface_type == "TCPClientInterface":
 
-                # required settings
-                interface_target_host = data.get('target_host')
-                interface_target_port = data.get('target_port')
-
-                # optional settings for kiss_framing and i2p tunnelling
-                interface_kiss_framing = data.get('kiss_framing')
-                interface_i2p_tunneled = data.get('i2p_tunneled')
-
                 # ensure target host provided
+                interface_target_host = data.get('target_host')
                 if interface_target_host is None or interface_target_host == "":
                     return web.json_response({
                         "message": "Target Host is required",
                     }, status=422)
 
                 # ensure target port provided
+                interface_target_port = data.get('target_port')
                 if interface_target_port is None or interface_target_port == "":
                     return web.json_response({
                         "message": "Target Port is required",
                     }, status=422)
 
+                # set required TCPClientInterface options
                 interface_details["target_host"] = interface_target_host
                 interface_details["target_port"] = interface_target_port
 
-                if interface_kiss_framing is not None:
-                    interface_details["kiss_framing"] = interface_kiss_framing
-
-                if interface_i2p_tunneled is not None:
-                    interface_details["i2p_tunneled"] = interface_i2p_tunneled
+                # set optional TCPClientInterface options
+                InterfaceEditor.update_value(interface_details, data, "kiss_framing")
+                InterfaceEditor.update_value(interface_details, data, "i2p_tunneled")
 
             # handle I2P interface
             if interface_type == "I2PInterface":
@@ -522,126 +510,114 @@ class ReticulumMeshChat:
             # handle tcp server interface
             if interface_type == "TCPServerInterface":
 
-                # required settings
-                interface_listen_ip = data.get('listen_ip')
-                interface_listen_port = data.get('listen_port')
-
-                # optional settings
-                interface_network_device = data.get('device')
-                interface_prefer_ipv6 = data.get('prefer_ipv6')
-
                 # ensure listen ip provided
+                interface_listen_ip = data.get('listen_ip')
                 if interface_listen_ip is None or interface_listen_ip == "":
                     return web.json_response({
                         "message": "Listen IP is required",
                     }, status=422)
 
                 # ensure listen port provided
+                interface_listen_port = data.get('listen_port')
                 if interface_listen_port is None or interface_listen_port == "":
                     return web.json_response({
                         "message": "Listen Port is required",
                     }, status=422)
 
+                # set required TCPServerInterface options
                 interface_details["listen_ip"] = interface_listen_ip
                 interface_details["listen_port"] = interface_listen_port
 
-                if interface_network_device is not None and interface_network_device != "":
-                    interface_details["device"] = interface_network_device
-
-                if interface_prefer_ipv6 is not None and interface_prefer_ipv6 != "" and interface_prefer_ipv6 != False:
-                    interface_details["prefer_ipv6"] = True
+                # set optional TCPServerInterface options
+                InterfaceEditor.update_value(interface_details, data, "device")
+                InterfaceEditor.update_value(interface_details, data, "prefer_ipv6")
 
             # handle udp interface
             if interface_type == "UDPInterface":
 
-                # required settings
-                interface_listen_ip = data.get('listen_ip')
-                interface_listen_port = data.get('listen_port')
-                interface_forward_ip = data.get('forward_ip')
-                interface_forward_port = data.get('forward_port')
-
-                # optional settings
-                interface_network_device = data.get('device')
-
                 # ensure listen ip provided
+                interface_listen_ip = data.get('listen_ip')
                 if interface_listen_ip is None or interface_listen_ip == "":
                     return web.json_response({
                         "message": "Listen IP is required",
                     }, status=422)
 
                 # ensure listen port provided
+                interface_listen_port = data.get('listen_port')
                 if interface_listen_port is None or interface_listen_port == "":
                     return web.json_response({
                         "message": "Listen Port is required",
                     }, status=422)
 
                 # ensure forward ip provided
+                interface_forward_ip = data.get('forward_ip')
                 if interface_forward_ip is None or interface_forward_ip == "":
                     return web.json_response({
                         "message": "Forward IP is required",
                     }, status=422)
 
                 # ensure forward port provided
+                interface_forward_port = data.get('forward_port')
                 if interface_forward_port is None or interface_forward_port == "":
                     return web.json_response({
                         "message": "Forward Port is required",
                     }, status=422)
 
+                # set required UDPInterface options
                 interface_details["listen_ip"] = interface_listen_ip
                 interface_details["listen_port"] = interface_listen_port
                 interface_details["forward_ip"] = interface_forward_ip
                 interface_details["forward_port"] = interface_forward_port
 
-                if interface_network_device is not None and interface_network_device != "":
-                    interface_details["network_device"] = interface_network_device
+                # set optional UDPInterface options
+                InterfaceEditor.update_value(interface_details, data, "device")
 
-            # handle rnode interface
+            # handle RNodeInterface
             if interface_type == "RNodeInterface":
 
-                # required settings
-                interface_port = data.get('port')
-                interface_frequency = data.get('frequency')
-                interface_bandwidth = data.get('bandwidth')
-                interface_txpower = data.get('txpower')
-                interface_spreadingfactor = data.get('spreadingfactor')
-                interface_codingrate = data.get('codingrate')
-
                 # ensure port provided
+                interface_port = data.get('port')
                 if interface_port is None or interface_port == "":
                     return web.json_response({
                         "message": "Port is required",
                     }, status=422)
 
                 # ensure frequency provided
+                interface_frequency = data.get('frequency')
                 if interface_frequency is None or interface_frequency == "":
                     return web.json_response({
                         "message": "Frequency is required",
                     }, status=422)
 
                 # ensure bandwidth provided
+                interface_bandwidth = data.get('bandwidth')
                 if interface_bandwidth is None or interface_bandwidth == "":
                     return web.json_response({
                         "message": "Bandwidth is required",
                     }, status=422)
 
                 # ensure txpower provided
+                interface_txpower = data.get('txpower')
                 if interface_txpower is None or interface_txpower == "":
                     return web.json_response({
                         "message": "TX power is required",
                     }, status=422)
 
                 # ensure spreading factor provided
+                interface_spreadingfactor = data.get('spreadingfactor')
                 if interface_spreadingfactor is None or interface_spreadingfactor == "":
                     return web.json_response({
                         "message": "Spreading Factor is required",
                     }, status=422)
 
                 # ensure coding rate provided
+                interface_codingrate = data.get('codingrate')
                 if interface_codingrate is None or interface_codingrate == "":
                     return web.json_response({
                         "message": "Coding Rate is required",
                     }, status=422)
 
+                # set required RNodeInterface options
                 interface_details["port"] = interface_port
                 interface_details["frequency"] = interface_frequency
                 interface_details["bandwidth"] = interface_bandwidth
@@ -649,8 +625,16 @@ class ReticulumMeshChat:
                 interface_details["spreadingfactor"] = interface_spreadingfactor
                 interface_details["codingrate"] = interface_codingrate
 
-            # Handle RNode Multi Interface
+                # set optional RNodeInterface options
+                InterfaceEditor.update_value(interface_details, data, "callsign")
+                InterfaceEditor.update_value(interface_details, data, "id_interval")
+                InterfaceEditor.update_value(interface_details, data, "airtime_limit_long")
+                InterfaceEditor.update_value(interface_details, data, "airtime_limit_short")
+
+            # handle RNodeMultiInterface
             if interface_type == "RNodeMultiInterface":
+
+                # FIXME: currently not possible to remove a sub interface after it has already been saved
 
                 # required settings
                 interface_port = data.get("port")
@@ -668,13 +652,13 @@ class ReticulumMeshChat:
                         "message": "At least one sub-interface is required",
                     }, status=422)
 
-                interface_details["type"] = interface_type
-                interface_details["interface_enabled"] = True
+                # set required RNodeMultiInterface options
                 interface_details["port"] = interface_port
 
+                # process each provided sub interface
                 for idx, sub_interface in enumerate(sub_interfaces):
 
-                    # ensure required fields for each sub-interface provided
+                    # ensure required fields for sub-interface provided
                     required_subinterface_fields = ["name", "frequency", "bandwidth", "txpower", "spreadingfactor", "codingrate", "vport"]
                     missing_fields = [field for field in required_subinterface_fields if not sub_interface.get(field)]
                     if missing_fields:
@@ -695,93 +679,70 @@ class ReticulumMeshChat:
 
                 interfaces[interface_name] = interface_details
 
-            # Handle Serial, KISS, and AX25KISS
+            # handle SerialInterface, KISSInterface, and AX25KISSInterface
             if interface_type == "SerialInterface" or interface_type == "KISSInterface" or interface_type == "AX25KISSInterface":
 
+                # ensure port provided
                 interface_port = data.get('port')
-                interface_speed = data.get('speed')
+                if interface_port is None or interface_port == "":
+                    return web.json_response({
+                        "message": "Port is required",
+                    }, status=422)
 
-                required_fields = {
-                    interface_port: "Port is required",
-                    interface_speed: "Serial speed is required",
-                }
-
-                for field, error_message in required_fields.items():
-                    if field is None or field == "":
-                        return web.json_response({
-                            "message": error_message,
-                        }, status=422)
-
+                # set required options
                 interface_details["port"] = interface_port
-                interface_details['connectable'] = "True"
-                interface_details["type"] = interface_type
-                interface_details["interface_enabled"] = True
 
-                interface_details["speed"] = interface_speed
-                interface_details["databits"] = data.get('databits')
-                interface_details['parity'] = data.get('parity')
-                interface_details['stopbits'] = data.get('stopbits')
+                # set optional options
+                InterfaceEditor.update_value(interface_details, data, "speed")
+                InterfaceEditor.update_value(interface_details, data, "databits")
+                InterfaceEditor.update_value(interface_details, data, "parity")
+                InterfaceEditor.update_value(interface_details, data, "stopbits")
 
                 # Handle KISS and AX25KISS specific options
-                if (interface_type == "KISSInterface" or interface_type == "AX25KISSInterface"):
-                    interface_details["preamble"] = data.get('preamble')
-                    interface_details["txtail"] = data.get('txtail')
-                    interface_details['persistence'] = data.get('persistence')
-                    interface_details['slottime'] = data.get('slottime')
-                    interface_details['callsign'] = data.get('callsign')
-                    interface_details['ssid'] = data.get('ssid')
+                if interface_type == "KISSInterface" or interface_type == "AX25KISSInterface":
 
+                    # set optional options
+                    InterfaceEditor.update_value(interface_details, data, "preamble")
+                    InterfaceEditor.update_value(interface_details, data, "txtail")
+                    InterfaceEditor.update_value(interface_details, data, "persistence")
+                    InterfaceEditor.update_value(interface_details, data, "slottime")
+                    InterfaceEditor.update_value(interface_details, data, "callsign")
+                    InterfaceEditor.update_value(interface_details, data, "ssid")
+
+            # FIXME: move to own sections
             # RNode Airtime limits and station ID
-            callsign = data.get('callsign')
-            id_interval = data.get('id_interval')
-            airtime_limit_long = data.get('airtime_limit_long')
-            airtime_limit_short = data.get('airtime_limit_short')
+            InterfaceEditor.update_value(interface_details, data, "callsign")
+            InterfaceEditor.update_value(interface_details, data, "id_interval")
+            InterfaceEditor.update_value(interface_details, data, "airtime_limit_long")
+            InterfaceEditor.update_value(interface_details, data, "airtime_limit_short")
 
-            if callsign is not None and callsign != "":
-                interface_details["callsign"] = callsign
-            if id_interval is not None and id_interval != "":
-                interface_details["id_interval"] = id_interval
-            if airtime_limit_long is not None and airtime_limit_long != "":
-                interface_details["airtime_limit_long"] = airtime_limit_long
-            if airtime_limit_short is not None and airtime_limit_short != "":
-                interface_details["airtime_limit_short"] = airtime_limit_short
-
-            # Handle Pipe Interface
+            # handle Pipe Interface
             if interface_type == "PipeInterface":
+
+                # ensure command provided
                 interface_command = data.get('command')
+                if interface_command is None or interface_command == "":
+                    return web.json_response({
+                        "message": "Command is required",
+                    }, status=422)
+
+                # ensure command provided
                 interface_respawn_delay = data.get('respawn_delay')
+                if interface_respawn_delay is None or interface_respawn_delay == "":
+                    return web.json_response({
+                        "message": "Respawn delay is required",
+                    }, status=422)
 
-                required_fields = {
-                    interface_command: "Command is required",
-                    interface_respawn_delay: "Respawn delay is required",
-                }
-
-                for field, error_message in required_fields.items():
-                    if field is None or field == "":
-                        return web.json_response({
-                            "message": error_message,
-                        }, status=422)
-
+                # set required options
                 interface_details["command"] = interface_command
                 interface_details["respawn_delay"] = interface_respawn_delay
 
-            # Common interface options
-            inferred_bitrate = data.get('bitrate')
-            transport_mode = data.get('mode')
-            network_name = data.get('network_name')
-            ifac_passphrase = data.get('passphrase')
-            ifac_size = data.get('ifac_size')
-
-            if inferred_bitrate is not None and inferred_bitrate != "":
-                interface_details["bitrate"] = inferred_bitrate
-            if transport_mode is not None and transport_mode != "":
-                interface_details["mode"] = transport_mode
-            if network_name is not None and network_name != "":
-                interface_details["network_name"] = network_name
-            if ifac_passphrase is not None and ifac_passphrase != "":
-                interface_details["passphrase"] = ifac_passphrase
-            if ifac_size is not None and ifac_size != "":
-                interface_details["ifac_size"] = ifac_size
+            # set common interface options
+            InterfaceEditor.update_value(interface_details, data, "bitrate")
+            InterfaceEditor.update_value(interface_details, data, "mode")
+            InterfaceEditor.update_value(interface_details, data, "network_name")
+            InterfaceEditor.update_value(interface_details, data, "passphrase")
+            InterfaceEditor.update_value(interface_details, data, "ifac_size")
 
             # merge new interface into existing interfaces
             interfaces[interface_name] = interface_details
