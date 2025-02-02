@@ -634,8 +634,6 @@ class ReticulumMeshChat:
             # handle RNodeMultiInterface
             if interface_type == "RNodeMultiInterface":
 
-                # FIXME: currently not possible to remove a sub interface after it has already been saved
-
                 # required settings
                 interface_port = data.get("port")
                 sub_interfaces = data.get("sub_interfaces", [])
@@ -654,6 +652,14 @@ class ReticulumMeshChat:
 
                 # set required RNodeMultiInterface options
                 interface_details["port"] = interface_port
+
+                # remove any existing sub interfaces, which can be found by finding keys that contain a dict value
+                # this allows us to replace all sub interfaces with the ones we are about to add, while also ensuring
+                # that we do not remove any existing config values from the main interface config
+                for key in interface_details:
+                    value = interface_details[key]
+                    if isinstance(value, dict):
+                        del interface_details[key]
 
                 # process each provided sub interface
                 for idx, sub_interface in enumerate(sub_interfaces):
