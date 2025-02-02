@@ -693,6 +693,9 @@
                                 <option value="roaming">Roaming</option>
                                 <option value="boundary">Boundary</option>
                             </select>
+                            <div class="text-xs text-gray-600 dark:text-zinc-300">
+                                Unsure which mode to select? <a class="text-blue-500 underline" href="https://reticulum.network/manual/interfaces.html#interface-modes" target="_blank">Reticulum Docs: Interface Modes</a>
+                            </div>
                         </div>
 
                         <div>
