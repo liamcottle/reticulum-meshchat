@@ -163,60 +163,52 @@
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                         </select>
                     </div>
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2 flex flex-wrap items-start gap-4">
 
-                        <!-- interface Frequency -->
-                        <div class="flex-1">
-                            <div class="mb-2">
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Frequency</label>
-                                <div class="flex items-center gap-2">
-                                    <div class="flex flex-col">
-                                        <input
-                                            type="number"
-                                            v-model.number="RNodeGHzValue"
-                                            min="0"
-                                            placeholder="GHz"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
-                                        />
-                                        <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">GHz</label>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <input
-                                            type="number"
-                                            v-model.number="RNodeMHzValue"
-                                            min="0"
-                                            placeholder="MHz"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
-                                        />
-                                        <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">MHz</label>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <input
-                                            type="number"
-                                            v-model.number="RNodekHzValue"
-                                            min="0"
-                                            placeholder="kHz"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
-                                        />
-                                        <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">kHz</label>
-                                    </div>
-                                </div>
-                                <div class="text-sm text-gray-600 dark:text-zinc-100 mt-2 font-bold">
-                                    Selected Frequency: {{ formattedFrequency }}
-                                </div>
+                    <!-- interface Frequency -->
+                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">
+                            <span>Frequency</span><span v-if="formattedFrequency">: {{ formattedFrequency }}</span>
+                        </label>
+                        <div class="flex items-center">
+                            <div class="flex flex-col">
+                                <input
+                                    type="number"
+                                    v-model.number="RNodeGHzValue"
+                                    min="0"
+                                    placeholder="GHz"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
+                                />
+                                <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">GHz</label>
+                            </div>
+                            <div class="flex flex-col">
+                                <input
+                                    type="number"
+                                    v-model.number="RNodeMHzValue"
+                                    min="0"
+                                    placeholder="MHz"
+                                    class="bg-gray-50 border-y border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
+                                />
+                                <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">MHz</label>
+                            </div>
+                            <div class="flex flex-col">
+                                <input
+                                    type="number"
+                                    v-model.number="RNodekHzValue"
+                                    min="0"
+                                    placeholder="kHz"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
+                                />
+                                <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">kHz</label>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- interface Bandwidth -->
-                        <div class="flex-1">
-                            <div class="mb-2">
-                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Bandwidth</label>
-                                <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
-                                    <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
-                                </select>
-                            </div>
-                        </div>
-
+                    <!-- interface bandwidth -->
+                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-2">
+                        <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Bandwidth</label>
+                        <select v-model="newInterfaceBandwidth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                            <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
+                        </select>
                     </div>
 
                     <!-- interface txpower -->
@@ -461,7 +453,7 @@
 
             <!-- RNodeInterface bitrate & link budget -->
             <ExpandingSection v-if="newInterfaceType === 'RNodeInterface'">
-                <template v-slot:title>Calculated On-Air RNode Bitrate & Link Budget</template>
+                <template v-slot:title>Calculated RNode Bitrate & Link Budget</template>
                 <template v-slot:content>
                     <div class="p-2 space-y-3">
 
@@ -479,15 +471,15 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-800 dark:text-white">On-Air Calculations</label>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-center">
-                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800">
+                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800 dark:border-zinc-600">
                                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Sensitivity</div>
                                     <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.sensitivity ?? "???" }}</div>
                                 </div>
-                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800">
+                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800 dark:border-zinc-600">
                                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Data Rate</div>
                                     <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.dataRate ?? "???" }}</div>
                                 </div>
-                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800">
+                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800 dark:border-zinc-600">
                                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Link Budget</div>
                                     <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.linkBudget ?? "???" }}</div>
                                 </div>
