@@ -715,7 +715,7 @@
                 <template v-slot:content>
                     <div class="p-2 space-y-3">
 
-                        <div v-show="transportEnabled">
+                        <div>
                             <FormLabel class="mb-1">Interface Mode</FormLabel>
                             <select v-model="sharedInterfaceSettings.mode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                                 <option :value="undefined">(not set)</option>
@@ -726,7 +726,7 @@
                                 <option value="boundary">Boundary</option>
                             </select>
                             <FormSubLabel>
-                                Unsure which mode to select? <a class="text-blue-500 underline" href="https://reticulum.network/manual/interfaces.html#interface-modes" target="_blank">Reticulum Docs: Interface Modes</a>
+                                This setting requires Transport Mode to be enabled. <a class="text-blue-500 underline" href="https://reticulum.network/manual/interfaces.html#interface-modes" target="_blank">Reticulum Docs: Interface Modes</a>
                             </FormSubLabel>
                         </div>
 
@@ -815,9 +815,6 @@ export default {
         return {
 
             isEditingInterface: false,
-
-            appInfo: null,
-            transportEnabled: false,
 
             config: null,
 
@@ -961,7 +958,6 @@ export default {
     },
     mounted() {
 
-        this.getAppInfo();
         this.getConfig();
         this.loadComports();
 
@@ -1317,15 +1313,6 @@ export default {
         },
         removeSubInterface(idx) {
             this.RNodeMultiInterface.subInterfaces.splice(idx, 1);
-        },
-        async getAppInfo() {
-            try {
-                const response = await window.axios.get("/api/v1/app/info");
-                this.appInfo = response.data.app_info;
-                this.transportEnabled = this.appInfo.is_transport_enabled;
-            } catch (e) {
-                console.log(e);
-            }
         },
     },
 }
