@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
-        <div class="h-full  p-2 space-y-2">
+        <div class="overflow-y-auto p-2 space-y-2">
 
             <!-- warning - keeping orange-500 for warning visibility in both modes -->
             <div class="flex bg-orange-500 p-2 text-sm font-semibold leading-6 text-white rounded shadow">
