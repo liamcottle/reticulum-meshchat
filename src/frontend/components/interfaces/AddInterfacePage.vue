@@ -101,39 +101,39 @@
                     <!-- interface target host -->
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
                         <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Target Host</label>
-                        <input type="text" placeholder="example.com" v-model="newInterfaceTargetHost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                        <input type="text" placeholder="e.g: example.com" v-model="newInterfaceTargetHost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface target port -->
                     <div v-if="newInterfaceType === 'TCPClientInterface'" class="mb-2">
                         <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Target Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                        <input type="text" placeholder="e.g: 1234" v-model="newInterfaceTargetPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- TCPServerInterface -->
                     <!-- interface listen ip -->
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Listen IP</label>
-                        <input type="text" placeholder="0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                        <input type="text" placeholder="e.g: 0.0.0.0" v-model="newInterfaceListenIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface listen port -->
                     <div v-if="newInterfaceType === 'TCPServerInterface' || newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Listen Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                        <input type="text" placeholder="e.g: 1234" v-model="newInterfaceListenPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- UDPInterface -->
                     <!-- interface forward ip -->
                     <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Forward IP</label>
-                        <input type="text" placeholder="255.255.255.255" v-model="newInterfaceForwardIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                        <input type="text" placeholder="e.g: 255.255.255.255" v-model="newInterfaceForwardIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- interface listen port -->
                     <div v-if="newInterfaceType === 'UDPInterface'" class="mb-2">
                         <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Forward Port</label>
-                        <input type="text" placeholder="1234" v-model="newInterfaceForwardPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                        <input type="text" placeholder="e.g: 1234" v-model="newInterfaceForwardPort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     </div>
 
                     <!-- I2PInterface -->
@@ -438,7 +438,7 @@
 
                         <div class="mb-2">
                             <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Command</label>
-                            <input type="text" placeholder="netcat -l 5757" v-model="newInterfaceCommand" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                            <input type="text" placeholder="e.g: netcat -l 5757" v-model="newInterfaceCommand" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                         </div>
 
                         <div>
@@ -520,7 +520,7 @@
                                 <input
                                     type="text"
                                     v-model="newInterfaceDevices"
-                                    placeholder="wlan0,eth1"
+                                    placeholder="e.g: wlan0,eth1"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                                 />
                             </div>
@@ -529,7 +529,7 @@
                                 <input
                                     type="text"
                                     v-model="newInterfaceIgnoredDevices"
-                                    placeholder="tun0,eth0"
+                                    placeholder="e.g: tun0,eth0"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                                 />
                             </div>
