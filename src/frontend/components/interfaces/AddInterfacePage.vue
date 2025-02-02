@@ -678,9 +678,9 @@
                 </template>
             </ExpandingSection>
 
-            <!-- common interface settings -->
+            <!-- optional interface settings -->
             <ExpandingSection>
-                <template v-slot:title>Common Interface Settings</template>
+                <template v-slot:title>Optional Interface Settings</template>
                 <template v-slot:content>
                     <div class="p-2 space-y-3">
 
@@ -783,7 +783,6 @@ export default {
         return {
 
             isEditingInterface: false,
-            showAllSettings: false, // more interface settings, used for TCPInterface and RNodeInterface
 
             appInfo: null,
             transportEnabled: false,
@@ -824,7 +823,6 @@ export default {
             newInterfaceForwardPort: null,
 
             I2PSettings: {
-                showPeerAccordion: false,
                 newInterfacePeers: [],
             },
 
@@ -1256,17 +1254,11 @@ export default {
             this.RNodeInterfaceLoRaParameters.sensitivity = `${sensitivity.toFixed(1)} dBm`;
 
         },
-        toggleI2PPeerAccordion() {
-            this.I2PSettings.showPeerAccordion = !this.I2PSettings.showPeerAccordion;
-        },
         addI2PPeer(address = "") {
             this.I2PSettings.newInterfacePeers.push(address);
         },
         removeI2PPeer(index) {
             this.I2PSettings.newInterfacePeers.splice(index, 1);
-        },
-        toggleAllSettings() {
-            this.showAllSettings = !this.showAllSettings;
         },
         addSubInterface() {
             this.RNodeMultiInterface.subInterfaces.push({
