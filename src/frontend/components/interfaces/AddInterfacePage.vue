@@ -1091,18 +1091,23 @@ export default {
         },
         async addInterface() {
             try {
+
+                // process sub interfaces for RNodeMultiInterface
                 let subInterfacesData = null;
                 if(this.newInterfaceType === 'RNodeMultiInterface'){
-                    subInterfacesData = this.RNodeMultiInterface.subInterfaces.map(s => ({
-                        name: s.name,
-                        frequency: s.frequency,
-                        bandwidth: s.bandwidth,
-                        txpower: s.txpower,
-                        spreadingfactor: s.spreadingfactor,
-                        codingrate: s.codingrate,
-                        vport: s.vport
-                    }));
+                    subInterfacesData = this.RNodeMultiInterface.subInterfaces.map((subInterface) => {
+                        return {
+                            name: subInterface.name,
+                            frequency: subInterface.frequency,
+                            bandwidth: subInterface.bandwidth,
+                            txpower: subInterface.txpower,
+                            spreadingfactor: subInterface.spreadingfactor,
+                            codingrate: subInterface.codingrate,
+                            vport: subInterface.vport,
+                        };
+                    });
                 }
+
                 // add interface
                 const response = await window.axios.post(`/api/v1/reticulum/interfaces/add`, {
 
@@ -1118,8 +1123,8 @@ export default {
                     devices: this.newInterfaceDevices,
                     ignored_devices: this.newInterfaceIgnoredDevices,
                     discovery_scope: this.newInterfaceDiscoveryScope,
-                    discovery_port:  this.newInterfaceDiscoveryPort,
-                    data_port:       this.newInterfaceDataPort,
+                    discovery_port: this.newInterfaceDiscoveryPort,
+                    data_port: this.newInterfaceDataPort,
 
                     // tcp client interface
                     target_host: this.newInterfaceTargetHost,
@@ -1177,7 +1182,7 @@ export default {
                     airtime_limit_long: this.newInterfaceAirtimeLimitLong,
                     airtime_limit_short: this.newInterfaceAirtimeLimitShort,
 
-                    // Shared interface settings
+                    // settings that can be added to any interface type
                     mode: this.sharedInterfaceSettings.mode,
                     bitrate: this.sharedInterfaceSettings.bitrate,
                     network_name: this.sharedInterfaceSettings.network_name,

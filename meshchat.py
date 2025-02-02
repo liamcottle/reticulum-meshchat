@@ -482,13 +482,14 @@ class ReticulumMeshChat:
                 if data.get("data_port"):
                     interface_details["data_port"] = data.get("data_port")
 
-
             # handle tcp client interface
             if interface_type == "TCPClientInterface":
 
+                # required settings
                 interface_target_host = data.get('target_host')
                 interface_target_port = data.get('target_port')
-                # optional parameters for kiss_framing and i2p tunnelling
+
+                # optional settings for kiss_framing and i2p tunnelling
                 interface_kiss_framing = data.get('kiss_framing')
                 interface_i2p_tunneled = data.get('i2p_tunneled')
 
@@ -504,12 +505,12 @@ class ReticulumMeshChat:
                         "message": "Target Port is required",
                     }, status=422)
 
-                interface_details["target_host"] = data.get('target_host')
-                interface_details["target_port"] = data.get('target_port')
+                interface_details["target_host"] = interface_target_host
+                interface_details["target_port"] = interface_target_port
                 interface_details["kiss_framing"] = interface_kiss_framing
                 interface_details["i2p_tunneled"] = interface_i2p_tunneled
 
-                # handle I2P interface
+            # handle I2P interface
             if interface_type == "I2PInterface":
                 interface_details['connectable'] = "True"
                 interface_details["peers"] = data.get('peers')
@@ -517,9 +518,11 @@ class ReticulumMeshChat:
             # handle tcp server interface
             if interface_type == "TCPServerInterface":
 
+                # required settings
                 interface_listen_ip = data.get('listen_ip')
                 interface_listen_port = data.get('listen_port')
 
+                # optional settings
                 interface_network_device = data.get('device')
                 interface_prefer_ipv6 = data.get('prefer_ipv6')
 
@@ -535,21 +538,25 @@ class ReticulumMeshChat:
                         "message": "Listen Port is required",
                     }, status=422)
 
-                interface_details["listen_ip"] = data.get('listen_ip')
-                interface_details["listen_port"] = data.get('listen_port')
+                interface_details["listen_ip"] = interface_listen_ip
+                interface_details["listen_port"] = interface_listen_port
 
                 if interface_network_device is not None and interface_network_device != "":
                     interface_details["device"] = interface_network_device
+
                 if interface_prefer_ipv6 is not None and interface_prefer_ipv6 != "" and interface_prefer_ipv6 != False:
                     interface_details["prefer_ipv6"] = True
 
             # handle udp interface
             if interface_type == "UDPInterface":
 
+                # required settings
                 interface_listen_ip = data.get('listen_ip')
                 interface_listen_port = data.get('listen_port')
                 interface_forward_ip = data.get('forward_ip')
                 interface_forward_port = data.get('forward_port')
+
+                # optional settings
                 interface_network_device = data.get('device')
 
                 # ensure listen ip provided
@@ -576,10 +583,10 @@ class ReticulumMeshChat:
                         "message": "Forward Port is required",
                     }, status=422)
 
-                interface_details["listen_ip"] = data.get('listen_ip')
-                interface_details["listen_port"] = data.get('listen_port')
-                interface_details["forward_ip"] = data.get('forward_ip')
-                interface_details["forward_port"] = data.get('forward_port')
+                interface_details["listen_ip"] = interface_listen_ip
+                interface_details["listen_port"] = interface_listen_port
+                interface_details["forward_ip"] = interface_forward_ip
+                interface_details["forward_port"] = interface_forward_port
 
                 if interface_network_device is not None and interface_network_device != "":
                     interface_details["network_device"] = interface_network_device
@@ -587,6 +594,7 @@ class ReticulumMeshChat:
             # handle rnode interface
             if interface_type == "RNodeInterface":
 
+                # required settings
                 interface_port = data.get('port')
                 interface_frequency = data.get('frequency')
                 interface_bandwidth = data.get('bandwidth')
@@ -639,45 +647,53 @@ class ReticulumMeshChat:
 
             # Handle RNode Multi Interface
             if interface_type == "RNodeMultiInterface":
+
+                # required settings
                 interface_port = data.get("port")
                 sub_interfaces = data.get("sub_interfaces", [])
 
-                if not interface_port:
-                    return web.json_response({"message": "Port is required"}, status=422)
+                # ensure port provided
+                if interface_port is None or interface_port == "":
+                    return web.json_response({
+                        "message": "Port is required",
+                    }, status=422)
 
+                # ensure sub interfaces provided
                 if not isinstance(sub_interfaces, list) or not sub_interfaces:
-                    return web.json_response({"message": "At least one sub-interface is required"}, status=422)
+                    return web.json_response({
+                        "message": "At least one sub-interface is required",
+                    }, status=422)
 
                 interface_details["type"] = interface_type
                 interface_details["interface_enabled"] = True
                 interface_details["port"] = interface_port
 
-                for idx, sub in enumerate(sub_interfaces):
-                    # validate required fields for each sub-interface
-                    required_subinterface_fields = ["name", "frequency", "bandwidth", "txpower", "spreadingfactor",
-                                                    "codingrate",
-                                                    "vport"]
-                    missing_fields = [field for field in required_subinterface_fields if not sub.get(field)]
+                for idx, sub_interface in enumerate(sub_interfaces):
+
+                    # ensure required fields for each sub-interface provided
+                    required_subinterface_fields = ["name", "frequency", "bandwidth", "txpower", "spreadingfactor", "codingrate", "vport"]
+                    missing_fields = [field for field in required_subinterface_fields if not sub_interface.get(field)]
                     if missing_fields:
                         return web.json_response({
                             "message": f"Sub-interface {idx + 1} is missing required field(s): {', '.join(missing_fields)}"
                         }, status=422)
 
-                    sub_interface_name = sub.get("name")
+                    sub_interface_name = sub_interface.get("name")
                     interface_details[sub_interface_name] = {
                         "interface_enabled": "true",
-                        "frequency": int(sub["frequency"]),
-                        "bandwidth": int(sub["bandwidth"]),
-                        "txpower": int(sub["txpower"]),
-                        "spreadingfactor": int(sub["spreadingfactor"]),
-                        "codingrate": int(sub["codingrate"]),
-                        "vport": int(sub["vport"]),
+                        "frequency": int(sub_interface["frequency"]),
+                        "bandwidth": int(sub_interface["bandwidth"]),
+                        "txpower": int(sub_interface["txpower"]),
+                        "spreadingfactor": int(sub_interface["spreadingfactor"]),
+                        "codingrate": int(sub_interface["codingrate"]),
+                        "vport": int(sub_interface["vport"]),
                     }
 
                 interfaces[interface_name] = interface_details
 
             # Handle Serial, KISS, and AX25KISS
             if interface_type == "SerialInterface" or interface_type == "KISSInterface" or interface_type == "AX25KISSInterface":
+
                 interface_port = data.get('port')
                 interface_speed = data.get('speed')
 
