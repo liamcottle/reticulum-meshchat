@@ -805,7 +805,7 @@ class ReticulumMeshChat:
                             if sub_name in {"type", "port", "interface_enabled"}:
                                 continue
                             if isinstance(sub_config, dict):
-                                output.append(f"  [[[ {sub_name} ]]]")
+                                output.append(f"  [[[{sub_name}]]]")
                                 for sub_key, sub_value in sub_config.items():
                                     output.append(f"      {sub_key} = {sub_value}")
                                 output.append("")
