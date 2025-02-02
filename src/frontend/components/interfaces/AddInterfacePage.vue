@@ -522,6 +522,7 @@
                         <div class="flex-1">
                             <FormLabel class="mb-1">Multicast Address Type</FormLabel>
                             <select v-model="newInterfaceMulticastAddressType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                                <option :value="undefined">(not set)</option>
                                 <option value="permanent">Permanent</option>
                                 <option value="temporary">Temporary</option>
                             </select>
@@ -552,6 +553,7 @@
                             <div class="flex-1">
                                 <FormLabel class="mb-1">Discovery Scope</FormLabel>
                                 <select v-model="newInterfaceDiscoveryScope" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                                    <option :value="undefined">(not set)</option>
                                     <option value="global">Global</option>
                                     <option value="admin">Admin</option>
                                     <option value="organisation">Organisation</option>
@@ -716,6 +718,7 @@
                         <div v-show="transportEnabled">
                             <FormLabel class="mb-1">Interface Mode</FormLabel>
                             <select v-model="sharedInterfaceSettings.mode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
+                                <option :value="undefined">(not set)</option>
                                 <option value="full">Full</option>
                                 <option value="gateway">Gateway</option>
                                 <option value="access_point">Access Point</option>
