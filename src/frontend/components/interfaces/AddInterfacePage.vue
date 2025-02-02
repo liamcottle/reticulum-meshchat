@@ -68,7 +68,7 @@
                                v-model="newInterfaceName"
                                class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                                :class="[ isEditingInterface ? 'cursor-not-allowed bg-gray-200' : 'bg-gray-50' ]">
-                        <div class="text-xs text-gray-600 dark:text-zinc-300">Interface names must be unique.</div>
+                        <FormSubLabel>Interface names must be unique.</FormSubLabel>
                     </div>
 
                     <!-- interface type -->
@@ -92,9 +92,9 @@
                             <option disabled selected>Other</option>
                             <option value="PipeInterface">Pipe Interface</option>
                         </select>
-                        <div class="text-xs text-gray-600 dark:text-zinc-300">
+                        <FormSubLabel>
                             Need help? <a class="text-blue-500 underline" href="https://reticulum.network/manual/interfaces.html" target="_blank">Reticulum Docs: Configuring Interfaces</a>
-                        </div>
+                        </FormSubLabel>
                     </div>
 
                     <!-- TCPClientInterface -->
@@ -178,7 +178,7 @@
                                     placeholder="GHz"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
                                 />
-                                <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">GHz</label>
+                                <FormSubLabel class="text-center">GHz</FormSubLabel>
                             </div>
                             <div class="flex flex-col">
                                 <input
@@ -188,7 +188,7 @@
                                     placeholder="MHz"
                                     class="bg-gray-50 border-y border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
                                 />
-                                <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">MHz</label>
+                                <FormSubLabel class="text-center">MHz</FormSubLabel>
                             </div>
                             <div class="flex flex-col">
                                 <input
@@ -198,7 +198,7 @@
                                     placeholder="kHz"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
                                 />
-                                <label class="text-xs text-gray-500 dark:text-zinc-400 mt-1 text-center">kHz</label>
+                                <FormSubLabel class="text-center">kHz</FormSubLabel>
                             </div>
                         </div>
                     </div>
@@ -693,9 +693,9 @@
                                 <option value="roaming">Roaming</option>
                                 <option value="boundary">Boundary</option>
                             </select>
-                            <div class="text-xs text-gray-600 dark:text-zinc-300">
+                            <FormSubLabel>
                                 Unsure which mode to select? <a class="text-blue-500 underline" href="https://reticulum.network/manual/interfaces.html#interface-modes" target="_blank">Reticulum Docs: Interface Modes</a>
-                            </div>
+                            </FormSubLabel>
                         </div>
 
                         <div>
@@ -770,10 +770,12 @@ import Utils from "../../js/Utils";
 import DialogUtils from "../../js/DialogUtils";
 import ExpandingSection from "./ExpandingSection.vue";
 import FormLabel from "../forms/FormLabel.vue";
+import FormSubLabel from "../forms/FormSubLabel.vue";
 
 export default {
     name: 'AddInterfacePage',
     components: {
+        FormSubLabel,
         FormLabel,
         ExpandingSection,
     },
