@@ -795,7 +795,8 @@ class ReticulumMeshChat:
                     # add interface to output
                     output.append(f"[[{interface_name}]]")
                     for key, value in interface.items():
-                        output.append(f"    {key} = {value}")
+                        if not isinstance(value, dict):
+                            output.append(f"    {key} = {value}")
                     output.append("")
 
                     # Handle sub-interfaces for RNodeMultiInterface
