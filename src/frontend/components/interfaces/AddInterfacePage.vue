@@ -274,52 +274,6 @@
 
                     </div>
 
-                    <!-- RNode LoRa parameters -->
-                    <div v-if="newInterfaceType === 'RNodeInterface'" class="mb-4">
-
-                        <ExpandingSectionHeader @click="toggleRNodeLoRaParameters" :is-expanded="showRNodeLoRaParameters">
-                            Show on-air RNode bitrate & link budget
-                        </ExpandingSectionHeader>
-
-                        <div v-show="showRNodeLoRaParameters" class="mt-3 space-y-6 p-6 border border-gray-300 rounded-lg bg-gray-50 dark:bg-zinc-900 dark:border-zinc-700">
-
-                            <div class="space-y-2">
-                                <div class="flex items-start space-x-2">
-                                    <div class="w-1/4">
-                                        <label class="block text-sm font-medium text-gray-800 dark:text-white">Antenna Gain (dBi)</label>
-                                        <input
-                                            type="number"
-                                            v-model.number="RNodeInterfaceLoRaParameters.antennaGain"
-                                            placeholder="Enter gain"
-                                            class="w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-1 px-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-white"
-                                        />
-                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">ⓘ A stub or PCB antenna might have around 1 dBi of gain, where a directional Yagi might have 5 dBi of gain.</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-center">On-Air Calculations</h3>
-                                <div class="grid grid-cols-3 gap-4 text-center mt-2">
-                                    <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
-                                        <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Sensitivity</div>
-                                        <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.sensitivity }}</div>
-                                    </div>
-                                    <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
-                                        <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Data Rate</div>
-                                        <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.dataRate }}</div>
-                                    </div>
-                                    <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
-                                        <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Link Budget</div>
-                                        <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.linkBudget }}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-
                     <!-- RNodeMultiInterface -->
                     <div v-if="newInterfaceType === 'RNodeMultiInterface'" class="mb-2">
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">ⓘ The RNode Multi Interface is used for custom devices with multiple LoRa transceivers such as the openCom XL.</p>
@@ -678,6 +632,49 @@
                 </template>
             </ExpandingSection>
 
+            <!-- RNodeInterface bitrate & link budget -->
+            <ExpandingSection v-if="newInterfaceType === 'RNodeInterface'">
+                <template v-slot:title>Calculated On-Air RNode Bitrate & Link Budget</template>
+                <template v-slot:content>
+                    <div class="p-2 space-y-3">
+
+                        <div class="space-y-2">
+                            <div class="flex items-start space-x-2">
+                                <div class="w-1/4">
+                                    <label class="block text-sm font-medium text-gray-800 dark:text-white">Antenna Gain (dBi)</label>
+                                    <input
+                                        type="number"
+                                        v-model.number="RNodeInterfaceLoRaParameters.antennaGain"
+                                        placeholder="Enter gain"
+                                        class="w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-1 px-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-white"
+                                    />
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">ⓘ A stub or PCB antenna might have around 1 dBi of gain, where a directional Yagi might have 5 dBi of gain.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-center">On-Air Calculations</h3>
+                            <div class="grid grid-cols-3 gap-4 text-center mt-2">
+                                <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
+                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Sensitivity</div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.sensitivity }}</div>
+                                </div>
+                                <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
+                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Data Rate</div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.dataRate }}</div>
+                                </div>
+                                <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
+                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Link Budget</div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.linkBudget }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+            </ExpandingSection>
+
             <!-- common interface settings -->
             <ExpandingSection>
                 <template v-slot:title>Common Interface Settings</template>
@@ -779,7 +776,6 @@ export default {
 
             isEditingInterface: false,
             showAllSettings: false, // more interface settings, used for TCPInterface and RNodeInterface
-            showRNodeLoRaParameters: false, // accordion for displaying RNode physical LoRa parameters
             showRNodeSubInterfaces: false, // accordion for adding multiple RNode interfaces
 
             appInfo: null,
@@ -1264,9 +1260,6 @@ export default {
         },
         toggleAllSettings() {
             this.showAllSettings = !this.showAllSettings;
-        },
-        toggleRNodeLoRaParameters() {
-            this.showRNodeLoRaParameters = !this.showRNodeLoRaParameters;
         },
         toggleRNodeSubInterfaces() {
             this.showRNodeSubInterfaces = !this.showRNodeSubInterfaces;
