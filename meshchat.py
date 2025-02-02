@@ -668,7 +668,7 @@ class ReticulumMeshChat:
                     missing_fields = []
                     required_subinterface_fields = ["name", "frequency", "bandwidth", "txpower", "spreadingfactor", "codingrate", "vport"]
                     for field in required_subinterface_fields:
-                        if field not in sub_interface or sub_interface.get(field) == "":
+                        if field not in sub_interface or sub_interface.get(field) is None or sub_interface.get(field) == "":
                             missing_fields.append(field)
                     if missing_fields:
                         return web.json_response({
