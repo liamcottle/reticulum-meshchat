@@ -459,6 +459,45 @@
                 </div>
             </div>
 
+            <!-- RNodeInterface bitrate & link budget -->
+            <ExpandingSection v-if="newInterfaceType === 'RNodeInterface'">
+                <template v-slot:title>Calculated On-Air RNode Bitrate & Link Budget</template>
+                <template v-slot:content>
+                    <div class="p-2 space-y-3">
+
+                        <div>
+                            <label class="block mb-1 text-sm font-medium text-gray-800 dark:text-white">Antenna Gain (dBi)</label>
+                            <input
+                                type="number"
+                                v-model.number="RNodeInterfaceLoRaParameters.antennaGain"
+                                placeholder="Enter gain"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
+                            />
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">ⓘ A stub or PCB antenna might have around 1 dBi of gain, where a directional Yagi might have 5 dBi of gain.</p>
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-sm font-medium text-gray-800 dark:text-white">On-Air Calculations</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-center">
+                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800">
+                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Sensitivity</div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.sensitivity ?? "???" }}</div>
+                                </div>
+                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800">
+                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Data Rate</div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.dataRate ?? "???" }}</div>
+                                </div>
+                                <div class="bg-gray-100 p-3 rounded-lg border dark:bg-zinc-800">
+                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Link Budget</div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.linkBudget ?? "???" }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+            </ExpandingSection>
+
             <!-- optional AutoInterface settings -->
             <ExpandingSection v-if="newInterfaceType === 'AutoInterface'">
                 <template v-slot:title>Optional AutoInterface Settings</template>
@@ -640,49 +679,6 @@
                                     placeholder="Enter long airtime limit (seconds)"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                                 />
-                            </div>
-                        </div>
-
-                    </div>
-                </template>
-            </ExpandingSection>
-
-            <!-- RNodeInterface bitrate & link budget -->
-            <ExpandingSection v-if="newInterfaceType === 'RNodeInterface'">
-                <template v-slot:title>Calculated On-Air RNode Bitrate & Link Budget</template>
-                <template v-slot:content>
-                    <div class="p-2 space-y-3">
-
-                        <div class="space-y-2">
-                            <div class="flex items-start space-x-2">
-                                <div class="w-1/4">
-                                    <label class="block text-sm font-medium text-gray-800 dark:text-white">Antenna Gain (dBi)</label>
-                                    <input
-                                        type="number"
-                                        v-model.number="RNodeInterfaceLoRaParameters.antennaGain"
-                                        placeholder="Enter gain"
-                                        class="w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-1 px-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-white"
-                                    />
-                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">ⓘ A stub or PCB antenna might have around 1 dBi of gain, where a directional Yagi might have 5 dBi of gain.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-center">On-Air Calculations</h3>
-                            <div class="grid grid-cols-3 gap-4 text-center mt-2">
-                                <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
-                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Sensitivity</div>
-                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.sensitivity }}</div>
-                                </div>
-                                <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
-                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Data Rate</div>
-                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.dataRate }}</div>
-                                </div>
-                                <div class="bg-gray-100 p-4 rounded-lg shadow dark:bg-zinc-800">
-                                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Link Budget</div>
-                                    <div class="text-xl font-bold text-gray-900 dark:text-white">{{ RNodeInterfaceLoRaParameters.linkBudget }}</div>
-                                </div>
                             </div>
                         </div>
 
