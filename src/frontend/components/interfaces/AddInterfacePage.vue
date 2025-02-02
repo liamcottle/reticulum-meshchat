@@ -163,24 +163,21 @@
                     </div>
 
                     <!-- I2PInterface -->
-                    <div v-if="newInterfaceType === 'I2PInterface'" class="mb-4">
-                        <span class="text-sm text-gray-500 dark:text-zinc-300">ⓘ To use the I2P interface, you must have an I2P router running on your system. When the I2P Interface is added for the first time Reticulum will generate a new I2P address for the interface and begin listening for inbound traffic.</span>
-                        <div class="mt-4">
-                            <ExpandingSectionHeader @click="toggleI2PPeerAccordion" :is-expanded="I2PSettings.showPeerAccordion">
-                                Manage Peers
-                            </ExpandingSectionHeader>
-                            <div v-show="I2PSettings.showPeerAccordion" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
-                                <div v-for="(peer, index) in I2PSettings.newInterfacePeers" :key="index" class="flex items-center space-x-2">
-                                    <input
-                                        type="text"
-                                        v-model="I2PSettings.newInterfacePeers[index]"
-                                        placeholder="Enter peer address (ex: 5urvjicpzi7q3ybztsef4i5ow2aq4soktfj7zedz53s47r54jnqq.b32.i2p)"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
-                                    />
-                                    <button @click="removeI2PPeer(index)" type="button" class="bg-red-500 hover:bg-red-400 text-white text-sm p-2 rounded-lg">Remove</button>
-                                </div>
-                                <button @click="addI2PPeer('')" type="button" class="bg-green-500 hover:bg-green-400 text-white text-sm px-4 py-2 rounded-lg">Add Peer</button>
+                    <!-- peers -->
+                    <div v-if="newInterfaceType === 'I2PInterface'">
+                        <div class="mb-2 text-sm text-gray-500 dark:text-zinc-300">ⓘ To use the I2P interface, you must have an I2P router running on your system. When the I2P Interface is added for the first time Reticulum will generate a new I2P address for the interface and begin listening for inbound traffic.</div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-zinc-100">Peers</label>
+                        <div class="space-y-2">
+                            <div v-for="(peer, index) in I2PSettings.newInterfacePeers" :key="index" class="flex items-center space-x-2">
+                                <input
+                                    type="text"
+                                    v-model="I2PSettings.newInterfacePeers[index]"
+                                    placeholder="Enter peer address (e.g: 5urvjicpzi7q3ybztsef4i5ow2aq4soktfj7zedz53s47r54jnqq.b32.i2p)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600"
+                                />
+                                <button @click="removeI2PPeer(index)" type="button" class="bg-red-500 hover:bg-red-400 text-white text-sm p-2 rounded-lg">Remove</button>
                             </div>
+                            <button @click="addI2PPeer('')" type="button" class="bg-green-500 hover:bg-green-400 text-white text-sm px-4 py-2 rounded-lg">Add Peer</button>
                         </div>
                     </div>
 
@@ -749,7 +746,7 @@
 
             <!-- add/save interface button -->
             <div class="p-2 bg-white rounded shadow divide-y divide-gray-200 dark:bg-zinc-900">
-                <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                <button @click="addInterface" type="button" class="bg-green-500 hover:bg-green-400 focus-visible:outline-green-500 my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                     <span v-if="isEditingInterface">Save Interface</span>
                     <span v-else>Add Interface</span>
                 </button>
