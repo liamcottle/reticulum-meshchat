@@ -254,17 +254,18 @@
                         </select>
                     </div>
 
-                    <div v-if="newInterfaceType === 'RNodeMultiInterface'" class="mb-4">
-                        <ExpandingSectionHeader @click="toggleRNodeSubInterfaces" :is-expanded="showRNodeSubInterfaces">
-                            Manage RNode Sub-Interfaces
-                        </ExpandingSectionHeader>
-                        <div v-show="showRNodeSubInterfaces" class="mt-3 space-y-4 p-4 border border-gray-200 rounded-lg bg-white dark:bg-zinc-900 dark:border-zinc-700">
-                            <div :key="idx" v-for="(sub, idx) in RNodeMultiInterface.subInterfaces" class="space-y-2 border-b border-gray-200 dark:border-zinc-700 pb-4 mb-4">
+                    <!-- RNodeMultiInterface: Sub Interfaces -->
+                    <div v-if="newInterfaceType === 'RNodeMultiInterface'" class="mb-2">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-zinc-100">Sub-Interfaces</label>
+                        <div class="space-y-3">
+                            <div :key="idx" v-for="(sub, idx) in RNodeMultiInterface.subInterfaces" class="p-2 space-y-2 border border-gray-200 rounded-lg dark:border-zinc-700">
+
                                 <input
                                     v-model="sub.name"
                                     type="text"
-                                    placeholder="Subinterface Name"
+                                    placeholder="Sub-Interface Name"
                                     class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
+
                                 <div class="flex gap-2">
                                     <div class="flex-1">
                                         <label class="text-sm dark:text-zinc-100">Frequency (Hz)</label>
@@ -280,6 +281,7 @@
                                         </select>
                                     </div>
                                 </div>
+
                                 <div class="flex gap-2">
                                     <div class="flex-1">
                                         <label class="text-sm dark:text-zinc-100">Spreading Factor</label>
@@ -294,6 +296,7 @@
                                         </select>
                                     </div>
                                 </div>
+
                                 <div class="flex gap-2 items-center">
                                     <div class="flex-1">
                                         <label class="text-sm dark:text-zinc-100">TX Power (dBm)</label>
@@ -310,9 +313,11 @@
                                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                                     </div>
                                 </div>
-                                <button @click="removeSubInterface(idx)" type="button" class="bg-red-500 hover:bg-red-400 text-white text-sm p-2 rounded-lg">Remove Subinterface</button>
+
+                                <button @click="removeSubInterface(idx)" type="button" class="bg-red-500 hover:bg-red-400 text-white text-sm p-2 rounded-lg">Remove Sub-Interface</button>
+
                             </div>
-                            <button @click="addSubInterface" type="button" class="bg-green-500 hover:bg-green-400 text-white text-sm px-4 py-2 rounded-lg">Add Subinterface</button>
+                            <button @click="addSubInterface" type="button" class="bg-green-500 hover:bg-green-400 text-white text-sm px-4 py-2 rounded-lg">Add Sub-Interface</button>
                         </div>
                     </div>
 
@@ -777,7 +782,6 @@ export default {
 
             isEditingInterface: false,
             showAllSettings: false, // more interface settings, used for TCPInterface and RNodeInterface
-            showRNodeSubInterfaces: false, // accordion for adding multiple RNode interfaces
 
             appInfo: null,
             transportEnabled: false,
@@ -1261,9 +1265,6 @@ export default {
         },
         toggleAllSettings() {
             this.showAllSettings = !this.showAllSettings;
-        },
-        toggleRNodeSubInterfaces() {
-            this.showRNodeSubInterfaces = !this.showRNodeSubInterfaces;
         },
         addSubInterface() {
             this.RNodeMultiInterface.subInterfaces.push({
