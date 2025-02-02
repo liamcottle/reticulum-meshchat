@@ -162,6 +162,9 @@
                         <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                         </select>
+                        <FormSubLabel>
+                            <div @click="loadComports" class="text-blue-500 underline cursor-pointer">Reload Ports</div>
+                        </FormSubLabel>
                     </div>
 
                     <!-- interface Frequency -->
@@ -244,6 +247,9 @@
                         <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                             <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                         </select>
+                        <FormSubLabel>
+                            <div @click="loadComports" class="text-blue-500 underline cursor-pointer">Reload Ports</div>
+                        </FormSubLabel>
                     </div>
 
                     <!-- RNodeMultiInterface: Sub Interfaces -->
@@ -321,6 +327,9 @@
                             <select v-model="newInterfacePort" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
                                 <option v-for="comport of comports" :value="comport.device">{{ comport.device }} (Product: {{ comport.product ?? '?' }}, Serial: {{ comport.serial ?? '?' }})</option>
                             </select>
+                            <FormSubLabel>
+                                <div @click="loadComports" class="text-blue-500 underline cursor-pointer">Reload Ports</div>
+                            </FormSubLabel>
                         </div>
 
                         <div class="mb-2">
