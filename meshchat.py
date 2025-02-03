@@ -270,7 +270,7 @@ class ReticulumMeshChat:
     # handle receiving a new audio call
     def on_incoming_audio_call(self, audio_call: AudioCall):
         print("on_incoming_audio_call: {}".format(audio_call.link.hash.hex()))
-        asyncio.run(self.websocket_broadcast(json.dumps({
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
             "type": "incoming_audio_call",
         })))
 
@@ -1115,7 +1115,7 @@ class ReticulumMeshChat:
             def on_audio_packet(data):
                 if websocket_response.closed is False:
                     try:
-                        asyncio.run(websocket_response.send_bytes(data))
+                        AsyncUtils.run_async(websocket_response.send_bytes(data))
                     except:
                         # ignore errors sending audio packets to websocket
                         pass
@@ -1124,7 +1124,7 @@ class ReticulumMeshChat:
             def on_hangup():
                 if websocket_response.closed is False:
                     try:
-                        asyncio.run(websocket_response.close(code=WSCloseCode.GOING_AWAY))
+                        AsyncUtils.run_async(websocket_response.close(code=WSCloseCode.GOING_AWAY))
                     except:
                         # ignore errors closing websocket
                         pass
@@ -2102,7 +2102,7 @@ class ReticulumMeshChat:
 
             # handle successful file download
             def on_file_download_success(file_name, file_bytes):
-                asyncio.run(client.send_str(json.dumps({
+                AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
                         "status": "success",
@@ -2115,7 +2115,7 @@ class ReticulumMeshChat:
 
             # handle file download failure
             def on_file_download_failure(failure_reason):
-                asyncio.create_task(client.send_str(json.dumps({
+                AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
                         "status": "failure",
@@ -2127,7 +2127,7 @@ class ReticulumMeshChat:
 
             # handle file download progress
             def on_file_download_progress(progress):
-                asyncio.run(client.send_str(json.dumps({
+                AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
                         "status": "progress",
@@ -2177,7 +2177,7 @@ class ReticulumMeshChat:
 
             # handle successful page download
             def on_page_download_success(page_content):
-                asyncio.run(client.send_str(json.dumps({
+                AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.page.download",
                     "nomadnet_page_download": {
                         "status": "success",
@@ -2189,7 +2189,7 @@ class ReticulumMeshChat:
 
             # handle page download failure
             def on_page_download_failure(failure_reason):
-                asyncio.create_task(client.send_str(json.dumps({
+                AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.page.download",
                     "nomadnet_page_download": {
                         "status": "failure",
@@ -2201,7 +2201,7 @@ class ReticulumMeshChat:
 
             # handle page download progress
             def on_page_download_progress(progress):
-                asyncio.run(client.send_str(json.dumps({
+                AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.page.download",
                     "nomadnet_page_download": {
                         "status": "progress",
@@ -2587,7 +2587,7 @@ class ReticulumMeshChat:
                 return
 
             # send received lxmf message data to all websocket clients
-            asyncio.run(self.websocket_broadcast(json.dumps({
+            AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
                 "type": "lxmf.delivery",
                 "lxmf_message": self.convert_db_lxmf_message_to_dict(db_lxmf_message),
             })))
@@ -2847,7 +2847,7 @@ class ReticulumMeshChat:
         # handle lxmf message progress loop without blocking or awaiting
         # otherwise other incoming websocket packets will not be processed until sending is complete
         # which results in the next message not showing up until the first message is finished
-        asyncio.create_task(self.handle_lxmf_message_progress(lxmf_message))
+        AsyncUtils.run_async(self.handle_lxmf_message_progress(lxmf_message))
 
         return lxmf_message
 
@@ -2897,7 +2897,7 @@ class ReticulumMeshChat:
             return
 
         # send database announce to all websocket clients
-        asyncio.run(self.websocket_broadcast(json.dumps({
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
             "type": "announce",
             "announce": self.convert_db_announce_to_dict(announce),
         })))
@@ -2918,14 +2918,14 @@ class ReticulumMeshChat:
             return
 
         # send database announce to all websocket clients
-        asyncio.run(self.websocket_broadcast(json.dumps({
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
             "type": "announce",
             "announce": self.convert_db_announce_to_dict(announce),
         })))
 
         # resend all failed messages that were intended for this destination
         if self.config.auto_resend_failed_messages_when_announce_received.get():
-            asyncio.run(self.resend_failed_messages_for_destination(destination_hash.hex()))
+            AsyncUtils.run_async(self.resend_failed_messages_for_destination(destination_hash.hex()))
 
     # handle an announce received from reticulum, for an lxmf propagation node address
     # NOTE: cant be async, as Reticulum doesn't await it
@@ -2943,7 +2943,7 @@ class ReticulumMeshChat:
             return
 
         # send database announce to all websocket clients
-        asyncio.run(self.websocket_broadcast(json.dumps({
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
             "type": "announce",
             "announce": self.convert_db_announce_to_dict(announce),
         })))
@@ -3027,7 +3027,7 @@ class ReticulumMeshChat:
             return
 
         # send database announce to all websocket clients
-        asyncio.run(self.websocket_broadcast(json.dumps({
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
             "type": "announce",
             "announce": self.convert_db_announce_to_dict(announce),
         })))
