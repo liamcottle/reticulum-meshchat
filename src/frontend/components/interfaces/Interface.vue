@@ -10,7 +10,7 @@
                     </svg>
                 </div>
                 <span class="ml-1 my-auto">
-                    <span class="text-green-500">{{ iface._stats.ifac_size * 8 }}-bit IFAC</span> with sig <span @click="onIFACSignatureClick(iface._stats.ifac_signature)" class="cursor-pointer">&lt;{{ iface._stats.ifac_signature.slice(0, 6) }}...{{ iface._stats.ifac_signature.slice(-6) }}&gt;</span>
+                    <span class="text-green-500">{{ iface._stats.ifac_size * 8 }}-bit IFAC</span> <span v-if="iface._stats?.ifac_netname != null">• Network Name: <span class="text-purple-500">{{ iface._stats.ifac_netname }}</span></span> • Signature <span @click="onIFACSignatureClick(iface._stats.ifac_signature)" class="cursor-pointer">&lt;{{ iface._stats.ifac_signature.slice(0, 6) }}...{{ iface._stats.ifac_signature.slice(-6) }}&gt;</span>
                 </span>
             </div>
         </div>
