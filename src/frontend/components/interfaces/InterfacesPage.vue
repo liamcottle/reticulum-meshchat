@@ -141,56 +141,12 @@ export default {
                 // update data
                 const interfaces = response.data.interface_stats?.interfaces ?? [];
                 for(const iface of interfaces){
-                    this.interfaceStats[iface.name] = iface;
+                    this.interfaceStats[iface.short_name] = iface;
                 }
 
             } catch(e) {
                 // do nothing if failed to load interfaces
             }
-        },
-        findInterfaceStats(interfaceName) {
-            const interfaceDescription = this.getInterfaceDescription(interfaceName);
-            return this.interfaceStats[interfaceDescription];
-        },
-        getInterfaceDescription(interfaceName) {
-
-            // the interface-stats api returns interface names like the following;
-            //
-            // "AutoInterface[Default Interface]"
-            // "RNodeInterface[RNode LoRa Interface Fast]"
-            // "TCPInterface[RNS Testnet Amsterdam/amsterdam.connect.reticulum.network:4965]"
-            //
-            // however, the interfaces api just returns;
-            // "Default Interface"
-            // "RNode LoRa Interface Fast"
-            // "RNS Testnet Amsterdam"
-            //
-            // so we need to map the basic interface name to the former, so we can lookup stats for the interface
-            const iface = this.interfaces[interfaceName];
-            if(iface){
-                switch(iface.type){
-                    case "TCPClientInterface": {
-                        // yes, this is meant to be passed as TCPInterface, even though the interface type includes client...
-                        // example: "TCPInterface[RNS Testnet Amsterdam/amsterdam.connect.reticulum.network:4965]";
-                        return `TCPInterface[${interfaceName}/${iface.target_host}:${iface.target_port}]`;
-                    }
-                    case "TCPServerInterface": {
-                        // example: "TCPServerInterface[TCP Server Interface/0.0.0.0:4242]";
-                        return `TCPServerInterface[${interfaceName}/${iface.listen_ip}:${iface.listen_port}]`;
-                    }
-                    case "UDPInterface": {
-                        // example: "UDPInterface[UDP Interface/0.0.0.0:1234]";
-                        return `UDPInterface[${interfaceName}/${iface.listen_ip}:${iface.listen_port}]`;
-                    }
-                    default: {
-                        // example: "RNodeInterface[RNode LoRa Interface Fast]",
-                        return `${iface.type}[${interfaceName}]`;
-                    }
-                }
-            }
-
-            return null;
-
         },
         async enableInterface(interfaceName) {
 
@@ -301,7 +257,7 @@ export default {
             const results = [];
             for(const [interfaceName, iface] of Object.entries(this.interfaces)){
                 iface._name = interfaceName;
-                iface._stats = this.findInterfaceStats(interfaceName);
+                iface._stats = this.interfaceStats[interfaceName];
                 results.push(iface);
             }
             return results;
