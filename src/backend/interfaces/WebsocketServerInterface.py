@@ -57,6 +57,10 @@ class WebsocketServerInterface(Interface):
         thread.daemon = True
         thread.start()
 
+    @property
+    def clients(self):
+        return len(self.spawned_interfaces)
+
     # todo docs
     def received_announce(self, from_spawned=False):
         if from_spawned:
@@ -123,6 +127,9 @@ class WebsocketServerInterface(Interface):
 
             # run read loop
             spawned_interface.read_loop()
+
+            # client must have disconnected as the read loop finished, so forget the spawned interface
+            self.spawned_interfaces.remove(spawned_interface)
 
         # run websocket server
         try:
