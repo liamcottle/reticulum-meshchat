@@ -3,8 +3,18 @@ import mitt from 'mitt';
 class WebSocketConnection {
 
     constructor() {
+
         this.emitter = mitt();
         this.reconnect();
+
+        /**
+         * ping websocket server every 30 seconds
+         * this helps to prevent the underlying tcp connection from going stale when there's no traffic for a long time
+         */
+        setInterval(() => {
+            this.ping();
+        }, 30000);
+
     }
 
     // add event listener
@@ -44,6 +54,16 @@ class WebSocketConnection {
     send(message) {
         if(this.ws != null && this.ws.readyState === WebSocket.OPEN){
             this.ws.send(message);
+        }
+    }
+
+    ping() {
+        try {
+            this.send(JSON.stringify({
+                "type": "ping",
+            }));
+        } catch(e) {
+            // ignore error
         }
     }
 

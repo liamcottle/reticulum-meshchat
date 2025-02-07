@@ -2081,8 +2081,14 @@ class ReticulumMeshChat:
         # get type from client data
         _type = data["type"]
 
+        # handle ping
+        if _type == "ping":
+            AsyncUtils.run_async(client.send_str(json.dumps({
+                "type": "pong",
+            })))
+
         # handle updating config
-        if _type == "config.set":
+        elif _type == "config.set":
 
             # get config from websocket
             config = data["config"]
