@@ -15,7 +15,7 @@ class WebsocketClientInterface(Interface):
     RECONNECT_DELAY_SECONDS = 5
 
     def __str__(self):
-        return f"WebsocketClientInterface[{self.name}/{self.target_host}:{self.target_port}]"
+        return f"WebsocketClientInterface[{self.name}/{self.target_url}]"
 
     def __init__(self, owner, configuration, websocket: Connection = None):
 
@@ -33,20 +33,11 @@ class WebsocketClientInterface(Interface):
         # parse config
         ifconf = Interface.get_config_obj(configuration)
         self.name = ifconf.get("name")
-        self.target_host = ifconf.get("target_host", None)
-        self.target_port = ifconf.get("target_port", None)
-        self.target_type = ifconf.get("target_type", "ws")
+        self.target_url = ifconf.get("target_url", None)
 
-        # ensure target host is provided
-        if self.target_host is None:
-            raise SystemError(f"target_host is required for interface '{self.name}'")
-
-        # ensure target port is provided
-        if self.target_port is None:
-            raise SystemError(f"target_port is required for interface '{self.name}'")
-
-        # convert target port to int
-        self.target_port = int(self.target_port)
+        # ensure target url is provided
+        if self.target_url is None:
+            raise SystemError(f"target_url is required for interface '{self.name}'")
 
         # connect to websocket server if an existing connection was not provided
         self.websocket = websocket
@@ -104,7 +95,7 @@ class WebsocketClientInterface(Interface):
         # connect to websocket server
         try:
             RNS.log(f"Connecting to Websocket for {str(self)}...", RNS.LOG_DEBUG)
-            self.websocket = connect(f"{self.target_type}://{self.target_host}:{self.target_port}", max_size=None, compression=None)
+            self.websocket = connect(f"{self.target_url}", max_size=None, compression=None)
             RNS.log(f"Connected to Websocket for {str(self)}", RNS.LOG_DEBUG)
             self.read_loop()
         except Exception as e:
