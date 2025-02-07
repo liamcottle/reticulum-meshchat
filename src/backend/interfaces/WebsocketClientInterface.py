@@ -103,8 +103,9 @@ class WebsocketClientInterface(Interface):
 
         # connect to websocket server
         try:
-            RNS.log(f"Establishing Websocket connection for {str(self)}...", RNS.LOG_DEBUG)
+            RNS.log(f"Connecting to Websocket for {str(self)}...", RNS.LOG_DEBUG)
             self.websocket = connect(f"{self.target_type}://{self.target_host}:{self.target_port}", max_size=None, compression=None)
+            RNS.log(f"Connected to Websocket for {str(self)}", RNS.LOG_DEBUG)
             self.read_loop()
         except Exception as e:
             RNS.log(f"{self} failed with error: {e}", RNS.LOG_ERROR)
