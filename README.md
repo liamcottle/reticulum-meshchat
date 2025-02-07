@@ -283,20 +283,6 @@ I build the vite app everytime without hot reload, since MeshChat expects everyt
 ## TODO
 
 - [ ] button to forget announces
-- [ ] support for managing Reticulum interfaces via the web ui
-  - [x] AutoInterface
-  - [x] RNodeInterface
-  - [x] TCPClientInterface
-  - [x] TCPServerInterface
-  - [x] UDPInterface
-  - [ ] I2PInterface
-  - [ ] SerialInterface
-  - [ ] PipeInterface
-  - [ ] KISSInterface
-  - [ ] AX25KISSInterface
-  - [ ] Other Options
-    - [ ] network_name
-    - [ ] passphrase
 
 # Notes
 
