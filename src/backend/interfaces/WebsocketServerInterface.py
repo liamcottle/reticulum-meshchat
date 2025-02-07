@@ -74,8 +74,6 @@ class WebsocketServerInterface(Interface):
     # called when a full packet has been received from a websocket client
     def process_incoming(self, data):
 
-        print(f"{self} process_incoming: {data.hex()}")
-
         # Update our received bytes counter
         self.rxb += len(data)
 
