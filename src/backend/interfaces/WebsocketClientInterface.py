@@ -12,7 +12,7 @@ class WebsocketClientInterface(Interface):
     # TODO: required?
     DEFAULT_IFAC_SIZE = 16
 
-    RECONNECT_DELAY_MILLIS = 5000
+    RECONNECT_DELAY_SECONDS = 5
 
     def __str__(self):
         return f"WebsocketClientInterface[{self.name}/{self.target_host}:{self.target_port}]"
@@ -103,13 +103,15 @@ class WebsocketClientInterface(Interface):
 
         # connect to websocket server
         try:
+            RNS.log(f"Establishing Websocket connection for {str(self)}...", RNS.LOG_DEBUG)
             self.websocket = connect(f"{self.target_type}://{self.target_host}:{self.target_port}", max_size=None, compression=None)
             self.read_loop()
         except Exception as e:
             RNS.log(f"{self} failed with error: {e}", RNS.LOG_ERROR)
 
         # auto reconnect after delay
-        time.sleep(self.RECONNECT_DELAY_MILLIS)
+        RNS.log(f"Websocket disconnected for {str(self)}...", RNS.LOG_DEBUG)
+        time.sleep(self.RECONNECT_DELAY_SECONDS)
         self.connect()
 
     def read_loop(self):

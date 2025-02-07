@@ -15,7 +15,7 @@ class WebsocketServerInterface(Interface):
     # TODO: required?
     DEFAULT_IFAC_SIZE = 16
 
-    RESTART_DELAY_MILLIS = 5000
+    RESTART_DELAY_SECONDS = 5
 
     def __str__(self):
         return f"WebsocketServerInterface[{self.name}/{self.listen_ip}:{self.listen_port}]"
@@ -126,6 +126,7 @@ class WebsocketServerInterface(Interface):
 
         # run websocket server
         try:
+            RNS.log(f"Starting Websocket server for {str(self)}...", RNS.LOG_DEBUG)
             with serve(on_websocket_client_connected, self.listen_ip, self.listen_port, compression=None) as server:
                 self.online = True
                 self.server = server
@@ -135,7 +136,8 @@ class WebsocketServerInterface(Interface):
 
         # websocket server is no longer running, let's restart it
         self.online = False
-        time.sleep(self.RESTART_DELAY_MILLIS)
+        RNS.log(f"Websocket server stopped for {str(self)}...", RNS.LOG_DEBUG)
+        time.sleep(self.RESTART_DELAY_SECONDS)
         self.serve()
 
     def detach(self):
