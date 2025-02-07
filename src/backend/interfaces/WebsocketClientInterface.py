@@ -22,6 +22,7 @@ class WebsocketClientInterface(Interface):
         super().__init__()
 
         self.owner = owner
+        self.parent_interface = None
 
         self.IN = True
         self.OUT = False
@@ -57,8 +58,16 @@ class WebsocketClientInterface(Interface):
     # called when a full packet has been received over the websocket
     def process_incoming(self, data):
 
+        # do nothing if offline or detached
+        if not self.online or self.detached:
+            return
+
         # update received bytes counter
         self.rxb += len(data)
+
+        # update received bytes counter for parent interface
+        if self.parent_interface is not None:
+            self.parent_interface.rxb += len(data)
 
         # send received data to transport instance
         self.owner.inbound(data, self)
@@ -66,15 +75,24 @@ class WebsocketClientInterface(Interface):
     # the running reticulum transport instance will call this method whenever the interface must transmit a packet
     def process_outgoing(self, data):
 
-        # do nothing if not online
-        if not self.online:
+        # do nothing if offline or detached
+        if not self.online or self.detached:
             return
 
         # send to websocket server
-        self.websocket.send(data)
+        try:
+            self.websocket.send(data)
+        except Exception as e:
+            RNS.log(f"Exception occurred while transmitting via {str(self)}", RNS.LOG_ERROR)
+            RNS.log(f"The contained exception was: {str(e)}", RNS.LOG_ERROR)
+            return
 
         # update sent bytes counter
         self.txb += len(data)
+
+        # update received bytes counter for parent interface
+        if self.parent_interface is not None:
+            self.parent_interface.txb += len(data)
 
     # connect to the configured websocket server
     def connect(self):

@@ -71,14 +71,9 @@ class WebsocketServerInterface(Interface):
         if from_spawned:
             self.oa_freq_deque.append(time.time())
 
-    # called when a full packet has been received from a websocket client
+    # do nothing as the spawned child interface will take care of rx/tx
     def process_incoming(self, data):
-
-        # Update our received bytes counter
-        self.rxb += len(data)
-
-        # And send the data packet to the Transport instance for processing.
-        self.owner.inbound(data, self)
+        pass
 
     # do nothing as the spawned child interface will take care of rx/tx
     def process_outgoing(self, data):
