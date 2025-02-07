@@ -1,18 +1,18 @@
-import asyncio
 import threading
+import time
 
 import RNS
-import websockets
 from RNS.Interfaces.Interface import Interface
-from websockets.asyncio.connection import Connection
-
-from src.backend.async_utils import AsyncUtils
+from websockets.sync.client import connect
+from websockets.sync.connection import Connection
 
 
 class WebsocketClientInterface(Interface):
 
     # TODO: required?
     DEFAULT_IFAC_SIZE = 16
+
+    RECONNECT_DELAY_MILLIS = 5000
 
     def __str__(self):
         return f"WebsocketClientInterface[{self.name}/{self.target_host}:{self.target_port}]"
@@ -49,7 +49,7 @@ class WebsocketClientInterface(Interface):
         # connect to websocket server if an existing connection was not provided
         self.websocket = websocket
         if self.websocket is None:
-            thread = threading.Thread(target=asyncio.run, args=(self.connect(),))
+            thread = threading.Thread(target=self.connect)
             thread.daemon = True
             thread.start()
 
@@ -73,43 +73,53 @@ class WebsocketClientInterface(Interface):
 
         # send to websocket server
         print(f"{self} process_outgoing: {data.hex()}")
-        AsyncUtils.run_async(self.websocket.send(data))
+        self.websocket.send(data)
 
         # update sent bytes counter
         self.txb += len(data)
 
     # connect to the configured websocket server
-    async def connect(self):
+    def connect(self):
 
+        # do nothing if interface is detached
+        if self.detached:
+            return
+
+        # connect to websocket server
         try:
             # todo: ws:// and wss:// support in config file?
-            async with websockets.connect(f"ws://{self.target_host}:{self.target_port}", max_size=None, compression=None) as websocket:
-                self.websocket = websocket
-                await self.read_loop()
+            self.websocket = connect(f"ws://{self.target_host}:{self.target_port}", max_size=None, compression=None)
+            self.read_loop()
         except Exception as e:
             RNS.log(f"{self} failed with error: {e}", RNS.LOG_ERROR)
 
-        # todo implement reconnect delay
-        await self.connect()
+        # auto reconnect after delay
+        time.sleep(self.RECONNECT_DELAY_MILLIS)
+        self.connect()
 
-    async def read_loop(self):
+    def read_loop(self):
 
         self.online = True
 
         try:
-            async for message in self.websocket:
+            for message in self.websocket:
                 self.process_incoming(message)
         except Exception as e:
             RNS.log(f"{self} read loop error: {e}", RNS.LOG_ERROR)
 
         self.online = False
 
-    # todo implement
     def detach(self):
-        # todo mark as offline
-        # todo close websocket
-        # todo mark as detached
-        pass
+
+        # mark as offline
+        self.online = False
+
+        # close websocket
+        if self.websocket is not None:
+            self.websocket.close()
+
+        # mark as detached
+        self.detached = True
 
 # set interface class RNS should use when importing this external interface
 interface_class = WebsocketClientInterface
