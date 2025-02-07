@@ -198,7 +198,7 @@
                 iface._stats?.noise_floor
               }} dBm
             </div>
-            <div v-if="iface._stats?.clients">• Clients: {{ iface._stats?.clients }}</div>
+            <div v-if="iface._stats?.clients != null">• Clients: {{ iface._stats?.clients }}</div>
 
         </div>
 
