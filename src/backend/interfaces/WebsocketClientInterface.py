@@ -34,6 +34,7 @@ class WebsocketClientInterface(Interface):
         self.name = ifconf.get("name")
         self.target_host = ifconf.get("target_host", None)
         self.target_port = ifconf.get("target_port", None)
+        self.target_type = ifconf.get("target_type", "ws")
 
         # ensure target host is provided
         if self.target_host is None:
@@ -87,8 +88,7 @@ class WebsocketClientInterface(Interface):
 
         # connect to websocket server
         try:
-            # todo: ws:// and wss:// support in config file?
-            self.websocket = connect(f"ws://{self.target_host}:{self.target_port}", max_size=None, compression=None)
+            self.websocket = connect(f"{self.target_type}://{self.target_host}:{self.target_port}", max_size=None, compression=None)
             self.read_loop()
         except Exception as e:
             RNS.log(f"{self} failed with error: {e}", RNS.LOG_ERROR)
