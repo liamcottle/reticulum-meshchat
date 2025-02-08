@@ -48,6 +48,9 @@ ipcMain.handle('showPathInFolder', (event, path) => {
 
 function log(message) {
 
+    // log to stdout of this process
+    console.log(message);
+
     // make sure main window exists
     if(!mainWindow){
         return;
@@ -57,9 +60,6 @@ function log(message) {
     if(mainWindow.isDestroyed()){
         return;
     }
-
-    // log to electron console
-    console.log(message);
 
     // log to web console
     mainWindow.webContents.send('log', message);
@@ -98,50 +98,63 @@ function getDefaultReticulumConfigDir() {
 
 app.whenReady().then(async () => {
 
-    // create browser window
-    mainWindow = new BrowserWindow({
-        width: 1500,
-        height: 800,
-        webPreferences: {
-            // used to inject logging over ipc
-            preload: path.join(__dirname, 'preload.js'),
-        },
-    });
+    // get arguments passed to application, and remove the provided application path
+    const userProvidedArguments = process.argv.slice(1);
+    const shouldLaunchHeadless = userProvidedArguments.includes("--headless");
 
-    // open external links in default web browser instead of electron
-    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if(!shouldLaunchHeadless){
 
-        var shouldShowInNewElectronWindow = false;
+        // create browser window
+        mainWindow = new BrowserWindow({
+            width: 1500,
+            height: 800,
+            webPreferences: {
+                // used to inject logging over ipc
+                preload: path.join(__dirname, 'preload.js'),
+            },
+        });
 
-        // we want to open call.html in a new electron window
-        // but all other target="_blank" links should open in the system web browser
-        // we don't want /rnode-flasher/index.html to open in electron, otherwise user can't select usb devices...
-        if(url.startsWith("http://localhost") && url.includes("/call.html")){
-            shouldShowInNewElectronWindow = true;
-        }
+        // open external links in default web browser instead of electron
+        mainWindow.webContents.setWindowOpenHandler(({ url }) => {
 
-        // we want to open blob urls in a new electron window
-        else if(url.startsWith("blob:")) {
-            shouldShowInNewElectronWindow = true;
-        }
+            var shouldShowInNewElectronWindow = false;
 
-        // open in new electron window
-        if(shouldShowInNewElectronWindow){
+            // we want to open call.html in a new electron window
+            // but all other target="_blank" links should open in the system web browser
+            // we don't want /rnode-flasher/index.html to open in electron, otherwise user can't select usb devices...
+            if(url.startsWith("http://localhost") && url.includes("/call.html")){
+                shouldShowInNewElectronWindow = true;
+            }
+
+            // we want to open blob urls in a new electron window
+            else if(url.startsWith("blob:")) {
+                shouldShowInNewElectronWindow = true;
+            }
+
+            // open in new electron window
+            if(shouldShowInNewElectronWindow){
+                return {
+                    action: "allow",
+                };
+            }
+
+            // fallback to opening any other url in external browser
+            shell.openExternal(url);
             return {
-                action: "allow",
+                action: "deny",
             };
+
+        });
+
+        // navigate to loading page
+        await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
+
+        // ask mac users for microphone access for audio calls to work
+        if(process.platform === "darwin"){
+            await systemPreferences.askForMediaAccess('microphone');
         }
 
-        // fallback to opening any other url in external browser
-        shell.openExternal(url);
-        return {
-            action: "deny",
-        };
-
-    });
-
-    // navigate to loading page
-    await mainWindow.loadFile(path.join(__dirname, 'loading.html'));
+    }
 
     // find path to python/cxfreeze reticulum meshchat executable
     const exeName = process.platform === "win32" ? "ReticulumMeshChat.exe" : "ReticulumMeshChat";
@@ -152,15 +165,7 @@ app.whenReady().then(async () => {
         exe = path.join(__dirname, '..', `build/exe/${exeName}`);
     }
 
-    // ask mac users for microphone access for audio calls to work
-    if(process.platform === "darwin"){
-        await systemPreferences.askForMediaAccess('microphone');
-    }
-
     try {
-
-        // get arguments passed to application, and remove the provided application path
-        const userProvidedArguments = process.argv.slice(1);
 
         // arguments we always want to pass in
         const requiredArguments = [
