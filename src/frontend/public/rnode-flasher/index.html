@@ -110,7 +110,7 @@
         <div class="border-t px-2 py-1 text-sm">
             <div>
                 <span>Download Firmware</span>
-                <span v-if="selectedProduct && selectedModel && recommendedFirmwareFilename">: {{ recommendedFirmwareFilename }}</span>
+                <span v-if="selectedProduct && selectedModel && recommendedFirmwareFilename">: <a target="_blank" :href="`https://github.com/markqvist/RNode_Firmware/releases/latest/download/${recommendedFirmwareFilename}`" class="text-blue-500 hover:underline">{{ recommendedFirmwareFilename }}</a></span>
             </div>
             <div class="space-x-1">
                 <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">Official Firmware</a>
@@ -312,6 +312,48 @@
 
     </div>
 
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Configure Display (optional)
+        </div>
+
+        <div class="p-3 space-y-2">
+
+            <div class="flex space-x-1">
+                <div class="my-auto">Rotation</div>
+                <button @click="setDisplayRotation(0)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    0
+                </button>
+                <button @click="setDisplayRotation(1)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    1
+                </button>
+                <button @click="setDisplayRotation(2)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    2
+                </button>
+                <button @click="setDisplayRotation(3)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    3
+                </button>
+            </div>
+
+            <div class="flex space-x-1">
+                <div class="my-auto">Reconditioning</div>
+                <button @click="startDisplayReconditioning" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Start
+                </button>
+                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Stop
+                </button>
+            </div>
+
+        </div>
+
+        <div class="border-t px-2 py-1 text-sm">
+            <div>Setting display rotation requires firmware v1.80+</div>
+        </div>
+
+    </div>
+
 </div>
 
 <!-- setup web-serial-polyfill -->
@@ -333,6 +375,8 @@
     Vue.createApp({
         data() {
             return {
+
+                rnode: null,
 
                 isFlashing: false,
                 flashingProgress: 0,
@@ -396,6 +440,22 @@
                                 "0x8000": "rnode_firmware_heltec32v3.partitions",
                             },
                         },
+                    },
+                    {
+                        name: "Heltec T114",
+                        id: ROM.PRODUCT_HELTEC_T114,
+                        platform: ROM.PLATFORM_NRF52,
+                        models: [
+                            {
+                                id: ROM.MODEL_C6,
+                                name: "470-510 MHz (HT-n5262-LF)",
+                            },
+                            {
+                                id: ROM.MODEL_C7,
+                                name: "863-928 MHz (HT-n5262-HF)",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_heltec_t114.zip",
                     },
                     {
                         name: "LilyGO LoRa32 v1.0",
@@ -587,6 +647,21 @@
                                     },
                                 },
                             },
+                            {
+                                id: ROM.MODEL_AC,
+                                name: "2.4 GHz (with SX1280 chip)",
+                                firmware_filename: "rnode_firmware_t3s3_sx1280_pa.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3_sx1280_pa.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3_sx1280_pa.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3_sx1280_pa.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3_sx1280_pa.partitions",
+                                    },
+                                },
+                            },
                         ],
                     },
                     {
@@ -714,11 +789,11 @@
                         platform: ROM.PLATFORM_NRF52,
                         models: [
                             {
-                                id: ROM.MODEL_T4,
+                                id: ROM.MODEL_16,
                                 name: "433 MHz",
                             },
                             {
-                                id: ROM.MODEL_T9,
+                                id: ROM.MODEL_17,
                                 name: "868 MHz / 915 MHz / 923 MHz",
                             },
                         ],
@@ -858,10 +933,36 @@
                     return null;
                 }
 
+                // close any existing rnode connection
+                if(this.rnode){
+                    await this.rnode.close();
+                    this.rnode = null;
+                }
+
                 // ask user to select device
                 return await navigator.serial.requestPort({
                     filters: [],
                 });
+
+            },
+            async askForRNode() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return false;
+                }
+
+                // check if device is an rnode
+                this.rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await this.rnode.detect();
+                if(!isRNode){
+                    await this.rnode.close();
+                    alert("Selected device is not an RNode!");
+                    return false;
+                }
+
+                return this.rnode;
 
             },
             async enterDfuMode() {
@@ -1069,17 +1170,9 @@
             },
             async detect() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1122,17 +1215,9 @@
             },
             async reboot() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1210,17 +1295,9 @@
             },
             async readDisplay() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1236,17 +1313,9 @@
             },
             async dumpEeprom() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1264,22 +1333,15 @@
             },
             async wipeEeprom() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
                 // ask user to confirm
                 if(!confirm("Are you sure you want to wipe the eeprom on this device? This will take about 30 seconds. An alert will show when the eeprom wipe has finished.")){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                    await rnode.close();
                     return;
                 }
 
@@ -1298,18 +1360,9 @@
             },
             async provision() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
-                    await rnode.close();
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1489,17 +1542,9 @@
             },
             async setFirmwareHash() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1546,17 +1591,9 @@
             },
             async enableTncMode() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1602,17 +1639,9 @@
             },
             async disableTncMode() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1643,17 +1672,9 @@
             },
             async enableBluetooth() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1671,26 +1692,18 @@
                 await rnode.enableBluetooth();
                 console.log("enabling bluetooth: done");
 
-                await Utils.sleepMillis(1000);
+                alert("Bluetooth has been enabled!");
 
                 // done
+                await Utils.sleepMillis(1000);
                 await rnode.close();
-                alert("Bluetooth has been enabled!");
 
             },
             async disableBluetooth() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1707,27 +1720,18 @@
                 console.log("disabling bluetooth");
                 await rnode.disableBluetooth();
                 console.log("disabling bluetooth: done");
-
-                await Utils.sleepMillis(1000);
+                alert("Bluetooth has been disabled!");
 
                 // done
+                await Utils.sleepMillis(1000);
                 await rnode.close();
-                alert("Bluetooth has been disabled!");
 
             },
             async startBluetoothPairing() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1743,13 +1747,72 @@
                 // start bluetooth pairing
                 try {
                     console.log("start bluetooth pairing");
-                    const pin = await rnode.startBluetoothPairing();
+                    await rnode.startBluetoothPairing(async (pin) => {
+                        alert("Bluetooth Pairing Pin: " + pin);
+                        await rnode.close();
+                    });
                     console.log("start bluetooth pairing: done");
                 } catch(error) {
                     alert(error);
                 }
 
-                alert("RNode should now be in Bluetooth Pairing mode. A pin will be shown on the screen when you pair with it from Android bluetooth settings.");
+                // tell user device is in pairing mode, and how to pair
+                alert([
+                    "- RNode is in Bluetooth Pairing Mode for 30 seconds.",
+                    "- Close this alert before performing the next steps.",
+                    "- Open bluetooth settings on your Android device.",
+                    "- Click pair on the RNode device that shows up.",
+                    "- Bluetooth pin will shown on your RNode screen and on this page.",
+                ].join("\n"));
+
+            },
+            async setDisplayRotation(rotation) {
+
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // configure
+                console.log("setting display rotation");
+                await rnode.setDisplayRotation(rotation);
+                console.log("setting display rotation: done");
+
+                // done
+                await rnode.close();
+
+            },
+            async startDisplayReconditioning() {
+
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // configure
+                console.log("starting display reconditioning");
+                await rnode.startDisplayReconditioning();
+                console.log("starting display reconditioning: done");
 
                 // done
                 await rnode.close();

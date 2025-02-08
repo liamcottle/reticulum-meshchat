@@ -79,6 +79,8 @@ class RNode {
     ROM_UNLOCK_BYTE = 0xF8;
     CMD_HASHES = 0x60;
     CMD_FW_UPD = 0x61;
+    CMD_DISP_ROT = 0x67;
+    CMD_DISP_RCND = 0x68;
 
     CMD_BT_CTRL = 0x46;
     CMD_BT_PIN = 0x62;
@@ -121,8 +123,10 @@ class RNode {
 
     constructor(serialPort) {
         this.serialPort = serialPort;
-        this.readable = serialPort.readable;
+        this.reader = serialPort.readable.getReader();
         this.writable = serialPort.writable;
+        this.callbacks = {};
+        this.readLoop();
     }
 
     static async fromSerialPort(serialPort) {
@@ -137,11 +141,21 @@ class RNode {
     }
 
     async close() {
+
+        // release reader lock
+        try {
+            this.reader.releaseLock();
+        } catch(e) {
+            //console.log("failed to release lock on serial port readable, ignoring...", e);
+        }
+
+        // close serial port
         try {
             await this.serialPort.close();
         } catch(e) {
-            console.log("failed to close serial port, ignoring...", e);
+            //console.log("failed to close serial port, ignoring...", e);
         }
+
     }
 
     async write(bytes) {
@@ -153,79 +167,100 @@ class RNode {
         }
     }
 
-    async readFromSerialPort(timeoutMillis) {
-        return new Promise(async (resolve, reject) => {
+    async readLoop() {
+        try {
+            let buffer = [];
+            let inFrame = false;
+            while(true){
 
-            // create reader
-            const reader = this.readable.getReader();
+                // read kiss frames until reader indicates it's done
+                const { value, done } = await this.reader.read();
+                if(done){
+                    break;
+                }
 
-            // timeout after provided millis
-            if(timeoutMillis != null){
-                setTimeout(() => {
-                    reader.releaseLock();
-                    reject("timeout");
-                }, timeoutMillis);
-            }
-
-            // attempt to read kiss frame
-            try {
-                let buffer = [];
-                while(true){
-                    const { value, done } = await reader.read();
-                    if(done){
-                        break;
-                    }
-                    if(value){
-                        for(let byte of value){
-                            buffer.push(byte);
-                            if(byte === this.KISS_FEND){
-                                if(buffer.length > 1){
-                                    resolve(this.handleKISSFrame(buffer));
-                                    return;
-                                }
-                                buffer = [this.KISS_FEND]; // Start new frame
+                // read kiss frames
+                for(const byte of value){
+                    if(byte === this.KISS_FEND){
+                        if(inFrame){
+                            // End of frame
+                            const decodedFrame = this.decodeKissFrame(buffer);
+                            if(decodedFrame){
+                                this.onCommandReceived(decodedFrame);
+                            } else {
+                                console.warn("Invalid frame ignored.");
                             }
+                            buffer = [];
                         }
+                        inFrame = !inFrame;
+                    } else if(inFrame) {
+                        buffer.push(byte);
                     }
                 }
-            } catch (error) {
-                console.error('Error reading from serial port: ', error);
-            } finally {
-                reader.releaseLock();
+
+            }
+        } catch(error) {
+
+            // ignore error if reader was released
+            if(error instanceof TypeError){
+                return;
             }
 
-        });
+            console.error('Error reading from serial port: ', error);
+
+        } finally {
+            this.reader.releaseLock();
+        }
     }
 
-    handleKISSFrame(frame) {
+    onCommandReceived(data) {
+        try {
 
-        let data = [];
+            // get received command and bytes from data
+            const [ command, ...bytes ] = data;
+            console.log("onCommandReceived", "0x" + command.toString(16), bytes);
+
+            // find callback for received command
+            const callback = this.callbacks[command];
+            if(!callback){
+                return;
+            }
+
+            // fire callback
+            callback(bytes);
+
+            // forget callback
+            delete this.callbacks[command];
+
+        } catch(e) {
+            console.log("failed to handle received command", data, e);
+        }
+    }
+
+    decodeKissFrame(frame) {
+
+        const data = [];
         let escaping = false;
 
-        // Skip the initial 0xC0 and process the rest
-        for(let i = 1; i < frame.length; i++){
-            let byte = frame[i];
-            if (escaping) {
-                if (byte === this.KISS_TFEND) {
+        for(const byte of frame){
+            if(escaping){
+                if(byte === this.KISS_TFEND){
                     data.push(this.KISS_FEND);
-                } else if (byte === this.KISS_TFESC) {
+                } else if(byte === this.KISS_TFESC) {
                     data.push(this.KISS_FESC);
+                } else {
+                    return null; // Invalid escape sequence
                 }
                 escaping = false;
+            } else if(byte === this.KISS_FESC) {
+                escaping = true;
             } else {
-                if (byte === this.KISS_FESC) {
-                    escaping = true;
-                } else if (byte === this.KISS_FEND) {
-                    // Ignore the end frame delimiter
-                    break;
-                } else {
-                    data.push(byte);
-                }
+                data.push(byte);
             }
         }
 
-        //console.log('Received KISS frame data:', new Uint8Array(data));
-        return data;
+        // return null if incomplete escape at end
+        return escaping ? null : data;
 
     }
 
@@ -248,6 +283,28 @@ class RNode {
         await this.write(this.createKissFrame(data));
     }
 
+    // sends a command to the rnode, and resolves the promise with the result
+    async sendCommand(command, data) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // listen for response
+                this.callbacks[command] = (response) => {
+                    resolve(response);
+                };
+
+                // send command
+                await this.sendKissCommand([
+                    command,
+                    ...data,
+                ]);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     async reset() {
         await this.sendKissCommand([
             this.CMD_RESET,
@@ -256,30 +313,42 @@ class RNode {
     }
 
     async detect() {
+        return new Promise(async (resolve) => {
+            try {
 
-        // ask if device is rnode
-        await this.sendKissCommand([
-            this.CMD_DETECT,
-            this.DETECT_REQ,
-        ]);
+                // timeout after provided millis
+                const timeout = setTimeout(() => {
+                    resolve(false);
+                }, 2000);
 
-        // read response from device
-        const [ command, responseByte ] = await this.readFromSerialPort();
+                // detect rnode
+                const response = await this.sendCommand(this.CMD_DETECT, [
+                    this.DETECT_REQ,
+                ]);
 
-        // device is an rnode if response is as expected
-        return command === this.CMD_DETECT && responseByte === this.DETECT_RESP;
+                // we no longer want to timeout
+                clearTimeout(timeout);
+
+                // device is an rnode if response is as expected
+                const [ responseByte ] = response;
+                const isRnode = responseByte === this.DETECT_RESP;
+                resolve(isRnode);
+
+            } catch(e) {
+                resolve(false);
+            }
+        });
 
     }
 
     async getFirmwareVersion() {
 
-        await this.sendKissCommand([
-            this.CMD_FW_VERSION,
+        const response = await this.sendCommand(this.CMD_FW_VERSION, [
             0x00,
         ]);
 
         // read response from device
-        var [ command, majorVersion, minorVersion ] = await this.readFromSerialPort();
+        var [ majorVersion, minorVersion ] = response;
         if(minorVersion.length === 1){
             minorVersion = "0" + minorVersion;
         }
@@ -291,99 +360,91 @@ class RNode {
 
     async getPlatform() {
 
-        await this.sendKissCommand([
-            this.CMD_PLATFORM,
+        const response = await this.sendCommand(this.CMD_PLATFORM, [
             0x00,
         ]);
 
         // read response from device
-        const [ command, platformByte ] = await this.readFromSerialPort();
+        const [ platformByte ] = response;
         return platformByte;
 
     }
 
     async getMcu() {
 
-        await this.sendKissCommand([
-            this.CMD_MCU,
+        const response = await this.sendCommand(this.CMD_MCU, [
             0x00,
         ]);
 
         // read response from device
-        const [ command, mcuByte ] = await this.readFromSerialPort();
+        const [ mcuByte ] = response;
         return mcuByte;
 
     }
 
     async getBoard() {
 
-        await this.sendKissCommand([
-            this.CMD_BOARD,
+        const response = await this.sendCommand(this.CMD_BOARD, [
             0x00,
         ]);
 
         // read response from device
-        const [ command, boardByte ] = await this.readFromSerialPort();
+        const [ boardByte ] = response;
         return boardByte;
 
     }
 
     async getDeviceHash() {
 
-        await this.sendKissCommand([
-            this.CMD_DEV_HASH,
+        const response = await this.sendCommand(this.CMD_DEV_HASH, [
             0x01, // anything != 0x00
         ]);
 
         // read response from device
-        const [ command, ...deviceHash ] = await this.readFromSerialPort();
+        const [ ...deviceHash ] = response;
         return deviceHash;
 
     }
 
     async getTargetFirmwareHash() {
 
-        await this.sendKissCommand([
-            this.CMD_HASHES,
+        const response = await this.sendCommand(this.CMD_HASHES, [
             this.HASH_TYPE_TARGET_FIRMWARE,
         ]);
 
         // read response from device
-        const [ command, hashType, ...targetFirmwareHash ] = await this.readFromSerialPort();
+        const [ hashType, ...targetFirmwareHash ] = response;
         return targetFirmwareHash;
 
     }
 
     async getFirmwareHash() {
 
-        await this.sendKissCommand([
-            this.CMD_HASHES,
+        const response = await this.sendCommand(this.CMD_HASHES, [
             this.HASH_TYPE_FIRMWARE,
         ]);
 
         // read response from device
-        const [ command, hashType, ...firmwareHash ] = await this.readFromSerialPort();
+        const [ hashType, ...firmwareHash ] = response;
         return firmwareHash;
 
     }
 
     async getRom() {
 
-        await this.sendKissCommand([
-            this.CMD_ROM_READ,
+        const response = await this.sendCommand(this.CMD_ROM_READ, [
             0x00,
         ]);
 
         // read response from device
-        const [ command, ...eepromBytes ] = await this.readFromSerialPort();
+        const [ ...eepromBytes ] = response;
         return eepromBytes;
 
     }
 
     async getFrequency() {
 
-        await this.sendKissCommand([
-            this.CMD_FREQUENCY,
+        const response = await this.sendCommand(this.CMD_FREQUENCY, [
             // request frequency by sending zero as 4 bytes
             0x00,
             0x00,
@@ -392,7 +453,7 @@ class RNode {
         ]);
 
         // read response from device
-        const [ command, ...frequencyBytes ] = await this.readFromSerialPort();
+        const [ ...frequencyBytes ] = response;
 
         // convert 4 bytes to 32bit integer representing frequency in hertz
         const frequencyInHz = frequencyBytes[0] << 24 | frequencyBytes[1] << 16 | frequencyBytes[2] << 8 | frequencyBytes[3];
@@ -402,8 +463,7 @@ class RNode {
 
     async getBandwidth() {
 
-        await this.sendKissCommand([
-            this.CMD_BANDWIDTH,
+        const response = await this.sendCommand(this.CMD_BANDWIDTH, [
             // request bandwidth by sending zero as 4 bytes
             0x00,
             0x00,
@@ -412,7 +472,7 @@ class RNode {
         ]);
 
         // read response from device
-        const [ command, ...bandwidthBytes ] = await this.readFromSerialPort();
+        const [ ...bandwidthBytes ] = response;
 
         // convert 4 bytes to 32bit integer representing bandwidth in hertz
         const bandwidthInHz = bandwidthBytes[0] << 24 | bandwidthBytes[1] << 16 | bandwidthBytes[2] << 8 | bandwidthBytes[3];
@@ -422,69 +482,60 @@ class RNode {
 
     async getTxPower() {
 
-        await this.sendKissCommand([
-            this.CMD_TXPOWER,
+        const response = await this.sendCommand(this.CMD_TXPOWER, [
             0xFF, // request tx power
         ]);
 
         // read response from device
-        const [ command, txPower ] = await this.readFromSerialPort();
-
+        const [ txPower ] = response;
         return txPower;
 
     }
 
     async getSpreadingFactor() {
 
-        await this.sendKissCommand([
-            this.CMD_SF,
+        const response = await this.sendCommand(this.CMD_SF, [
             0xFF, // request spreading factor
         ]);
 
         // read response from device
-        const [ command, spreadingFactor ] = await this.readFromSerialPort();
-
+        const [ spreadingFactor ] = response;
         return spreadingFactor;
 
     }
 
     async getCodingRate() {
 
-        await this.sendKissCommand([
-            this.CMD_CR,
+        const response = await this.sendCommand(this.CMD_CR, [
             0xFF, // request coding rate
         ]);
 
         // read response from device
-        const [ command, codingRate ] = await this.readFromSerialPort();
-
+        const [ codingRate ] = response;
         return codingRate;
 
     }
 
     async getRadioState() {
 
-        await this.sendKissCommand([
-            this.CMD_RADIO_STATE,
+        const response = await this.sendCommand(this.CMD_RADIO_STATE, [
             0xFF, // request radio state
         ]);
 
         // read response from device
-        const [ command, radioState ] = await this.readFromSerialPort();
-
+        const [ radioState ] = response;
         return radioState;
 
     }
 
     async getRxStat() {
 
-        await this.sendKissCommand([
-            this.CMD_STAT_RX,
+        const response = await this.sendCommand(this.CMD_STAT_RX, [
             0x00,
         ]);
 
         // read response from device
-        const [ command, ...statBytes ] = await this.readFromSerialPort();
+        const [ ...statBytes ] = response;
 
         // convert 4 bytes to 32bit integer
         const stat = statBytes[0] << 24 | statBytes[1] << 16 | statBytes[2] << 8 | statBytes[3];
@@ -494,13 +545,12 @@ class RNode {
 
     async getTxStat() {
 
-        await this.sendKissCommand([
-            this.CMD_STAT_TX,
+        const response = await this.sendCommand(this.CMD_STAT_TX, [
             0x00,
         ]);
 
         // read response from device
-        const [ command, ...statBytes ] = await this.readFromSerialPort();
+        const [ ...statBytes ] = response;
 
         // convert 4 bytes to 32bit integer
         const stat = statBytes[0] << 24 | statBytes[1] << 16 | statBytes[2] << 8 | statBytes[3];
@@ -510,14 +560,12 @@ class RNode {
 
     async getRssiStat() {
 
-        await this.sendKissCommand([
-            this.CMD_STAT_RSSI,
+        const response = await this.sendCommand(this.CMD_STAT_RSSI, [
             0x00,
         ]);
 
         // read response from device
-        const [ command, rssi ] = await this.readFromSerialPort();
-
+        const [ rssi ] = response;
         return rssi;
 
     }
@@ -536,7 +584,23 @@ class RNode {
         ]);
     }
 
-    async startBluetoothPairing() {
+    async startBluetoothPairing(pinCallback) {
+
+        // listen for bluetooth pin
+        // pin will be available once the user has initiated pairing from an Android device
+        this.callbacks[this.CMD_BT_PIN] = (response) => {
+
+            // read response from device
+            const [ ...pinBytes ] = response;
+
+            // convert 4 bytes to 32bit integer
+            const pin = pinBytes[0] << 24 | pinBytes[1] << 16 | pinBytes[2] << 8 | pinBytes[3];
+
+            // tell user what the bluetooth pin is
+            console.log("Bluetooth Pairing Pin: " + pin);
+            pinCallback(pin);
+
+        };
 
         // enable pairing
         await this.sendKissCommand([
@@ -544,43 +608,16 @@ class RNode {
             0x02, // enable pairing
         ]);
 
-        // todo: listen for packets, pin will be available once user has initiated pairing from Android device
-
-        // // attempt to get bluetooth pairing pin
-        // try {
-        //
-        //     // read response from device
-        //     const [ command, ...pinBytes ] = await this.readFromSerialPort(5000);
-        //     if(command !== this.CMD_BT_PIN){
-        //         throw `unexpected command response: ${command}`;
-        //     }
-        //
-        //     // convert 4 bytes to 32bit integer
-        //     const pin = pinBytes[0] << 24 | pinBytes[1] << 16 | pinBytes[2] << 8 | pinBytes[3];
-        //
-        //     // todo: remove logs
-        //     console.log(pinBytes);
-        //     console.log(pin);
-        //
-        //     // todo: convert to string
-        //     return pin;
-        //
-        // } catch(error) {
-        //     throw `failed to get bluetooth pin: ${error}`;
-        // }
-
     }
 
     async readDisplay() {
 
-        await this.sendKissCommand([
-            this.CMD_DISP_READ,
+        const response = await this.sendCommand(this.CMD_DISP_READ, [
             0x01,
         ]);
 
         // read response from device
-        const [ command, ...displayBuffer ] = await this.readFromSerialPort();
-
+        const [ ...displayBuffer ] = response;
         return displayBuffer;
 
     }
@@ -715,6 +752,20 @@ class RNode {
         return new ROM(rom);
     }
 
+    async setDisplayRotation(rotation) {
+        await this.sendKissCommand([
+            this.CMD_DISP_ROT,
+            rotation & 0xFF,
+        ]);
+    }
+
+    async startDisplayReconditioning() {
+        await this.sendKissCommand([
+            this.CMD_DISP_RCND,
+            0x01,
+        ]);
+    }
+
 }
 
 class ROM {
@@ -743,6 +794,7 @@ class ROM {
     static MODEL_A7       = 0xA7
     static MODEL_A5       = 0xA5;
     static MODEL_AA       = 0xAA;
+    static MODEL_AC       = 0xAC;
 
     static PRODUCT_T32_10 = 0xB2
     static MODEL_BA       = 0xBA
@@ -766,6 +818,10 @@ class ROM {
     static MODEL_C5       = 0xC5
     static MODEL_CA       = 0xCA
 
+    static PRODUCT_HELTEC_T114 = 0xC2
+    static MODEL_C6       = 0xC6
+    static MODEL_C7       = 0xC7
+
     static PRODUCT_TBEAM  = 0xE0
     static MODEL_E4       = 0xE4
     static MODEL_E9       = 0xE9
@@ -781,8 +837,8 @@ class ROM {
     static MODEL_D9       = 0xD9;
 
     static PRODUCT_TECHO  = 0x15;
-    static MODEL_T4       = 0x16;
-    static MODEL_T9       = 0x17;
+    static MODEL_16       = 0x16;
+    static MODEL_17       = 0x17;
 
     static PRODUCT_HMBRW  = 0xF0
     static MODEL_FF       = 0xFF
