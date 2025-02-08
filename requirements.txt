@@ -3,4 +3,4 @@ cx_freeze>=7.0.0
 lxmf>=0.6.0
 peewee>=3.17.3
 rns>=0.9.1
-websockets>=12.0
+websockets>=14.2
