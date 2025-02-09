@@ -43,6 +43,11 @@
                     <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clip-rule="evenodd" />
                 </svg>
             </button>
+            <button @click="showNodePageSource" type="button" class="ml-1 my-auto text-gray-500 dark:text-gray-300 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 rounded p-1 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+                </svg>
+            </button>
             <button @click="loadPreviousNodePage" type="button" :disabled="nodePagePathHistory.length === 0" :class="[ nodePagePathHistory.length > 0 ? 'text-gray-500 dark:text-gray-300 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700' : 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-zinc-900']" class="ml-1 my-auto rounded p-1 cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                     <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
@@ -69,7 +74,7 @@
                 </div>
                 <div class="my-auto">Loading {{ nodePageProgress }}%</div>
             </div>
-            <pre v-else v-html="nodePageContent" class="h-full break-words whitespace-pre-wrap"></pre>
+            <pre v-else v-html="renderedNodePageContent()" class="h-full break-words whitespace-pre-wrap"></pre>
         </div>
 
         <!-- file download bottom bar -->
@@ -385,6 +390,7 @@ export default {
                 // if page is cache, we can just return it now
                 if(cachedNodePageContent != null){
                     this.nodePageContent = cachedNodePageContent;
+                    this.renderPageContent(pagePath, cachedNodePageContent);
                     this.isLoadingNodePage = false;
                     return;
                 }
@@ -393,31 +399,21 @@ export default {
 
             this.downloadNomadNetPage(destinationHash, pagePath, fieldData, (pageContent) => {
 
-                const muParser = new MicronParser();
-                
                 // do nothing if callback is for a previous request
                 if(seq !== this.nodePageRequestSequence){
                     console.log("ignoring page content callback for previous page request")
                     return;
                 }
 
-                // check if page url ends with .mu but remove page data first
-                // address:/page/index.mu`Data=123
-                const [ pagePathWithoutData, pageData ] = pagePath.split("`");
-
-                // convert micron to html if page ends with .mu extension
-                // otherwise, we will just serve the content as is
-                if(pagePathWithoutData.endsWith(".mu")){
-                    this.nodePageContent = muParser.convertMicronToHtml(pageContent);
-                } else {
-                    this.nodePageContent = pageContent;
-                }
+                // update page content
+                this.nodePageContent = pageContent;
 
                 // update cache
                 const nodePagePathCacheKey = `${destinationHash}:${pagePath}`;
                 this.nodePageCache[nodePagePathCacheKey] = this.nodePageContent;
 
                 // update page content
+                this.renderPageContent(pagePath, pageContent);
                 this.isLoadingNodePage = false;
 
                 // update node path
@@ -450,6 +446,39 @@ export default {
                 this.nodePageProgress = Math.round(progress * 100);
 
             });
+        },
+        renderPageContent(path, content) {
+
+            // check if page url ends with .mu but remove page data first
+            // address:/page/index.mu`Data=123
+            const [ pagePathWithoutData ] = path.split("`");
+
+            // convert micron to html if page ends with .mu extension
+            if(pagePathWithoutData.endsWith(".mu")){
+                const muParser = new MicronParser();
+                return muParser.convertMicronToHtml(content);
+            }
+
+            // otherwise, we will just serve the content as is
+            return content;
+
+        },
+        showNodePageSource() {
+
+            // create blob containing page content
+            const blob = new Blob([this.nodePageContent], {
+                type: "text/plain",
+            });
+
+            // create object url for blob
+            const objectUrl = URL.createObjectURL(blob);
+
+            // open blob in new tab
+            window.open(objectUrl, "_blank");
+
+            // revoke object url to clear memory
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+
         },
         async reloadNodePage() {
 
@@ -775,6 +804,9 @@ export default {
                 console.error(e);
             }
         },
+        renderedNodePageContent() {
+            return this.renderPageContent(this.nodePagePath, this.nodePageContent);
+        }
     },
 }
 </script>
