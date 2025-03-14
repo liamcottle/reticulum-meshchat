@@ -177,18 +177,21 @@ export default {
         };
     },
     beforeUnmount() {
+
         // stop listening for websocket messages
         WebSocketConnection.off("message", this.onWebsocketMessage);
+
+        // stop listening for element clicks
+        window.document.removeEventListener('click', this.onElementClick);
+
     },
     mounted() {
 
         // listen for websocket messages
         WebSocketConnection.on("message", this.onWebsocketMessage);
 
-        // fixme: this is called by the micron-parser.js
-        window.onNodePageUrlClick = (url, options = null) => {
-            this.onNodePageUrlClick(url, options);
-        };
+        // listen for element clicks
+        window.document.addEventListener('click', this.onElementClick);
 
         // load nomadnetwork node if a destination hash was provided on page load
         if(this.destinationHash){
@@ -203,6 +206,22 @@ export default {
 
     },
     methods: {
+        onElementClick(event) {
+
+            // find the closest ancestor (or the clicked element itself) with data-action="openNode"
+            const element = event.target.closest('[data-action="openNode"]');
+            if(!element){
+                return;
+            }
+
+            // get the destination and fields
+            const destination = element.getAttribute("data-destination");
+            const fields = element.getAttribute("data-fields");
+
+            // navigate to destination
+            this.onNodePageUrlClick(destination, fields);
+
+        },
         async onWebsocketMessage(message) {
             const json = JSON.parse(message.data);
             switch(json.type){
