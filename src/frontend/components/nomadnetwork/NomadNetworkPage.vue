@@ -135,7 +135,7 @@ pre a:hover {
 
 <script>
 
-import MicronParser from "../../js/MicronParser";
+import MicronParser from "micron-parser";
 import DialogUtils from "../../js/DialogUtils";
 import WebSocketConnection from "../../js/WebSocketConnection";
 import NomadNetworkSidebar from "./NomadNetworkSidebar.vue";
