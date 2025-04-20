@@ -690,7 +690,7 @@
                                 <input
                                     type="number"
                                     v-model="newInterfaceAirtimeLimitShort"
-                                    placeholder="Enter short airtime limit (seconds)"
+                                    placeholder="Enter short airtime limit (% of a rolling 15 seconds window)"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                                 />
                             </div>
@@ -699,7 +699,7 @@
                                 <input
                                     type="number"
                                     v-model="newInterfaceAirtimeLimitLong"
-                                    placeholder="Enter long airtime limit (seconds)"
+                                    placeholder="Enter long airtime limit (% of a rolling 60 seconds window)"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white"
                                 />
                             </div>
