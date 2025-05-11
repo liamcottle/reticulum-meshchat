@@ -100,8 +100,7 @@ app.whenReady().then(async () => {
 
     // get arguments passed to application, and remove the provided application path
     const ignoredArguments = ["--no-sandbox"];
-    const userProvidedArguments = process.argv.slice(1)
-        .filter(arg => !ignoredArguments.includes(arg));
+    const userProvidedArguments = process.argv.slice(1).filter((arg) => !ignoredArguments.includes(arg));
     const shouldLaunchHeadless = userProvidedArguments.includes("--headless");
 
     if(!shouldLaunchHeadless){
