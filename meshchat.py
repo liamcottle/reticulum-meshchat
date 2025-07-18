@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import io
 import json
 import os
 import sys
@@ -3271,7 +3272,7 @@ class Config:
 nomadnet_cached_links = {}
 class NomadnetDownloader:
 
-    def __init__(self, destination_hash: bytes, path: str, data: str|None, on_download_success: Callable[[bytes], None], on_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None], timeout: int|None = None):
+    def __init__(self, destination_hash: bytes, path: str, data: str|None, on_download_success: Callable[[RNS.RequestReceipt], None], on_download_failure: Callable[[str], None], on_progress_update: Callable[[float], None], timeout: int|None = None):
         self.app_name = "nomadnetwork"
         self.aspects = "node"
         self.destination_hash = destination_hash
@@ -3353,8 +3354,8 @@ class NomadnetDownloader:
         )
 
     # handle successful download
-    def on_response(self, request_receipt):
-        self.on_download_success(request_receipt.response)
+    def on_response(self, request_receipt: RNS.RequestReceipt):
+        self.on_download_success(request_receipt)
 
     # handle failure
     def on_failed(self, request_receipt=None):
@@ -3373,8 +3374,8 @@ class NomadnetPageDownloader(NomadnetDownloader):
         super().__init__(destination_hash, page_path, data, self.on_download_success, self.on_download_failure, on_progress_update, timeout)
 
     # page download was successful, decode the response and send to provided callback
-    def on_download_success(self, response_bytes):
-        micron_markup_response = response_bytes.decode("utf-8")
+    def on_download_success(self, request_receipt: RNS.RequestReceipt):
+        micron_markup_response = request_receipt.response.decode("utf-8")
         self.on_page_download_success(micron_markup_response)
 
     # page download failed, send error to provided callback
@@ -3390,7 +3391,30 @@ class NomadnetFileDownloader(NomadnetDownloader):
         super().__init__(destination_hash, page_path, None, self.on_download_success, self.on_download_failure, on_progress_update, timeout)
 
     # file download was successful, decode the response and send to provided callback
-    def on_download_success(self, response):
+    def on_download_success(self, request_receipt: RNS.RequestReceipt):
+
+        # get response
+        response = request_receipt.response
+
+        # handle buffered reader response
+        if isinstance(response, io.BufferedReader):
+
+            # get file name from metadata
+            file_name = "downloaded_file"
+            metadata = request_receipt.metadata
+            if metadata is not None and "name" in metadata:
+                file_path = metadata["name"].decode("utf-8")
+                file_name = os.path.basename(file_path)
+
+            # get file data
+            file_data: bytes = response.read()
+
+            self.on_file_download_success(file_name, file_data)
+            return
+
+        # original response format
+        # unsure if this is actually used anymore now that a buffered reader is provided
+        # have left here just in case...
         file_name: str = response[0]
         file_data: bytes = response[1]
         self.on_file_download_success(file_name, file_data)
