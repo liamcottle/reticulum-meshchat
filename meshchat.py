@@ -2144,8 +2144,6 @@ class ReticulumMeshChat:
                     },
                 })))
 
-            # todo: handle file download progress
-
             # download the file
             downloader = NomadnetFileDownloader(destination_hash, file_path, on_file_download_success, on_file_download_failure, on_file_download_progress)
             AsyncUtils.run_async(downloader.download())
@@ -2217,8 +2215,6 @@ class ReticulumMeshChat:
                         "page_path": page_path,
                     },
                 })))
-
-            # todo: handle page download progress
 
             # download the page
             downloader = NomadnetPageDownloader(destination_hash, page_path_to_download, combined_data, on_page_download_success, on_page_download_failure, on_page_download_progress)
