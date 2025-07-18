@@ -2147,7 +2147,7 @@ class ReticulumMeshChat:
 
             # download the file
             downloader = NomadnetFileDownloader(destination_hash, file_path, on_file_download_success, on_file_download_failure, on_file_download_progress)
-            await downloader.download()
+            AsyncUtils.run_async(downloader.download())
 
         # handle downloading a page from a nomadnet node
         elif _type == "nomadnet.page.download":
