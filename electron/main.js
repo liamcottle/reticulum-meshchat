@@ -99,7 +99,7 @@ function getDefaultReticulumConfigDir() {
 app.whenReady().then(async () => {
 
     // get arguments passed to application, and remove the provided application path
-    const ignoredArguments = ["--no-sandbox"];
+    const ignoredArguments = ["--no-sandbox", "--ozone-platform-hint=auto"];
     const userProvidedArguments = process.argv.slice(1).filter((arg) => !ignoredArguments.includes(arg));
     const shouldLaunchHeadless = userProvidedArguments.includes("--headless");
 
