@@ -413,6 +413,7 @@ export default {
                 const response = await window.axios.get(`/api/v1/announces`, {
                     params: {
                         aspect: "nomadnetwork.node",
+                        limit: 500, // limit ui to showing 500 latest announces
                     },
                 });
 
