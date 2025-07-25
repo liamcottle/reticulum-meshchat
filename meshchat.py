@@ -1758,6 +1758,30 @@ class ReticulumMeshChat:
                 "lxmf_message": lxmf_message,
             })
 
+        # identify self on existing nomadnetwork link
+        @routes.post("/api/v1/nomadnetwork/{destination_hash}/identify")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # convert destination hash to bytes
+            destination_hash = bytes.fromhex(destination_hash)
+
+            # identify to existing active link
+            if destination_hash in nomadnet_cached_links:
+                link = nomadnet_cached_links[destination_hash]
+                if link.status is RNS.Link.ACTIVE:
+                    link.identify(self.identity)
+                    return web.json_response({
+                        "message": "Identity has been sent!",
+                    })
+
+            # failed to identify
+            return web.json_response({
+                "message": "Failed to identify. No active link to destination.",
+            }, status=500)
+
         # delete lxmf message
         @routes.delete("/api/v1/lxmf-messages/{hash}")
         async def index(request):
