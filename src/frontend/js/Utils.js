@@ -2,6 +2,13 @@ import moment from "moment";
 
 class Utils {
 
+    static formatDestinationHash(destinationHashHex) {
+        const bytesPerSide = 4;
+        const leftSide = destinationHashHex.substring(0, bytesPerSide * 2);
+        const rightSide = destinationHashHex.substring(destinationHashHex.length - bytesPerSide * 2);
+        return `<${leftSide}...${rightSide}>`
+    }
+
     static formatBytes(bytes) {
 
         if(bytes === 0){

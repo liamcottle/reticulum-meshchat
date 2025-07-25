@@ -78,6 +78,7 @@ class ReticulumMeshChat:
             database.Config,
             database.Announce,
             database.CustomDestinationDisplayName,
+            database.FavouriteDestination,
             database.LxmfMessage,
             database.LxmfConversationReadState,
             database.LxmfUserIcon,
@@ -1231,6 +1232,79 @@ class ReticulumMeshChat:
 
             return web.json_response({
                 "announces": announces,
+            })
+
+        # serve favourites
+        @routes.get("/api/v1/favourites")
+        async def index(request):
+
+            # get query params
+            aspect = request.query.get("aspect", None)
+
+            # build favourites database query
+            query = database.FavouriteDestination.select()
+
+            # filter by provided aspect
+            if aspect is not None:
+                query = query.where(database.FavouriteDestination.aspect == aspect)
+
+            # order favourites alphabetically
+            query_results = query.order_by(database.FavouriteDestination.display_name.asc())
+
+            # process favourites
+            favourites = []
+            for favourite in query_results:
+                favourites.append(self.convert_db_favourite_to_dict(favourite))
+
+            return web.json_response({
+                "favourites": favourites,
+            })
+
+        # add favourite
+        @routes.post("/api/v1/favourites/add")
+        async def index(request):
+
+            # get request data
+            data = await request.json()
+            destination_hash = data.get("destination_hash", None)
+            display_name = data.get("display_name", None)
+            aspect = data.get("aspect", None)
+
+            # destination hash is required
+            if destination_hash is None:
+                return web.json_response({
+                    "message": "destination_hash is required",
+                }, status=422)
+
+            # display name is required
+            if display_name is None:
+                return web.json_response({
+                    "message": "display_name is required",
+                }, status=422)
+
+            # aspect is required
+            if aspect is None:
+                return web.json_response({
+                    "message": "aspect is required",
+                }, status=422)
+
+            # upsert favourite
+            self.db_upsert_favourite(destination_hash, display_name, aspect)
+            return web.json_response({
+                "message": "Favourite has been added!",
+            })
+
+        # delete favourite
+        @routes.delete("/api/v1/favourites/{destination_hash}")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # delete favourite
+            database.FavouriteDestination.delete().where(database.FavouriteDestination.destination_hash == destination_hash).execute()
+            return web.json_response({
+                "message": "Favourite has been added!",
             })
 
         # propagation node status
@@ -2528,6 +2602,17 @@ class ReticulumMeshChat:
             "updated_at": announce.updated_at,
         }
 
+    # convert database favourite to a dictionary
+    def convert_db_favourite_to_dict(self, favourite: database.FavouriteDestination):
+        return {
+            "id": favourite.id,
+            "destination_hash": favourite.destination_hash,
+            "display_name": favourite.display_name,
+            "aspect": favourite.aspect,
+            "created_at": favourite.created_at,
+            "updated_at": favourite.updated_at,
+        }
+
     # convert database lxmf message to a dictionary
     def convert_db_lxmf_message_to_dict(self, db_lxmf_message: database.LxmfMessage):
 
@@ -2736,6 +2821,22 @@ class ReticulumMeshChat:
         # upsert to database
         query = database.CustomDestinationDisplayName.insert(data)
         query = query.on_conflict(conflict_target=[database.CustomDestinationDisplayName.destination_hash], update=data)
+        query.execute()
+
+    # upserts a custom destination display name to the database
+    def db_upsert_favourite(self, destination_hash: str, display_name: str, aspect: str):
+
+        # prepare data to insert or update
+        data = {
+            "destination_hash": destination_hash,
+            "display_name": display_name,
+            "aspect": aspect,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+        # upsert to database
+        query = database.FavouriteDestination.insert(data)
+        query = query.on_conflict(conflict_target=[database.FavouriteDestination.destination_hash], update=data)
         query.execute()
 
     # upserts lxmf conversation read state to the database
