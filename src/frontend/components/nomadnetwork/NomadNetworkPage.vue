@@ -862,10 +862,10 @@ export default {
             }
 
         },
-        onRemoveFavourite: function(favourite) {
+        async onRemoveFavourite(favourite) {
 
             // ask user to confirm
-            if(!confirm("Are you sure you want to remove this favourite?")){
+            if(!await DialogUtils.confirm("Are you sure you want to remove this favourite?")){
                 return;
             }
 
@@ -911,7 +911,7 @@ export default {
             try {
 
                 // ask user to confirm
-                if(!confirm("Are you sure you want to identify yourself to this NomadNetwork Node? The page will reload after your identity has been sent.")){
+                if(!await DialogUtils.confirm("Are you sure you want to identify yourself to this NomadNetwork Node? The page will reload after your identity has been sent.")){
                     return;
                 }
 

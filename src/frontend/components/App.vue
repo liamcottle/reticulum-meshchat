@@ -448,7 +448,7 @@ export default {
 
             // ask to stop syncing if already syncing
             if(this.isSyncingPropagationNode){
-                if(confirm("Are you sure you want to stop syncing?")){
+                if(await DialogUtils.confirm("Are you sure you want to stop syncing?")){
                     await this.stopSyncingPropagationNode();
                 }
                 return;
@@ -529,7 +529,7 @@ export default {
         async hangupAllCalls() {
 
             // confirm user wants to hang up calls
-            if(!confirm("Are you sure you want to hang up all incoming and outgoing calls?")){
+            if(!await DialogUtils.confirm("Are you sure you want to hang up all incoming and outgoing calls?")){
                 return;
             }
 

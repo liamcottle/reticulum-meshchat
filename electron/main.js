@@ -22,6 +22,27 @@ ipcMain.handle('alert', async(event, message) => {
     });
 });
 
+// add support for showing a confirm window via ipc
+ipcMain.handle('confirm', async(event, message) => {
+
+    // show confirm dialog
+    const result = await dialog.showMessageBox(mainWindow, {
+        type: "question",
+        title: "Confirm",
+        message: message,
+        cancelId: 0, // esc key should press cancel button
+        defaultId: 1, // enter key should press ok button
+        buttons: [
+            "Cancel", // 0
+            "OK", // 1
+        ],
+    });
+
+    // check if user clicked OK
+    return result.response === 1;
+
+});
+
 // add support for showing a prompt window via ipc
 ipcMain.handle('prompt', async(event, message) => {
     return await electronPrompt({

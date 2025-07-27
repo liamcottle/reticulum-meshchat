@@ -191,7 +191,7 @@ export default {
         async deleteInterface(interfaceName) {
 
             // ask user to confirm deleting conversation history
-            if(!confirm("Are you sure you want to delete this interface? This can not be undone!")){
+            if(!await DialogUtils.confirm("Are you sure you want to delete this interface? This can not be undone!")){
                 return;
             }
 

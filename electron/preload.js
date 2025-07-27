@@ -15,6 +15,11 @@ contextBridge.exposeInMainWorld('electron', {
         return await ipcRenderer.invoke('alert', message);
     },
 
+    // show a confirm dialog in electron browser window, this fixes a bug where confirm breaks input fields on windows
+    confirm: async function(message) {
+        return await ipcRenderer.invoke('confirm', message);
+    },
+
     // add support for using "prompt" in electron browser window
     prompt: async function(message) {
         return await ipcRenderer.invoke('prompt', message);

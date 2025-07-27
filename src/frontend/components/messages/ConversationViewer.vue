@@ -997,7 +997,7 @@ export default {
             try {
 
                 // ask user to confirm deleting message
-                if(shouldConfirm && !confirm("Are you sure you want to delete this message? This can not be undone!")){
+                if(shouldConfirm && !await DialogUtils.confirm("Are you sure you want to delete this message? This can not be undone!")){
                     return;
                 }
 
@@ -1078,7 +1078,7 @@ export default {
 
                 // ask user if they still want to send message if it may be rejected by sender
                 if(totalMessageSize > 1000 * 900){ // actual limit in LXMF Router is 1mb
-                    if(!confirm(`Your message exceeds 900KB (It's ${this.formatBytes(totalMessageSize)}). It may be rejected by the recipient unless they have increased their delivery limit. Do you want to try sending anyway?`)){
+                    if(!await DialogUtils.confirm(`Your message exceeds 900KB (It's ${this.formatBytes(totalMessageSize)}). It may be rejected by the recipient unless they have increased their delivery limit. Do you want to try sending anyway?`)){
                         return;
                     }
                 }
@@ -1209,10 +1209,10 @@ export default {
         clearFileInput: function() {
             this.$refs["file-input"].value = null;
         },
-        removeImageAttachment: function() {
+        async removeImageAttachment() {
 
             // ask user to confirm removing image attachment
-            if(!confirm("Are you sure you want to remove this image attachment?")){
+            if(!await DialogUtils.confirm("Are you sure you want to remove this image attachment?")){
                 return;
             }
 
@@ -1244,7 +1244,7 @@ export default {
             }
 
             // ask user to confirm recording new audio attachment, if an existing audio attachment exists
-            if(this.newMessageAudio && !confirm("An audio recording is already attached. A new recording will replace it. Do you want to continue?")){
+            if(this.newMessageAudio && !await DialogUtils.confirm("An audio recording is already attached. A new recording will replace it. Do you want to continue?")){
                 return;
             }
 
@@ -1386,10 +1386,10 @@ export default {
             }
 
         },
-        removeAudioAttachment: function() {
+        async removeAudioAttachment() {
 
             // ask user to confirm removing audio attachment
-            if(!confirm("Are you sure you want to remove this audio attachment?")){
+            if(!await DialogUtils.confirm("Are you sure you want to remove this audio attachment?")){
                 return;
             }
 

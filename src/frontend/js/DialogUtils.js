@@ -10,6 +10,16 @@ class DialogUtils {
         }
     }
 
+    static confirm(message) {
+        if(window.electron){
+            // running inside electron, use ipc confirm
+            return window.electron.confirm(message);
+        } else {
+            // running inside normal browser, use browser alert
+            return window.confirm(message);
+        }
+    }
+
     static async prompt(message) {
         if(window.electron){
             // running inside electron, use ipc prompt

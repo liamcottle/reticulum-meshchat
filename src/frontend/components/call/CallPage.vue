@@ -259,6 +259,7 @@
 
 <script>
 import protobuf from "protobufjs";
+import DialogUtils from "../../js/DialogUtils";
 export default {
     name: 'CallPage',
     data() {
@@ -488,7 +489,7 @@ export default {
         async hangupCall(callHash) {
 
             // confirm user wants to hang up call
-            if(!confirm("Are you sure you want to hang up this call?")){
+            if(!await DialogUtils.confirm("Are you sure you want to hang up this call?")){
                 return;
             }
 
@@ -681,7 +682,7 @@ export default {
         async deleteCall(callHash) {
 
             // confirm user wants to delete call
-            if(!confirm("Are you sure you want to delete this call?")){
+            if(!await DialogUtils.confirm("Are you sure you want to delete this call?")){
                 return;
             }
 
@@ -701,7 +702,7 @@ export default {
         async clearCallHistory() {
 
             // confirm user wants to clear call history
-            if(!confirm("Are you sure you want to clear your call history?")){
+            if(!await DialogUtils.confirm("Are you sure you want to clear your call history?")){
                 return;
             }
 

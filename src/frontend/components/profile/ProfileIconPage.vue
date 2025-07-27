@@ -145,7 +145,7 @@ export default {
             }
 
             // confirm user wants to update their icon
-            if(!confirm("Are you sure you want to set this as your profile icon?")){
+            if(!await DialogUtils.confirm("Are you sure you want to set this as your profile icon?")){
                 return;
             }
 
@@ -160,7 +160,7 @@ export default {
         async removeProfileIcon() {
 
             // confirm user wants to remove their icon
-            if(!confirm("Are you sure you want to remove your profile icon? Anyone that has already received it will continue to see it until you send them a new icon.")){
+            if(!await DialogUtils.confirm("Are you sure you want to remove your profile icon? Anyone that has already received it will continue to see it until you send them a new icon.")){
                 return;
             }
 
