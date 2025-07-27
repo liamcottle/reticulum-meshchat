@@ -1294,6 +1294,25 @@ class ReticulumMeshChat:
                 "message": "Favourite has been added!",
             })
 
+        # rename favourite
+        @routes.post("/api/v1/favourites/{destination_hash}/rename")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # get request data
+            data = await request.json()
+            display_name = data.get("display_name")
+
+            # update display name if provided
+            if len(display_name) > 0:
+                database.FavouriteDestination.update(display_name=display_name).where(database.FavouriteDestination.destination_hash == destination_hash).execute()
+
+            return web.json_response({
+                "message": "Favourite has been renamed",
+            })
+
         # delete favourite
         @routes.delete("/api/v1/favourites/{destination_hash}")
         async def index(request):

@@ -30,6 +30,38 @@
                             <div class="text-gray-900 dark:text-gray-100">{{ favourite.display_name }}</div>
                             <div class="text-gray-500 dark:text-gray-400 text-sm">{{ formatDestinationHash(favourite.destination_hash) }}</div>
                         </div>
+                        <div class="ml-auto my-auto">
+                            <DropDownMenu>
+                                <template v-slot:button>
+                                    <IconButton class="bg-transparent dark:bg-transparent">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                                        </svg>
+                                    </IconButton>
+                                </template>
+                                <template v-slot:items>
+
+                                    <!-- rename button -->
+                                    <DropDownMenuItem @click="onRenameFavourite(favourite)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5">
+                                            <path fill-rule="evenodd" d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span>Rename Favourite</span>
+                                    </DropDownMenuItem>
+
+                                    <!-- remove favourite button -->
+                                    <div>
+                                        <DropDownMenuItem @click="onRemoveFavourite(favourite)">
+                                            <svg class="size-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
+                                            </svg>
+                                            <span class="text-red-500">Remove Favourite</span>
+                                        </DropDownMenuItem>
+                                    </div>
+
+                                </template>
+                            </DropDownMenu>
+                        </div>
                     </div>
                 </div>
                 <div v-else class="mx-auto my-auto text-center leading-5">
@@ -127,10 +159,13 @@
 
 import Utils from "../../js/Utils";
 import MaterialDesignIcon from "../MaterialDesignIcon.vue";
+import DropDownMenu from "../DropDownMenu.vue";
+import IconButton from "../IconButton.vue";
+import DropDownMenuItem from "../DropDownMenuItem.vue";
 
 export default {
     name: 'NomadNetworkSidebar',
-    components: {MaterialDesignIcon},
+    components: {DropDownMenuItem, IconButton, DropDownMenu, MaterialDesignIcon},
     props: {
         nodes: Object,
         favourites: Array,
@@ -149,6 +184,12 @@ export default {
         },
         onFavouriteClick(favourite) {
             this.onNodeClick(favourite);
+        },
+        onRenameFavourite(favourite) {
+            this.$emit("rename-favourite", favourite);
+        },
+        onRemoveFavourite(favourite) {
+            this.$emit("remove-favourite", favourite);
         },
         formatTimeAgo: function(datetimeString) {
             return Utils.formatTimeAgo(datetimeString);

@@ -5,7 +5,9 @@
         :nodes="nodes"
         :favourites="favourites"
         :selected-destination-hash="selectedNode?.destination_hash"
-        @node-click="onNodeClick"/>
+        @node-click="onNodeClick"
+        @rename-favourite="onRenameFavourite"
+        @remove-favourite="onRemoveFavourite"/>
 
    <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
     <!-- node -->
@@ -834,6 +836,40 @@ export default {
 
             // load default node page
             this.loadNodePage(node.destination_hash, this.defaultNodePagePath);
+
+        },
+        async onRenameFavourite(favourite) {
+
+            // ask user for new display name
+            const displayName = await DialogUtils.prompt("Rename this favourite");
+            if(displayName == null){
+                return;
+            }
+
+            try {
+
+                // rename on server
+                await axios.post(`/api/v1/favourites/${favourite.destination_hash}/rename`, {
+                    display_name: displayName,
+                });
+
+                // reload favourites
+                await this.getFavourites();
+
+            } catch(e) {
+                console.log(e);
+                DialogUtils.alert("Failed to rename favourite");
+            }
+
+        },
+        onRemoveFavourite: function(favourite) {
+
+            // ask user to confirm
+            if(!confirm("Are you sure you want to remove this favourite?")){
+                return;
+            }
+
+            this.removeFavourite(favourite);
 
         },
         onCloseNodeViewer: function() {
