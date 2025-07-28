@@ -1,25 +1,25 @@
 import asyncio
+from typing import Coroutine
 
 
 class AsyncUtils:
 
-    # this method allows running the provided async coroutine from within a sync function
-    # it will run the async function on the existing event loop if available, otherwise it will start a new event loop
+    # remember main loop
+    main_loop: asyncio.AbstractEventLoop | None = None
+
     @staticmethod
-    def run_async(coroutine):
+    def set_main_loop(loop: asyncio.AbstractEventLoop):
+        AsyncUtils.main_loop = loop
 
-        # attempt to get existing event loop
-        existing_event_loop = None
-        try:
-            existing_event_loop = asyncio.get_running_loop()
-        except RuntimeError:
-            # 'RuntimeError: no running event loop'
-            pass
+    # this method allows running the provided async coroutine from within a sync function
+    # it will run the async function on the main event loop if possible, otherwise it logs a warning
+    @staticmethod
+    def run_async(coroutine: Coroutine):
 
-        # if there is an existing event loop running, submit the coroutine to that loop
-        if existing_event_loop and existing_event_loop.is_running():
-            existing_event_loop.create_task(coroutine)
+        # run provided coroutine on main event loop, ensuring thread safety
+        if AsyncUtils.main_loop and AsyncUtils.main_loop.is_running():
+            asyncio.run_coroutine_threadsafe(coroutine, AsyncUtils.main_loop)
             return
 
-        # otherwise start a new event loop to run the coroutine
-        asyncio.run(coroutine)
+        # main event loop not running...
+        print("WARNING: Main event loop not available. Could not schedule task.")

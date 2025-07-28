@@ -2038,6 +2038,9 @@ class ReticulumMeshChat:
         # called when web app has started
         async def on_startup(app):
 
+            # remember main event loop
+            AsyncUtils.set_main_loop(asyncio.get_event_loop())
+
             # auto launch web browser
             if launch_browser:
                 try:
