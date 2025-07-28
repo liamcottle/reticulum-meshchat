@@ -12,7 +12,7 @@
                         <div class="mr-auto">
                             <div>Versions</div>
                             <div class="text-sm text-gray-700 dark:text-zinc-400">
-                                MeshChat v{{ appInfo.version }} • RNS v{{ appInfo.rns_version }} • LXMF v{{ appInfo.lxmf_version }}
+                                MeshChat v{{ appInfo.version }} • RNS v{{ appInfo.rns_version }} • LXMF v{{ appInfo.lxmf_version }} • Python v{{ appInfo.python_version }}
                             </div>
                         </div>
                         <div class="hidden sm:block mx-2 my-auto">

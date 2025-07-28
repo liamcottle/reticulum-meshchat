@@ -4,6 +4,7 @@ import argparse
 import io
 import json
 import os
+import platform
 import sys
 import threading
 import time
@@ -944,6 +945,7 @@ class ReticulumMeshChat:
                     "version": self.get_app_version(),
                     "lxmf_version": LXMF.__version__,
                     "rns_version": RNS.__version__,
+                    "python_version": platform.python_version(),
                     "storage_path": self.storage_path,
                     "database_path": self.database_path,
                     "database_file_size": os.path.getsize(self.database_path),
