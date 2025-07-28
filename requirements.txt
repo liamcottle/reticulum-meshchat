@@ -1,4 +1,4 @@
-aiohttp>=3.9.5
+aiohttp>=3.12.14
 cx_freeze>=7.0.0
 lxmf>=0.8.0
 peewee>=3.17.3
