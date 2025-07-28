@@ -3552,6 +3552,22 @@ class NomadnetFileDownloader(NomadnetDownloader):
             self.on_file_download_success(file_name, file_data)
             return
 
+        # check for list response with bytes in position 0, and metadata dict in position 1
+        # e.g: [file_bytes, {name: "filename.ext"}]
+        if isinstance(response, list) and isinstance(response[1], dict):
+
+            file_data: bytes = response[0]
+            metadata: dict = response[1]
+
+            # get file name from metadata
+            file_name = "downloaded_file"
+            if metadata is not None and "name" in metadata:
+                file_path = metadata["name"].decode("utf-8")
+                file_name = os.path.basename(file_path)
+
+            self.on_file_download_success(file_name, file_data)
+            return
+
         # original response format
         # unsure if this is actually used anymore now that a buffered reader is provided
         # have left here just in case...
