@@ -3568,12 +3568,15 @@ class NomadnetFileDownloader(NomadnetDownloader):
             self.on_file_download_success(file_name, file_data)
             return
 
-        # original response format
+        # try using original response format
         # unsure if this is actually used anymore now that a buffered reader is provided
         # have left here just in case...
-        file_name: str = response[0]
-        file_data: bytes = response[1]
-        self.on_file_download_success(file_name, file_data)
+        try:
+            file_name: str = response[0]
+            file_data: bytes = response[1]
+            self.on_file_download_success(file_name, file_data)
+        except:
+            self.on_download_failure("unsupported_response")
 
     # page download failed, send error to provided callback
     def on_download_failure(self, failure_reason):
