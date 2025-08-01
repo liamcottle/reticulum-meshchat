@@ -1056,7 +1056,11 @@ export default {
                 if(this.newMessageImage){
                     imageTotalSize = this.newMessageImage.size;
                     fields["image"] = {
-                        // Reticulum sends image type as "jpg" or "png" and not "image/jpg" or "image/png"
+                        // Reticulum sends image type as "jpg", "png", "webp" etc and not "image/jpg" or "image/png"
+                        // From memory, Sideband would not display images if the image type has the "image/" prefix
+                        // https://github.com/markqvist/Sideband/blob/354fb08297835eab04ac69d15081a18baf0583ac/docs/example_plugins/view.py#L78
+                        // https://github.com/markqvist/Sideband/blob/354fb08297835eab04ac69d15081a18baf0583ac/sbapp/main.py#L1900
+                        // https://github.com/markqvist/Sideband/blob/354fb08297835eab04ac69d15081a18baf0583ac/sbapp/ui/messages.py#L783
                         "image_type": this.newMessageImage.type.replace("image/", ""),
                         "image_bytes": Utils.arrayBufferToBase64(await this.newMessageImage.arrayBuffer()),
                     };
