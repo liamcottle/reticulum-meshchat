@@ -149,9 +149,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/liamcottle/reticulum-meshchat:latest
-            ghcr.io/liamcottle/reticulum-meshchat:${{ github.ref_name }}
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           labels: |
             org.opencontainers.image.title=Reticulum MeshChat
             org.opencontainers.image.description=Docker image for Reticulum MeshChat
-            org.opencontainers.image.url=https://github.com/liamcottle/reticulum-meshchat/pkgs/container/reticulum-meshchat/
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}/pkgs/container/reticulum-meshchat/
