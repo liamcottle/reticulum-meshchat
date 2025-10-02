@@ -129,6 +129,9 @@ jobs:
       - name: Clone Repo
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
+      - name: Set lowercase repository owner
+        run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
 
@@ -149,8 +152,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: >-
-            ghcr.io/${{ github.repository_owner }}/reticulum-meshchat:latest,
-            ghcr.io/${{ github.repository_owner }}/reticulum-meshchat:${{ github.ref_name }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/reticulum-meshchat:latest,
+            ghcr.io/${{ env.REPO_OWNER_LC }}/reticulum-meshchat:${{ github.ref_name }}
           labels: >-
             org.opencontainers.image.title=Reticulum MeshChat,
             org.opencontainers.image.description=Docker image for Reticulum MeshChat,
