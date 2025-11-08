@@ -180,11 +180,20 @@ app.whenReady().then(async () => {
 
     // find path to python/cxfreeze reticulum meshchat executable
     const exeName = process.platform === "win32" ? "ReticulumMeshChat.exe" : "ReticulumMeshChat";
-    var exe = path.join(__dirname, `build/exe/${exeName}`);
 
-    // if dist exe doesn't exist, check local build
-    if(!fs.existsSync(exe)){
-        exe = path.join(__dirname, '..', `build/exe/${exeName}`);
+    var exe;
+
+    // In production (packaged app), Python exe is in Resources/python
+    if(process.resourcesPath && fs.existsSync(path.join(process.resourcesPath, 'python'))){
+        exe = path.join(process.resourcesPath, 'python', exeName);
+    }
+    // In development, use local build
+    else if(fs.existsSync(path.join(__dirname, '..', 'build', 'exe', exeName))){
+        exe = path.join(__dirname, '..', 'build', 'exe', exeName);
+    }
+    // Fallback
+    else {
+        exe = path.join(__dirname, 'build', 'exe', exeName);
     }
 
     try {
