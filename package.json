@@ -10,7 +10,9 @@
     "build": "npm run build-frontend && npm run build-backend",
     "electron-postinstall": "electron-builder install-app-deps",
     "electron": "npm run electron-postinstall && npm run build && electron .",
-    "dist": "npm run electron-postinstall && npm run build && electron-builder --publish=never"
+    "dist": "npm run electron-postinstall && npm run build && electron-builder --publish=never",
+    "dist:mac-arm64": "npm run electron-postinstall && npm run build && electron-builder --mac --arm64 --publish=never",
+    "dist:mac-universal": "npm run electron-postinstall && npm run build && electron-builder --mac --universal --publish=never"
   },
   "license": "MIT",
   "engines": {
@@ -23,30 +25,36 @@
   "build": {
     "appId": "com.liamcottle.reticulummeshchat",
     "productName": "Reticulum MeshChat",
-    "asar": false,
-    "files": [
-      "electron/**/*"
+    "asar": true,
+    "extraResources": [
+      {
+        "from": "build/exe",
+        "to": "python",
+        "filter": ["**/*"]
+      }
     ],
-    "directories": {
-      "buildResources": "electron/build"
-    },
+    "files": [
+      "electron/*.js",
+      "electron/*.html",
+      "electron/assets/**/*",
+      "public/**/*",
+      "package.json"
+    ],
     "mac": {
-      "target": "dmg",
+      "target": {
+        "target": "dmg",
+        "arch": [
+          "universal"
+        ]
+      },
       "identity": null,
-      "artifactName": "ReticulumMeshChat-v${version}-${os}.${ext}",
+      "icon": "electron/build/icon.png",
+      "artifactName": "ReticulumMeshChat-v${version}-${os}-${arch}.${ext}",
+      "x64ArchFiles": "Contents/Resources/python/**/*",
       "extendInfo": {
         "NSMicrophoneUsageDescription": "Microphone access is only needed for Audio Calls",
         "com.apple.security.device.audio-input": true
-      },
-      "extraFiles": [
-        {
-          "from": "build/exe",
-          "to": "Resources/app/electron/build/exe",
-          "filter": [
-            "**/*"
-          ]
-        }
-      ]
+      }
     },
     "win": {
       "artifactName": "ReticulumMeshChat-v${version}-${os}.${ext}",
@@ -57,29 +65,11 @@
         {
           "target": "nsis"
         }
-      ],
-      "extraFiles": [
-        {
-          "from": "build/exe",
-          "to": "Resources/app/electron/build/exe",
-          "filter": [
-            "**/*"
-          ]
-        }
       ]
     },
     "linux": {
       "artifactName": "ReticulumMeshChat-v${version}-${os}.${ext}",
-      "target": "AppImage",
-      "extraFiles": [
-        {
-          "from": "build/exe",
-          "to": "resources/app/electron/build/exe",
-          "filter": [
-            "**/*"
-          ]
-        }
-      ]
+      "target": "AppImage"
     },
     "dmg": {
       "writeUpdateInfo": false
