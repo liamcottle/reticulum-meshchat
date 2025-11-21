@@ -3248,9 +3248,9 @@ class ReticulumMeshChat:
             app_data_bytes = base64.b64decode(app_data_base64)
             data = msgpack.unpackb(app_data_bytes)
             return {
-                "enabled": bool(data[0]),
+                "enabled": bool(data[2]),
                 "timebase": int(data[1]),
-                "per_transfer_limit": int(data[2]),
+                "per_transfer_limit": int(data[3]),
             }
         except:
             return None
