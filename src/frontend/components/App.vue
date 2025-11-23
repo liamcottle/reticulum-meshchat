@@ -395,6 +395,7 @@ export default {
                 }
                 case 'telephone_ringing': {
                     this.getTelephoneStatus();
+                    NotificationUtils.showIncomingCallNotification();
                     break;
                 }
                 case 'telephone_call_established': {
