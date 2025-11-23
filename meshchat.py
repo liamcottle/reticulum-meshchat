@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
+import asyncio
+import base64
 import io
 import json
 import os
@@ -8,29 +10,28 @@ import platform
 import sys
 import threading
 import time
+import webbrowser
 from datetime import datetime, timezone
 from typing import Callable, List
 
+import LXMF
+import LXST
 import RNS
 import RNS.vendor.umsgpack as msgpack
-import LXMF
 from LXMF import LXMRouter
+from LXST import Telephone
 from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
-import asyncio
-import base64
-import webbrowser
-
 from peewee import SqliteDatabase
 from serial.tools import list_ports
 
 import database
 from src.backend.announce_handler import AnnounceHandler
 from src.backend.async_utils import AsyncUtils
+from src.backend.audio_call_manager import AudioCall, AudioCallManager
 from src.backend.colour_utils import ColourUtils
 from src.backend.interface_config_parser import InterfaceConfigParser
 from src.backend.interface_editor import InterfaceEditor
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
-from src.backend.audio_call_manager import AudioCall, AudioCallManager
 from src.backend.sideband_commands import SidebandCommands
 
 
@@ -151,6 +152,11 @@ class ReticulumMeshChat:
         self.audio_call_manager = AudioCallManager(identity=self.identity)
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
 
+        # init telephone
+        # todo check if user wants to enable telephone
+        self.telephone = None
+        self.init_telephone()
+
         # start background thread for auto announce loop
         thread = threading.Thread(target=asyncio.run, args=(self.announce_loop(),))
         thread.daemon = True
@@ -160,6 +166,34 @@ class ReticulumMeshChat:
         thread = threading.Thread(target=asyncio.run, args=(self.announce_sync_propagation_nodes(),))
         thread.daemon = True
         thread.start()
+
+    # init telephone
+    def init_telephone(self):
+        self.telephone = Telephone(identity=self.identity)
+        self.telephone.set_ringing_callback(self.on_telephone_ringing)
+        self.telephone.set_established_callback(self.on_telephone_call_established)
+        self.telephone.set_ended_callback(self.on_telephone_call_ended)
+
+    # handle receiving a new telephone call
+    def on_telephone_ringing(self, caller_identity: RNS.Identity):
+        print("on_telephone_ringing: {}".format(caller_identity.hash.hex()))
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
+            "type": "telephone_ringing",
+        })))
+
+    # handle telephone call established
+    def on_telephone_call_established(self, caller_identity: RNS.Identity):
+        print("on_telephone_call_established: {}".format(caller_identity.hash.hex()))
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
+            "type": "telephone_call_established",
+        })))
+
+    # handle telephone call ended
+    def on_telephone_call_ended(self, caller_identity: RNS.Identity):
+        print("on_telephone_ended: {}".format(caller_identity.hash.hex()))
+        AsyncUtils.run_async(self.websocket_broadcast(json.dumps({
+            "type": "telephone_call_ended",
+        })))
 
     # gets app version from package.json
     def get_app_version(self) -> str:
@@ -307,6 +341,122 @@ class ReticulumMeshChat:
         async def index(request):
             return web.json_response({
                 "status": "ok",
+            })
+
+        # serve telephone status
+        @routes.get("/api/v1/telephone/status")
+        async def index(request):
+
+            # make sure telephone is enabled
+            if self.telephone is None:
+                return web.json_response({
+                    "message": "Telephone is disabled",
+                }, status=503)
+
+            # get active call info
+            active_call = None
+            telephone_active_call = self.telephone.active_call
+            if telephone_active_call is not None:
+
+                # get remote identity hash
+                remote_identity_hash = None
+                remote_identity = telephone_active_call.get_remote_identity()
+                if remote_identity is not None:
+                    remote_identity_hash = remote_identity.hash.hex()
+
+                active_call = {
+                    "hash": telephone_active_call.hash.hex(),
+                    "status": self.telephone.call_status,
+                    "is_incoming": telephone_active_call.is_incoming,
+                    "is_outgoing": telephone_active_call.is_outgoing,
+                    "remote_identity_hash": remote_identity_hash,
+                }
+
+            return web.json_response({
+                "is_busy": self.telephone.busy,
+                "call_status": self.telephone.call_status,
+                "active_call": active_call,
+            })
+
+        # answer incoming telephone call
+        @routes.get("/api/v1/telephone/answer")
+        async def index(request):
+
+            # get incoming caller identity
+            caller_identity = self.telephone.active_call.get_remote_identity()
+
+            # answer call
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.answer, caller_identity))
+
+            return web.json_response({
+                "message": "Answering call...",
+            })
+
+        # hangup active telephone call
+        @routes.get("/api/v1/telephone/hangup")
+        async def index(request):
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.hangup))
+            return web.json_response({
+                "message": "Hanging up call...",
+            })
+
+        # initiate a telephone call
+        @routes.get("/api/v1/telephone/call/{identity_hash}")
+        async def index(request):
+
+            # get path params
+            identity_hash_hex = request.match_info.get("identity_hash", "")
+            timeout_seconds = int(request.query.get("timeout", 15))
+
+            # convert hash to bytes
+            identity_hash = bytes.fromhex(identity_hash_hex)
+
+            # find destination identity
+            destination_identity = RNS.Identity.recall(identity_hash, from_identity_hash=True)
+            if destination_identity is None:
+                # couldn't find as identity hash, try finding as destination hash
+                destination_identity = RNS.Identity.recall(identity_hash, from_identity_hash=False)
+
+            # ensure identity was found
+            if destination_identity is None:
+                return web.json_response({
+                    "message": "Call Failed: Destination identity not found.",
+                }, status=503)
+
+            # create telephony destination, only used to determine if we have a path
+            telephony_destination = RNS.Destination(
+                destination_identity,
+                RNS.Destination.OUT,
+                RNS.Destination.SINGLE,
+                LXST.APP_NAME,
+                LXST.Primitives.Telephony.PRIMITIVE_NAME
+            )
+            telephony_destination_hash = telephony_destination.hash
+
+            # determine when to timeout
+            timeout_after_seconds = time.time() + timeout_seconds
+
+            # check if we have a path to the destination
+            if not RNS.Transport.has_path(telephony_destination_hash):
+
+                # we don't have a path, so we need to request it
+                RNS.Transport.request_path(telephony_destination_hash)
+
+                # wait until we have a path, or give up after the configured timeout
+                while not RNS.Transport.has_path(telephony_destination_hash) and time.time() < timeout_after_seconds:
+                    await asyncio.sleep(0.1)
+
+            # if we still don't have a path, call will fail, so bail out
+            if not RNS.Transport.has_path(telephony_destination_hash):
+                return web.json_response({
+                    "message": "Call Failed: Could not find path to destination.",
+                }, status=503)
+
+            # initiate call
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.call, destination_identity, None))
+
+            return web.json_response({
+                "message": "Calling...",
             })
 
         # fetch com ports
@@ -2074,6 +2224,10 @@ class ReticulumMeshChat:
 
         # send announce for audio call
         self.audio_call_manager.announce(app_data=self.config.display_name.get().encode("utf-8"))
+
+        # send announce for telephone if enabled
+        if self.telephone is not None:
+            self.telephone.announce()
 
         # tell websocket clients we just announced
         await self.send_announced_to_websocket_clients()
