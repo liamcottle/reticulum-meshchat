@@ -263,21 +263,35 @@ dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outli
                             <div v-if="isShowingCallsSection" class="divide-y text-gray-900 border-t border-gray-300 dark:border-zinc-900">
                                 <div class="p-1 flex dark:border-zinc-900 dark:text-white">
                                     <div>
-                                        <div>Status</div>
+                                        <div>
+                                            <span v-if="activeCall && activeCall.is_incoming">Incoming Call</span>
+                                            <span v-else-if="activeCall && activeCall.is_outgoing">Outgoing Call</span>
+                                            <span v-else>Status</span>
+                                        </div>
                                         <div class="text-sm text-gray-700 dark:text-white">
-                                            <div v-if="activeCall">1 Active Call</div>
+                                            <div v-if="activeCall">
+                                                <span v-if="activeCall.is_incoming">
+                                                    <span v-if="activeCall.status === 5">Connecting...</span>
+                                                    <span v-else-if="activeCall.status === 6">Active</span>
+                                                    <span v-else>Ringing...</span>
+                                                </span>
+                                                <span v-if="activeCall.is_outgoing">
+                                                    <span v-if="activeCall.status === 5">Connecting...</span>
+                                                    <span v-else-if="activeCall.status === 6">Active</span>
+                                                    <span v-else>Calling...</span>
+                                                </span>
+                                            </div>
                                             <div v-else>Hung up, waiting for call...</div>
                                         </div>
                                     </div>
                                     <div v-if="activeCall" class="ml-auto my-auto mr-1 space-x-2">
 
-                                        <!-- view incoming calls -->
-                                        <a href="../call.html" target="_blank" title="View Incoming Call" class="my-auto inline-flex items-center gap-x-1 rounded-full bg-green-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                                                <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd" />
-                                                <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd" />
+                                        <!-- answer call -->
+                                        <button v-if="activeCall.is_incoming && activeCall.status === 4" title="Answer Call" @click="answerCall" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-full bg-green-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                                <path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clip-rule="evenodd" />
                                             </svg>
-                                        </a>
+                                        </button>
 
                                         <!-- hangup call -->
                                         <button title="Hangup Call" @click="hangupCall" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-full bg-red-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
@@ -533,6 +547,19 @@ export default {
 
             } catch(e) {
                 // do nothing on error
+            }
+        },
+        async answerCall() {
+            try {
+
+                // hangup call
+                await axios.get(`/api/v1/telephone/answer`);
+
+                // update ui
+                await this.getTelephoneStatus();
+
+            } catch(e) {
+                // ignore error answering call
             }
         },
         async hangupCall() {
