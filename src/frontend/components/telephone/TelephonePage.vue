@@ -71,7 +71,11 @@
                                 </div>
                             </div>
                             <div>
-                                <div>{{ activeCall.remote_identity_hash || "Unknown" }}</div>
+                                <div>
+                                    <span v-if="activeCall.remote_identity_name != null">{{ activeCall.remote_identity_name }}</span>
+                                    <span v-else-if="activeCall.remote_identity_hash != null">{{ Utils.formatDestinationHash(activeCall.remote_identity_hash) }}</span>
+                                    <span v-else>Unknown</span>
+                                </div>
                                 <div class="text-sm text-gray-500 dark:text-zinc-100">
                                     <span>
                                         <span v-if="activeCall.status === 0">Busy...</span>
@@ -80,7 +84,7 @@
                                         <span v-else-if="activeCall.status === 3">Available...</span>
                                         <span v-else-if="activeCall.status === 4">Ringing...</span>
                                         <span v-else-if="activeCall.status === 5">Connecting...</span>
-                                        <span v-else-if="activeCall.status === 6">Established...</span>
+                                        <span v-else-if="activeCall.status === 6">Connected</span>
                                         <span v-else>Status: {{ activeCall.status }}</span>
                                     </span>
                                 </div>
@@ -113,8 +117,15 @@
 </template>
 
 <script>
+import Utils from "../../js/Utils";
+
 export default {
     name: 'TelephonePage',
+    computed: {
+        Utils() {
+            return Utils;
+        }
+    },
     data() {
         return {
 

@@ -264,24 +264,18 @@ dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outli
                                 <div class="p-1 flex dark:border-zinc-900 dark:text-white">
                                     <div>
                                         <div>
-                                            <span v-if="activeCall && activeCall.is_incoming">Incoming Call</span>
-                                            <span v-else-if="activeCall && activeCall.is_outgoing">Outgoing Call</span>
+                                            <span v-if="activeCall && activeCall.status === 6">Active Call</span>
+                                            <span v-else-if="activeCall && activeCall.is_incoming">Incoming Call {{ activeCall.status }}</span>
+                                            <span v-else-if="activeCall && activeCall.is_outgoing">Outgoing Call {{ activeCall.status }}</span>
+                                            <span v-else-if="activeCall">Status {{ activeCall.status }}</span>
                                             <span v-else>Status</span>
                                         </div>
                                         <div class="text-sm text-gray-700 dark:text-white">
                                             <div v-if="activeCall">
-                                                <span v-if="activeCall.is_incoming">
-                                                    <span v-if="activeCall.status === 5">Connecting...</span>
-                                                    <span v-else-if="activeCall.status === 6">Active</span>
-                                                    <span v-else>
-                                                        <span v-if="activeCall.remote_identity_hash">{{ Utils.formatDestinationHash(activeCall.remote_identity_hash) }}</span>
-                                                        <span v-else>Ringing...</span>
-                                                    </span>
-                                                </span>
-                                                <span v-if="activeCall.is_outgoing">
-                                                    <span v-if="activeCall.status === 5">Connecting...</span>
-                                                    <span v-else-if="activeCall.status === 6">Active</span>
-                                                    <span v-else>Calling...</span>
+                                                <span>
+                                                    <span v-if="activeCall.remote_identity_name != null">{{ activeCall.remote_identity_name }}</span>
+                                                    <span v-else-if="activeCall.remote_identity_hash != null">{{ Utils.formatDestinationHash(activeCall.remote_identity_hash) }}</span>
+                                                    <span v-else>Unknown Caller</span>
                                                 </span>
                                             </div>
                                             <div v-else>Hung up, waiting for call...</div>

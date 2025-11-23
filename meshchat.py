@@ -360,9 +360,11 @@ class ReticulumMeshChat:
 
                 # get remote identity hash
                 remote_identity_hash = None
+                remote_identity_name = None
                 remote_identity = telephone_active_call.get_remote_identity()
                 if remote_identity is not None:
                     remote_identity_hash = remote_identity.hash.hex()
+                    remote_identity_name = self.get_name_for_identity_hash(remote_identity_hash)
 
                 active_call = {
                     "hash": telephone_active_call.hash.hex(),
@@ -370,6 +372,7 @@ class ReticulumMeshChat:
                     "is_incoming": telephone_active_call.is_incoming,
                     "is_outgoing": telephone_active_call.is_outgoing,
                     "remote_identity_hash": remote_identity_hash,
+                    "remote_identity_name": remote_identity_name,
                 }
 
             return web.json_response({
@@ -3338,6 +3341,30 @@ class ReticulumMeshChat:
             "announce": self.convert_db_announce_to_dict(announce),
         })))
 
+    # try and get a name for the provided identity hash
+    def get_name_for_identity_hash(self, identity_hash: str):
+
+        # recall identity
+        identity = RNS.Identity.recall(bytes.fromhex(identity_hash), from_identity_hash=True)
+        if identity is None:
+            return None
+
+        # get lxmf.delivery destination hash
+        lxmf_destination_hash = RNS.Destination.hash(identity, "lxmf", "delivery").hex()
+
+        # use custom name if available
+        custom_name = self.get_custom_destination_display_name(lxmf_destination_hash)
+        if custom_name is not None:
+            return custom_name
+
+        # use lxmf name if available
+        lxmf_name = self.get_lxmf_conversation_name(lxmf_destination_hash, default_name=None)
+        if lxmf_name is not None:
+            return lxmf_name
+
+        # couldn't find a name for this identity
+        return None
+
     # gets the custom display name a user has set for the provided destination hash
     def get_custom_destination_display_name(self, destination_hash: str):
 
@@ -3351,7 +3378,7 @@ class ReticulumMeshChat:
     # get name to show for an lxmf conversation
     # currently, this will use the app data from the most recent announce
     # TODO: we should fetch this from our contacts database, when it gets implemented, and if not found, fallback to app data
-    def get_lxmf_conversation_name(self, destination_hash):
+    def get_lxmf_conversation_name(self, destination_hash, default_name:str|None="Anonymous Peer"):
 
         # get lxmf.delivery announce from database for the provided destination hash
         lxmf_announce = (database.Announce.select()
@@ -3365,7 +3392,7 @@ class ReticulumMeshChat:
             return self.parse_lxmf_display_name(app_data_base64=lxmf_announce.app_data)
 
         # announce did not have app data, so provide a fallback name
-        return "Anonymous Peer"
+        return default_name
 
     # reads the lxmf display name from the provided base64 app data
     def parse_lxmf_display_name(self, app_data_base64: str, default_value: str | None = "Anonymous Peer"):
