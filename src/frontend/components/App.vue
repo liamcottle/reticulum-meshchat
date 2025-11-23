@@ -273,7 +273,10 @@ dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outli
                                                 <span v-if="activeCall.is_incoming">
                                                     <span v-if="activeCall.status === 5">Connecting...</span>
                                                     <span v-else-if="activeCall.status === 6">Active</span>
-                                                    <span v-else>Ringing...</span>
+                                                    <span v-else>
+                                                        <span v-if="activeCall.remote_identity_hash">{{ Utils.formatDestinationHash(activeCall.remote_identity_hash) }}</span>
+                                                        <span v-else>Ringing...</span>
+                                                    </span>
                                                 </span>
                                                 <span v-if="activeCall.is_outgoing">
                                                     <span v-if="activeCall.status === 5">Connecting...</span>
@@ -586,6 +589,9 @@ export default {
         },
     },
     computed: {
+        Utils() {
+            return Utils;
+        },
         unreadConversationsCount() {
             return GlobalState.unreadConversationsCount;
         },
