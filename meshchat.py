@@ -20,6 +20,7 @@ import RNS
 import RNS.vendor.umsgpack as msgpack
 from LXMF import LXMRouter
 from LXST import Telephone
+from LXST.Primitives.Telephony import Profiles
 from aiohttp import web, WSMessage, WSMsgType, WSCloseCode
 from peewee import SqliteDatabase
 from serial.tools import list_ports
@@ -412,6 +413,7 @@ class ReticulumMeshChat:
             timeout_seconds = int(request.query.get("timeout", 15))
             input_device_name = request.query.get("input_device_name", None)
             output_device_name = request.query.get("output_device_name", None)
+            audio_profile_id = int(request.query.get("audio_profile_id", None))
 
             # convert hash to bytes
             identity_hash = bytes.fromhex(identity_hash_hex)
@@ -462,7 +464,7 @@ class ReticulumMeshChat:
             self.telephone.set_speaker(output_device_name)
 
             # initiate call
-            AsyncUtils.run_async(asyncio.to_thread(self.telephone.call, destination_identity, None))
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.call, destination_identity, audio_profile_id))
 
             return web.json_response({
                 "message": "Calling...",
@@ -497,6 +499,23 @@ class ReticulumMeshChat:
                 "default_output_device": default_output_device,
                 "input_devices": input_devices,
                 "output_devices": output_devices,
+            })
+
+        # serve list of available audio profiles
+        @routes.get("/api/v1/telephone/audio-profiles")
+        async def index(request):
+
+            # get audio profiles
+            audio_profiles = []
+            for available_profile in Profiles.available_profiles():
+                audio_profiles.append({
+                    "id": available_profile,
+                    "name": Profiles.profile_name(available_profile)
+                })
+
+            return web.json_response({
+                "default_audio_profile_id": Profiles.DEFAULT_PROFILE,
+                "audio_profiles": audio_profiles,
             })
 
         # fetch com ports
