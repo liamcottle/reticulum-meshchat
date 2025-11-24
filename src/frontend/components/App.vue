@@ -265,9 +265,8 @@ dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outli
                                     <div>
                                         <div>
                                             <span v-if="activeCall && activeCall.status === 6">Active Call</span>
-                                            <span v-else-if="activeCall && activeCall.is_incoming">Incoming Call {{ activeCall.status }}</span>
-                                            <span v-else-if="activeCall && activeCall.is_outgoing">Outgoing Call {{ activeCall.status }}</span>
-                                            <span v-else-if="activeCall">Status {{ activeCall.status }}</span>
+                                            <span v-else-if="activeCall && activeCall.is_incoming">Incoming Call</span>
+                                            <span v-else-if="activeCall && activeCall.is_outgoing">Outgoing Call</span>
                                             <span v-else>Status</span>
                                         </div>
                                         <div class="text-sm text-gray-700 dark:text-white">
