@@ -153,10 +153,10 @@ class ReticulumMeshChat:
         self.audio_call_manager = AudioCallManager(identity=self.identity)
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
 
-        # init telephone
-        # todo check if user wants to enable telephone
+        # init telephone if enabled
         self.telephone = None
-        self.init_telephone()
+        if self.config.telephone_enabled.get():
+            self.init_telephone()
 
         # start background thread for auto announce loop
         thread = threading.Thread(target=asyncio.run, args=(self.announce_loop(),))
@@ -174,6 +174,32 @@ class ReticulumMeshChat:
         self.telephone.set_ringing_callback(self.on_telephone_ringing)
         self.telephone.set_established_callback(self.on_telephone_call_established)
         self.telephone.set_ended_callback(self.on_telephone_call_ended)
+
+    # enable telephone
+    def enable_telephone(self):
+
+        # mark as enabled in config
+        self.config.telephone_enabled.set(True)
+
+        # do nothing if already enabled
+        if self.telephone is not None:
+            return
+
+        # start instance
+        self.init_telephone()
+
+    # disable telephone
+    def disable_telephone(self):
+
+        # teardown telephone instance
+        if self.telephone is not None:
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.teardown))
+
+        # mark as disabled in config
+        self.config.telephone_enabled.set(False)
+
+        # clear instance
+        self.telephone = None
 
     # handle receiving a new telephone call
     def on_telephone_ringing(self, caller_identity: RNS.Identity):
@@ -344,6 +370,22 @@ class ReticulumMeshChat:
                 "status": "ok",
             })
 
+        # enable telephone
+        @routes.get("/api/v1/telephone/enable")
+        async def index(request):
+            self.enable_telephone()
+            return web.json_response({
+                "message": "Telephone has been enabled.",
+            })
+
+        # disable telephone
+        @routes.get("/api/v1/telephone/disable")
+        async def index(request):
+            self.disable_telephone()
+            return web.json_response({
+                "message": "Telephone has been disabled.",
+            })
+
         # serve telephone status
         @routes.get("/api/v1/telephone/status")
         async def index(request):
@@ -351,8 +393,9 @@ class ReticulumMeshChat:
             # make sure telephone is enabled
             if self.telephone is None:
                 return web.json_response({
+                    "enabled": False,
                     "message": "Telephone is disabled",
-                }, status=503)
+                })
 
             # get active call info
             active_call = None
@@ -381,6 +424,7 @@ class ReticulumMeshChat:
                 }
 
             return web.json_response({
+                "enabled": True,
                 "is_busy": self.telephone.busy,
                 "call_status": self.telephone.call_status,
                 "active_call": active_call,
@@ -411,6 +455,12 @@ class ReticulumMeshChat:
         # initiate a telephone call
         @routes.get("/api/v1/telephone/call/{identity_hash}")
         async def index(request):
+
+            # make sure telephone enabled
+            if self.telephone is None:
+                return web.json_response({
+                    "message": "Telephone has been disabled.",
+                }, status=503)
 
             # get path params
             identity_hash_hex = request.match_info.get("identity_hash", "")
@@ -3653,6 +3703,7 @@ class Config:
     lxmf_user_icon_name = StringConfig("lxmf_user_icon_name", None)
     lxmf_user_icon_foreground_colour = StringConfig("lxmf_user_icon_foreground_colour", None)
     lxmf_user_icon_background_colour = StringConfig("lxmf_user_icon_background_colour", None)
+    telephone_enabled = BoolConfig("telephone_enabled", True)
 
 # FIXME: we should probably set this as an instance variable of ReticulumMeshChat so it has a proper home, and pass it in to the constructor?
 nomadnet_cached_links = {}
