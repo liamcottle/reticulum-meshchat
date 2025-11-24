@@ -139,12 +139,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex p-1 dark:bg-zinc-700 dark:border-zinc-600">
-                        <div>
+                    <div class="flex space-x-2 p-2 dark:bg-zinc-700 dark:border-zinc-600">
+                        <div class="my-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
+                            </svg>
+                        </div>
+                        <div class="w-full">
                             <div class='dark:text-white'>My Identity Hash</div>
                             <div class="text-sm text-gray-700 dark:text-zinc-100">{{ myIdentityHash || "Unknown" }}</div>
                         </div>
-                        <div class="ml-auto my-auto mr-1">
+                        <div class="my-auto mr-1">
                             <a @click="announce" href="javascript:void(0)" class="rounded-full">
                                 <div class="flex text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full">
                                     <div>
