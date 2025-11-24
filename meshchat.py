@@ -410,6 +410,8 @@ class ReticulumMeshChat:
             # get path params
             identity_hash_hex = request.match_info.get("identity_hash", "")
             timeout_seconds = int(request.query.get("timeout", 15))
+            input_device_name = request.query.get("input_device_name", None)
+            output_device_name = request.query.get("output_device_name", None)
 
             # convert hash to bytes
             identity_hash = bytes.fromhex(identity_hash_hex)
@@ -455,11 +457,46 @@ class ReticulumMeshChat:
                     "message": "Call Failed: Could not find path to destination.",
                 }, status=503)
 
+            # set audio devices
+            self.telephone.set_microphone(input_device_name)
+            self.telephone.set_speaker(output_device_name)
+
             # initiate call
             AsyncUtils.run_async(asyncio.to_thread(self.telephone.call, destination_identity, None))
 
             return web.json_response({
                 "message": "Calling...",
+            })
+
+        # serve list of available input/output devices
+        @routes.get("/api/v1/telephone/audio-devices")
+        async def index(request):
+
+            # get default input device
+            default_input_device = LXST.Sources.Backend().soundcard.default_microphone()
+            if default_input_device is not None:
+                default_input_device = default_input_device.name
+
+            # get default output device
+            default_output_device = LXST.Sources.Backend().soundcard.default_speaker()
+            if default_output_device is not None:
+                default_output_device = default_output_device.name
+
+            # get input devices
+            input_devices = []
+            for input_device in LXST.Sources.Backend().soundcard.all_microphones():
+                input_devices.append(input_device.name)
+
+            # get output devices
+            output_devices = []
+            for output_device in LXST.Sources.Backend().soundcard.all_speakers():
+                output_devices.append(output_device.name)
+
+            return web.json_response({
+                "default_input_device": default_input_device,
+                "default_output_device": default_output_device,
+                "input_devices": input_devices,
+                "output_devices": output_devices,
             })
 
         # fetch com ports

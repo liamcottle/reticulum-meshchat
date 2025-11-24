@@ -85,15 +85,46 @@
                         <div class="my-auto">Telephone</div>
                     </div>
                     <div class="flex border-b border-gray-300 text-gray-900 p-2 space-x-2 dark:bg-zinc-700 dark:text-zinc-100 dark:border-zinc-600">
+                        <div class="my-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5" />
+                            </svg>
+                        </div>
                         <div class="flex-1">
                             <input v-model="destinationHash" type="text" placeholder="Enter Destination Hash" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100">
                         </div>
                         <button @click="initiateCall(destinationHash)" :disabled="isInitiatingCall" type="button" :class="[ isInitiatingCall ? 'bg-gray-400 focus-visible:outline-gray-500' : 'bg-green-500 hover:bg-green-400 focus-visible:outline-green-500' ]" class="my-auto inline-flex items-center gap-x-1 rounded-md p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                        <span v-if="isInitiatingCall">
-                            <span>Calling...</span>
-                        </span>
+                            <span v-if="isInitiatingCall">
+                                <span>Calling...</span>
+                            </span>
                             <span v-else>Initiate Call</span>
                         </button>
+                    </div>
+                    <div class="border-b border-gray-300 text-gray-900 p-2 space-y-2 dark:bg-zinc-700 dark:text-zinc-100 dark:border-zinc-600">
+                        <div class="flex space-x-2">
+                            <div class="my-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                                </svg>
+                            </div>
+                            <div class="w-full">
+                                <select v-model="selectedInputDevice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                                    <option v-for="inputDevice in inputDevices" :value="inputDevice">{{ inputDevice }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <div class="my-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                                </svg>
+                            </div>
+                            <div class="w-full">
+                                <select v-model="selectedOutputDevice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                                    <option v-for="outputDevice in outputDevices" :value="outputDevice">{{ outputDevice }}</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex p-1 dark:bg-zinc-700 dark:border-zinc-600">
                         <div>
@@ -208,12 +239,19 @@ export default {
             destinationHash: null,
             isInitiatingCall: false,
 
+            selectedInputDevice: null,
+            selectedOutputDevice: null,
+
+            inputDevices: [],
+            outputDevices: [],
+
         };
     },
     mounted: function() {
 
         // update config
         this.getConfig();
+        this.getAudioDevices();
         this.getTelephoneStatus();
 
         // update telephone status every second
@@ -246,6 +284,18 @@ export default {
                 return;
             }
 
+            // make sure input device provided
+            if(!this.selectedInputDevice) {
+                alert("Please select input microphone.");
+                return;
+            }
+
+            // make sure output device provided
+            if(!this.selectedOutputDevice) {
+                alert("Please select output speakers.");
+                return;
+            }
+
             // show loading
             this.isInitiatingCall = true;
 
@@ -255,6 +305,8 @@ export default {
                 await axios.get(`/api/v1/telephone/call/${destinationHash}`, {
                     params: {
                         timeout: 15, // how long to attempt to initiate call
+                        input_device_name: this.selectedInputDevice,
+                        output_device_name: this.selectedOutputDevice,
                     },
                 });
 
@@ -312,6 +364,23 @@ export default {
                 // update ui
                 this.config = response.data.config;
                 this.myIdentityHash = response.data.config.identity_hash;
+
+            } catch(e) {
+                // do nothing on error
+                console.error(e);
+            }
+        },
+        async getAudioDevices() {
+            try {
+
+                // fetch audio devices
+                const response = await axios.get("/api/v1/telephone/audio-devices");
+
+                // update ui
+                this.selectedInputDevice = response.data.default_input_device;
+                this.selectedOutputDevice = response.data.default_output_device;
+                this.inputDevices = response.data.input_devices;
+                this.outputDevices = response.data.output_devices;
 
             } catch(e) {
                 // do nothing on error
