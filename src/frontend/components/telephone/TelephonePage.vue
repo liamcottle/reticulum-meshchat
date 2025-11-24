@@ -2,7 +2,77 @@
     <div class="flex w-full h-full bg-gray-100 dark:bg-zinc-950" :class="{'dark': config?.theme === 'dark'}">
         <div class="mx-auto my-auto w-full max-w-xl p-4">
 
-            <div class="w-full space-y-2">
+            <div v-if="activeCall" class="flex">
+                <div class="mx-auto my-auto">
+
+                    <div class="text-center">
+                        <div>
+
+                            <!-- icon -->
+                            <div class="flex mb-4">
+                                <div class="mx-auto bg-gray-300 dark:bg-zinc-700 text-gray-500 dark:text-gray-400 p-4 rounded-full">
+                                    <MaterialDesignIcon icon-name="account" class="size-12"/>
+                                </div>
+                            </div>
+
+                            <!-- name -->
+                            <div class="text-xl text-semibold">
+                                <span v-if="activeCall.remote_identity_name != null">{{ activeCall.remote_identity_name }}</span>
+                                <span v-else>Unknown</span>
+                            </div>
+
+                            <!-- identity hash -->
+                            <div v-if="activeCall.remote_identity_hash != null" class="text-gray-500 dark:text-zinc-100">
+                                {{ Utils.formatDestinationHash(activeCall.remote_identity_hash) }}
+                            </div>
+
+                        </div>
+
+                        <!-- call status -->
+                        <div class="text-gray-500 dark:text-zinc-100 mb-4">
+                            <span v-if="activeCall.is_incoming && activeCall.status === 4">Incoming Call</span>
+                            <span v-else>
+                                <span v-if="activeCall.status === 0">Busy...</span>
+                                <span v-else-if="activeCall.status === 1">Rejected...</span>
+                                <span v-else-if="activeCall.status === 2">Calling...</span>
+                                <span v-else-if="activeCall.status === 3">Available...</span>
+                                <span v-else-if="activeCall.status === 4">Ringing...</span>
+                                <span v-else-if="activeCall.status === 5">Connecting...</span>
+                                <span v-else-if="activeCall.status === 6">Connected</span>
+                                <span v-else>Status: {{ activeCall.status }}</span>
+                            </span>
+                        </div>
+
+                        <!-- actions -->
+                        <div class="mx-auto space-x-2">
+
+                            <!-- hangup call -->
+                            <button title="Hangup Call" @click="hangupCall" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-red-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 rotate-[135deg] translate-y-0.5">
+                                    <path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="ml-1">
+                                    <span v-if="activeCall.is_incoming && activeCall.status === 4">Decline</span>
+                                    <span v-else>Hang Up</span>
+                                </span>
+                            </button>
+
+                            <!-- answer call -->
+                            <button v-if="activeCall.is_incoming && activeCall.status === 4" title="Answer Call" @click="answerCall" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-green-500 p-2 text-sm font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="ml-1">Accept</span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div v-else class="w-full space-y-2">
 
                 <!-- dialer -->
                 <div class="border rounded-xl bg-white shadow w-full overflow-hidden dark:border-zinc-900">
@@ -118,9 +188,11 @@
 
 <script>
 import Utils from "../../js/Utils";
+import MaterialDesignIcon from "../MaterialDesignIcon.vue";
 
 export default {
     name: 'TelephonePage',
+    components: {MaterialDesignIcon},
     computed: {
         Utils() {
             return Utils;
