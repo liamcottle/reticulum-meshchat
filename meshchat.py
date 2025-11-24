@@ -374,6 +374,10 @@ class ReticulumMeshChat:
                     "is_outgoing": telephone_active_call.is_outgoing,
                     "remote_identity_hash": remote_identity_hash,
                     "remote_identity_name": remote_identity_name,
+                    "tx_packets": telephone_active_call.tx,
+                    "rx_packets": telephone_active_call.rx,
+                    "tx_bytes": telephone_active_call.txbytes,
+                    "rx_bytes": telephone_active_call.rxbytes,
                 }
 
             return web.json_response({
