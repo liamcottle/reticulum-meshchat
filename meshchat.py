@@ -410,16 +410,6 @@ class ReticulumMeshChat:
                     remote_identity_hash = remote_identity.hash.hex()
                     remote_identity_name = self.get_name_for_identity_hash(remote_identity_hash)
 
-                # check if receive is muted
-                is_receive_muted = False
-                if self.telephone.receive_mixer is not None:
-                    is_receive_muted = self.telephone.receive_mixer.muted
-
-                # check if transmit is muted
-                is_transmit_muted = False
-                if self.telephone.transmit_mixer is not None:
-                    is_transmit_muted = self.telephone.transmit_mixer.muted
-
                 active_call = {
                     "hash": telephone_active_call.hash.hex(),
                     "status": self.telephone.call_status,
@@ -428,8 +418,8 @@ class ReticulumMeshChat:
                     "remote_identity_hash": remote_identity_hash,
                     "remote_identity_name": remote_identity_name,
                     "audio_profile_id": self.telephone.active_profile,
-                    "is_receive_muted": is_receive_muted,
-                    "is_transmit_muted": is_transmit_muted,
+                    "is_receive_muted": self.telephone.receive_muted,
+                    "is_transmit_muted": self.telephone.transmit_muted,
                     "tx_packets": telephone_active_call.tx,
                     "rx_packets": telephone_active_call.rx,
                     "tx_bytes": telephone_active_call.txbytes,
