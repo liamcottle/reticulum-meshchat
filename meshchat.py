@@ -578,12 +578,12 @@ class ReticulumMeshChat:
         async def index(request):
 
             # get default input device
-            default_input_device = LXST.Sources.Backend().soundcard.default_microphone()
+            default_input_device = self.telephone.default_input()
             if default_input_device is not None:
                 default_input_device = default_input_device.name
 
             # get default output device
-            default_output_device = LXST.Sources.Backend().soundcard.default_speaker()
+            default_output_device = self.telephone.default_output()
             if default_output_device is not None:
                 default_output_device = default_output_device.name
 
