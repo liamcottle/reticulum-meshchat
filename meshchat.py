@@ -410,6 +410,16 @@ class ReticulumMeshChat:
                     remote_identity_hash = remote_identity.hash.hex()
                     remote_identity_name = self.get_name_for_identity_hash(remote_identity_hash)
 
+                # check if receive is muted
+                is_receive_muted = False
+                if self.telephone.receive_mixer is not None:
+                    is_receive_muted = self.telephone.receive_mixer.muted
+
+                # check if transmit is muted
+                is_transmit_muted = False
+                if self.telephone.transmit_mixer is not None:
+                    is_transmit_muted = self.telephone.transmit_mixer.muted
+
                 active_call = {
                     "hash": telephone_active_call.hash.hex(),
                     "status": self.telephone.call_status,
@@ -417,6 +427,8 @@ class ReticulumMeshChat:
                     "is_outgoing": telephone_active_call.is_outgoing,
                     "remote_identity_hash": remote_identity_hash,
                     "remote_identity_name": remote_identity_name,
+                    "is_receive_muted": is_receive_muted,
+                    "is_transmit_muted": is_transmit_muted,
                     "tx_packets": telephone_active_call.tx,
                     "rx_packets": telephone_active_call.rx,
                     "tx_bytes": telephone_active_call.txbytes,
@@ -450,6 +462,38 @@ class ReticulumMeshChat:
             AsyncUtils.run_async(asyncio.to_thread(self.telephone.hangup))
             return web.json_response({
                 "message": "Hanging up call...",
+            })
+
+        # mute received audio
+        @routes.get("/api/v1/telephone/mute-receive")
+        async def index(request):
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.mute_receive, True))
+            return web.json_response({
+                "message": "ok",
+            })
+
+        # unmute received audio
+        @routes.get("/api/v1/telephone/unmute-receive")
+        async def index(request):
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.mute_receive, False))
+            return web.json_response({
+                "message": "ok",
+            })
+
+        # mute transmit audio
+        @routes.get("/api/v1/telephone/mute-transmit")
+        async def index(request):
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.mute_transmit, True))
+            return web.json_response({
+                "message": "ok",
+            })
+
+        # unmute transmit audio
+        @routes.get("/api/v1/telephone/unmute-transmit")
+        async def index(request):
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.mute_transmit, False))
+            return web.json_response({
+                "message": "ok",
             })
 
         # initiate a telephone call
