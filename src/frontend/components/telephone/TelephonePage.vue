@@ -3,7 +3,7 @@
         <div class="mx-auto my-auto w-full max-w-xl p-4">
 
             <div v-if="activeCall" class="flex">
-                <div class="mx-auto my-auto">
+                <div class="mx-auto my-auto min-w-64">
 
                     <div class="text-center">
                         <div>
@@ -76,6 +76,13 @@
                                 </svg>
                             </button>
 
+                            <!-- toggle stats -->
+                            <button @click="isShowingStats = !isShowingStats" type="button" :class="[ isShowingStats ? 'bg-green-500 hover:bg-green-400 focus-visible:outline-green-500' : 'bg-gray-500 hover:bg-gray-400 focus-visible:outline-gray-500' ]" class="my-auto inline-flex items-center gap-x-1 rounded-full p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
                         </div>
 
                         <!-- actions -->
@@ -100,6 +107,12 @@
                                 </span>
                             </button>
 
+                        </div>
+
+                        <!-- stats -->
+                        <div v-if="isShowingStats" class="mx-auto text-sm font-mono text-gray-400 mt-4">
+                            <div>TX: {{ formatBytes(activeCall.tx_bytes) }} ({{ activeCall.tx_packets }} packets)</div>
+                            <div>RX: {{ formatBytes(activeCall.rx_bytes) }} ({{ activeCall.rx_packets }} packets)</div>
                         </div>
 
                     </div>
@@ -290,6 +303,7 @@ export default {
             activeCall: null,
             isMicMuted: false,
             isSpeakerMuted: false,
+            isShowingStats: false,
 
             destinationHash: null,
             isInitiatingCall: false,
@@ -550,6 +564,9 @@ export default {
             } catch(e) {
                 console.log(e);
             }
+        },
+        formatBytes: function(bytes) {
+            return Utils.formatBytes(bytes);
         },
     },
 }
