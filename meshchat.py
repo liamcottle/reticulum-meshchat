@@ -584,12 +584,12 @@ class ReticulumMeshChat:
 
             # get input devices
             input_devices = []
-            for input_device in LXST.Sources.Backend().soundcard.all_microphones():
+            for input_device in self.telephone.available_inputs():
                 input_devices.append(input_device.name)
 
             # get output devices
             output_devices = []
-            for output_device in LXST.Sources.Backend().soundcard.all_speakers():
+            for output_device in self.telephone.available_outputs():
                 output_devices.append(output_device.name)
 
             return web.json_response({
