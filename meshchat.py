@@ -18,6 +18,7 @@ import LXMF
 import LXST
 import RNS
 import RNS.vendor.umsgpack as msgpack
+import numpy
 from LXMF import LXMRouter
 from LXST import Telephone
 from LXST.Primitives.Telephony import Profiles
@@ -34,6 +35,10 @@ from src.backend.interface_config_parser import InterfaceConfigParser
 from src.backend.interface_editor import InterfaceEditor
 from src.backend.lxmf_message_fields import LxmfImageField, LxmfFileAttachmentsField, LxmfFileAttachment, LxmfAudioField
 from src.backend.sideband_commands import SidebandCommands
+
+# hack to avoid below error on windows from soundcard/mediafoundation.py in self._record_chunk()
+# ValueError: The binary mode of fromstring is removed, use frombuffer instead
+numpy.fromstring = numpy.frombuffer
 
 
 # NOTE: this is required to be able to pack our app with cxfreeze as an exe, otherwise it can't access bundled assets
