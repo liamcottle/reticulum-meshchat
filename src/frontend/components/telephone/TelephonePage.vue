@@ -43,6 +43,32 @@
                             </span>
                         </div>
 
+                        <!-- controls during connected call -->
+                        <div v-if="activeCall.status === 6" class="mx-auto space-x-2 mb-4">
+
+                            <!-- mute/unmute mic -->
+                            <button @click="toggleMicrophone" type="button" :class="[ isMicMuted ? 'bg-red-500 hover:bg-red-400 focus-visible:outline-red-500' : 'bg-gray-500 hover:bg-gray-400 focus-visible:outline-gray-500' ]" class="my-auto inline-flex items-center gap-x-1 rounded-full p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                                <svg v-if="isMicMuted" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" class="w-6 h-6">
+                                    <path d="M213.38,229.92a8,8,0,0,1-11.3-.54l-30.92-34A78.83,78.83,0,0,1,136,207.59V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64.07,64.07,0,0,0,64,64,63.41,63.41,0,0,0,32.21-8.68l-11.1-12.2A48,48,0,0,1,80,128V95.09L42.08,53.38A8,8,0,0,1,53.92,42.62l160,176A8,8,0,0,1,213.38,229.92Zm-24.19-63.13a7.88,7.88,0,0,0,3.51.82,8,8,0,0,0,7.19-4.49A79.16,79.16,0,0,0,208,128a8,8,0,0,0-16,0,63.32,63.32,0,0,1-6.48,28.09A8,8,0,0,0,189.19,166.79Zm-27.33-29.22A8,8,0,0,0,175.74,133a49.49,49.49,0,0,0,.26-5V64A48,48,0,0,0,84,44.87a8,8,0,0,0,1.41,8.57Z"></path>
+                                </svg>
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" class="w-6 h-6">
+                                    <path d="M80,128V64a48,48,0,0,1,96,0v64a48,48,0,0,1-96,0Zm128,0a8,8,0,0,0-16,0,64,64,0,0,1-128,0,8,8,0,0,0-16,0,80.11,80.11,0,0,0,72,79.6V240a8,8,0,0,0,16,0V207.6A80.11,80.11,0,0,0,208,128Z"></path>
+                                </svg>
+                            </button>
+
+                            <!-- mute/unmute speaker -->
+                            <button @click="toggleSpeaker" type="button" :class="[ isSpeakerMuted ? 'bg-red-500 hover:bg-red-400 focus-visible:outline-red-500' : 'bg-gray-500 hover:bg-gray-400 focus-visible:outline-gray-500' ]" class="my-auto inline-flex items-center gap-x-1 rounded-full p-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                                <svg v-if="isSpeakerMuted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                    <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 0 0 1.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06ZM17.78 9.22a.75.75 0 1 0-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 1 0 1.06-1.06L20.56 12l1.72-1.72a.75.75 0 1 0-1.06-1.06l-1.72 1.72-1.72-1.72Z" />
+                                </svg>
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                    <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 0 0 1.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06ZM18.584 5.106a.75.75 0 0 1 1.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 0 1-1.06-1.06 8.25 8.25 0 0 0 0-11.668.75.75 0 0 1 0-1.06Z" />
+                                    <path d="M15.932 7.757a.75.75 0 0 1 1.061 0 6 6 0 0 1 0 8.486.75.75 0 0 1-1.06-1.061 4.5 4.5 0 0 0 0-6.364.75.75 0 0 1 0-1.06Z" />
+                                </svg>
+                            </button>
+
+                        </div>
+
                         <!-- actions -->
                         <div class="mx-auto space-x-2">
 
@@ -253,6 +279,8 @@ export default {
             config: null,
             myIdentityHash: null,
             activeCall: null,
+            isMicMuted: false,
+            isSpeakerMuted: false,
 
             destinationHash: null,
             isInitiatingCall: false,
@@ -438,6 +466,8 @@ export default {
 
                 // update ui
                 this.activeCall = response.data.active_call;
+                this.isMicMuted = response.data.active_call?.is_transmit_muted ?? false;
+                this.isSpeakerMuted = response.data.active_call?.is_receive_muted ?? false;
 
             } catch(e) {
                 // do nothing on error
@@ -449,6 +479,52 @@ export default {
                 await window.axios.get(`/api/v1/announce`);
             } catch(e) {
                 alert("failed to announce");
+                console.log(e);
+            }
+        },
+        async toggleMicrophone() {
+            if(this.isMicMuted){
+                this.unmuteMicrophone();
+            } else {
+                this.muteMicrophone();
+            }
+        },
+        async muteMicrophone() {
+            try {
+                await window.axios.get(`/api/v1/telephone/mute-transmit`);
+                await this.getTelephoneStatus();
+            } catch(e) {
+                console.log(e);
+            }
+        },
+        async unmuteMicrophone() {
+            try {
+                await window.axios.get(`/api/v1/telephone/unmute-transmit`);
+                await this.getTelephoneStatus();
+            } catch(e) {
+                console.log(e);
+            }
+        },
+        async toggleSpeaker() {
+            if(this.isSpeakerMuted){
+                this.unmuteSpeaker();
+            } else {
+                this.muteSpeaker();
+            }
+        },
+        async muteSpeaker() {
+            try {
+                await window.axios.get(`/api/v1/telephone/mute-receive`);
+                await this.getTelephoneStatus();
+            } catch(e) {
+                console.log(e);
+            }
+        },
+        async unmuteSpeaker() {
+            try {
+                await window.axios.get(`/api/v1/telephone/unmute-receive`);
+                await this.getTelephoneStatus();
+            } catch(e) {
                 console.log(e);
             }
         },
