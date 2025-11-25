@@ -109,8 +109,8 @@
 
                         </div>
 
-                        <!-- stats -->
-                        <div v-if="isShowingStats" class="mx-auto text-sm font-mono text-gray-400 mt-4">
+                        <!-- stats during connected call -->
+                        <div v-if="activeCall.status === 6 && isShowingStats" class="mx-auto text-sm font-mono text-gray-400 mt-4">
                             <div>TX: {{ formatBytes(activeCall.tx_bytes) }} ({{ activeCall.tx_packets }} packets)</div>
                             <div>RX: {{ formatBytes(activeCall.rx_bytes) }} ({{ activeCall.rx_packets }} packets)</div>
                         </div>
