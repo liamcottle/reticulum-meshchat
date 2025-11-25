@@ -176,6 +176,7 @@ class ReticulumMeshChat:
     # init telephone
     def init_telephone(self):
         self.telephone = Telephone(identity=self.identity)
+        self.telephone.set_busy_tone_time(0) # disable busy tone played on caller side when remote side rejects, or doesn't answer
         self.telephone.set_ringing_callback(self.on_telephone_ringing)
         self.telephone.set_established_callback(self.on_telephone_call_established)
         self.telephone.set_ended_callback(self.on_telephone_call_ended)
