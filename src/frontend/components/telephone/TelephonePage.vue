@@ -43,6 +43,15 @@
                             </span>
                         </div>
 
+                        <!-- settings during connected call -->
+                        <div v-if="activeCall.status === 6" class="mb-4">
+                            <div class="w-full">
+                                <select v-model="selectedAudioProfileId" @change="switchAudioProfile(selectedAudioProfileId)" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white dark:focus:ring-blue-600 dark:focus:border-blue-600">
+                                    <option v-for="audioProfile in audioProfiles" :value="audioProfile.id">{{ audioProfile.name }}</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- controls during connected call -->
                         <div v-if="activeCall.status === 6" class="mx-auto space-x-2 mb-4">
 
@@ -469,6 +478,12 @@ export default {
                 this.isMicMuted = response.data.active_call?.is_transmit_muted ?? false;
                 this.isSpeakerMuted = response.data.active_call?.is_receive_muted ?? false;
 
+                // update audio profile to what is being used in call
+                const audioProfileId = response.data.active_call.audio_profile_id;
+                if(audioProfileId != null){
+                    this.selectedAudioProfileId = audioProfileId;
+                }
+
             } catch(e) {
                 // do nothing on error
                 console.error(e);
@@ -523,6 +538,14 @@ export default {
         async unmuteSpeaker() {
             try {
                 await window.axios.get(`/api/v1/telephone/unmute-receive`);
+                await this.getTelephoneStatus();
+            } catch(e) {
+                console.log(e);
+            }
+        },
+        async switchAudioProfile(audioProfileId) {
+            try {
+                await window.axios.get(`/api/v1/telephone/switch-audio-profile/${audioProfileId}`);
                 await this.getTelephoneStatus();
             } catch(e) {
                 console.log(e);

@@ -427,6 +427,7 @@ class ReticulumMeshChat:
                     "is_outgoing": telephone_active_call.is_outgoing,
                     "remote_identity_hash": remote_identity_hash,
                     "remote_identity_name": remote_identity_name,
+                    "audio_profile_id": self.telephone.active_profile,
                     "is_receive_muted": is_receive_muted,
                     "is_transmit_muted": is_transmit_muted,
                     "tx_packets": telephone_active_call.tx,
@@ -462,6 +463,15 @@ class ReticulumMeshChat:
             AsyncUtils.run_async(asyncio.to_thread(self.telephone.hangup))
             return web.json_response({
                 "message": "Hanging up call...",
+            })
+
+        # switch outbound audio profile
+        @routes.get("/api/v1/telephone/switch-audio-profile/{audio_profile_id}")
+        async def index(request):
+            audio_profile_id = int(request.match_info.get("audio_profile_id"))
+            AsyncUtils.run_async(asyncio.to_thread(self.telephone.switch_profile, audio_profile_id))
+            return web.json_response({
+                "message": "ok",
             })
 
         # mute received audio
