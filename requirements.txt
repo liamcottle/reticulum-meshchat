@@ -1,7 +1,7 @@
 aiohttp>=3.12.14
 cx_freeze>=8.5.0
 lxmf>=0.9.2
-lxst>=0.4.3
+lxst>=0.4.4
 peewee>=3.18.1
 pycparser==2.14
 rns>=1.0.2
