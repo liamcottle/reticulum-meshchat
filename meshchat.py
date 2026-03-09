@@ -34,6 +34,27 @@ from src.backend.audio_call_manager import AudioCall, AudioCallManager
 from src.backend.sideband_commands import SidebandCommands
 
 
+# helper to safely convert peewee DateTimeField values (may be datetime or str depending on version)
+def _ensure_datetime(value):
+    """Convert string to datetime if needed; pass through datetime objects."""
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f%z")
+    raise TypeError(f"Expected datetime or str, got {type(value)}")
+
+
+# helper to safely convert datetime to ISO 8601 string for JSON serialization
+def _datetime_to_str(value):
+    """Convert datetime to ISO 8601 string for JSON serialization."""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return value  # already a string
+
+
 # NOTE: this is required to be able to pack our app with cxfreeze as an exe, otherwise it can't access bundled assets
 # this returns a file path based on if we are running meshchat.py directly, or if we have packed it as an exe with cxfreeze
 # https://cx-freeze.readthedocs.io/en/latest/faq.html#using-data-files
@@ -1420,8 +1441,8 @@ class ReticulumMeshChat:
                     "operator_display_name": operator_display_name,
                     "is_propagation_enabled": is_propagation_enabled,
                     "per_transfer_limit": per_transfer_limit,
-                    "created_at": announce.created_at,
-                    "updated_at": announce.updated_at,
+                    "created_at": _datetime_to_str(announce.created_at),
+                    "updated_at": _datetime_to_str(announce.updated_at),
                 })
 
             return web.json_response({
@@ -1527,12 +1548,12 @@ class ReticulumMeshChat:
             # determine when latest announce was received
             latest_announce_at = None
             if latest_announce is not None:
-                latest_announce_at = datetime.fromisoformat(latest_announce.updated_at)
+                latest_announce_at = _ensure_datetime(latest_announce.updated_at)
 
             # determine when latest lxmf message was received
             latest_lxmf_message_at = None
             if latest_lxmf_message is not None:
-                latest_lxmf_message_at = datetime.fromisoformat(latest_lxmf_message.created_at)
+                latest_lxmf_message_at = _ensure_datetime(latest_lxmf_message.created_at)
 
             # get signal metrics from latest announce
             if latest_announce is not None:
@@ -1555,7 +1576,7 @@ class ReticulumMeshChat:
                     "snr": snr,
                     "rssi": rssi,
                     "quality": quality,
-                    "updated_at": updated_at,
+                    "updated_at": _datetime_to_str(updated_at),
                 },
             })
 
@@ -1728,6 +1749,10 @@ class ReticulumMeshChat:
             # ensure probe_responder is hex as json_response can't serialize bytes
             if "probe_responder" in interface_stats and interface_stats["probe_responder"] is not None:
                 interface_stats["probe_responder"] = interface_stats["probe_responder"].hex()
+
+            # ensure network_id is hex as json_response can't serialize bytes
+            if "network_id" in interface_stats and interface_stats["network_id"] is not None:
+                interface_stats["network_id"] = interface_stats["network_id"].hex()
             
             # ensure ifac_signature is hex as json_response can't serialize bytes
             for interface in interface_stats["interfaces"]:
@@ -1735,7 +1760,7 @@ class ReticulumMeshChat:
                 if "short_name" in interface:
                     interface["interface_name"] = interface["short_name"]
 
-                if "parent_interface_name" in interface and interface["parent_interface_name"] is not None:
+                if "parent_interface_hash" in interface and isinstance(interface["parent_interface_hash"], bytes):
                     interface["parent_interface_hash"] = interface["parent_interface_hash"].hex()
 
                 if "ifac_signature" in interface and interface["ifac_signature"]:
@@ -2016,7 +2041,7 @@ class ReticulumMeshChat:
                     "lxmf_user_icon": lxmf_user_icon,
                     # we say the conversation was updated when the latest message was created
                     # otherwise this will go crazy when sending a message, as the updated_at on the latest message changes very frequently
-                    "updated_at": created_at,
+                    "updated_at": _datetime_to_str(created_at),
                 })
 
             return web.json_response({
@@ -2622,8 +2647,8 @@ class ReticulumMeshChat:
             "display_name": display_name,
             "custom_display_name": self.get_custom_destination_display_name(announce.destination_hash),
             "lxmf_user_icon": lxmf_user_icon,
-            "created_at": announce.created_at,
-            "updated_at": announce.updated_at,
+            "created_at": _datetime_to_str(announce.created_at),
+            "updated_at": _datetime_to_str(announce.updated_at),
         }
 
     # convert database favourite to a dictionary
@@ -2633,8 +2658,8 @@ class ReticulumMeshChat:
             "destination_hash": favourite.destination_hash,
             "display_name": favourite.display_name,
             "aspect": favourite.aspect,
-            "created_at": favourite.created_at,
-            "updated_at": favourite.updated_at,
+            "created_at": _datetime_to_str(favourite.created_at),
+            "updated_at": _datetime_to_str(favourite.updated_at),
         }
 
     # convert database lxmf message to a dictionary
@@ -2658,8 +2683,8 @@ class ReticulumMeshChat:
             "rssi": db_lxmf_message.rssi,
             "snr": db_lxmf_message.snr,
             "quality": db_lxmf_message.quality,
-            "created_at": db_lxmf_message.created_at,
-            "updated_at": db_lxmf_message.updated_at,
+            "created_at": _datetime_to_str(db_lxmf_message.created_at),
+            "updated_at": _datetime_to_str(db_lxmf_message.updated_at),
         }
 
     # updates the lxmf user icon for the provided destination hash
@@ -3278,8 +3303,8 @@ class ReticulumMeshChat:
             return True
 
         # conversation is unread if last read at is before the latest incoming message creation date
-        conversation_last_read_at = datetime.strptime(lxmf_conversation_read_state.last_read_at, "%Y-%m-%d %H:%M:%S.%f%z")
-        conversation_latest_message_at = datetime.strptime(latest_incoming_lxmf_message.created_at, "%Y-%m-%d %H:%M:%S.%f%z")
+        conversation_last_read_at = _ensure_datetime(lxmf_conversation_read_state.last_read_at)
+        conversation_latest_message_at = _ensure_datetime(latest_incoming_lxmf_message.created_at)
         return conversation_last_read_at < conversation_latest_message_at
 
     # returns number of messages that failed to send in a conversation
