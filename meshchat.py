@@ -1726,7 +1726,7 @@ class ReticulumMeshChat:
                 interface_stats["transport_id"] = interface_stats["transport_id"].hex()
 
             # ensure network_id is hex as json_response can't serialize bytes
-            if "network_id" in interface_stats and interface_stats["network_id"]:
+            if "network_id" in interface_stats and interface_stats["network_id"] is not None:
                 interface_stats["network_id"] = interface_stats["network_id"].hex()
 
             # ensure probe_responder is hex as json_response can't serialize bytes
