@@ -45,7 +45,7 @@ jobs:
           artifacts: "dist/*-win-installer.exe,dist/*-win-portable.exe"
 
   build_mac:
-    runs-on: macos-13
+    runs-on: macos-14
     permissions:
       contents: write
     steps:
@@ -68,7 +68,7 @@ jobs:
       - name: Install NodeJS Deps
         run: npm install
 
-      - name: Build Electron App
+      - name: Build Electron App (Universal)
         run: npm run dist
 
       - name: Create Release
@@ -80,7 +80,7 @@ jobs:
           replacesArtifacts: true
           omitDraftDuringUpdate: true
           omitNameDuringUpdate: true
-          artifacts: "dist/*-mac.dmg"
+          artifacts: "dist/*-mac-*.dmg"
 
   build_linux:
     runs-on: ubuntu-latest
