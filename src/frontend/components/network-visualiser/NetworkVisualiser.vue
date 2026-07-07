@@ -32,6 +32,28 @@
                             <label class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Auto Update (5 sec)</label>
                         </div>
                     </div>
+                    <div class="px-1 py-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input 
+                                    v-model="disable_lxmf_delivery" 
+                                    type="checkbox" 
+                                    class="w-4 h-4 border border-gray-300 dark:border-zinc-600 rounded bg-gray-50 dark:bg-zinc-900 focus:ring-3 focus:ring-blue-300 dark:focus:ring-blue-800"
+                                >
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-white">disable lxmf.delivery</label>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input 
+                                    v-model="disable_nomadnetwork_node" 
+                                    type="checkbox" 
+                                    class="w-4 h-4 border border-gray-300 dark:border-zinc-600 rounded bg-gray-50 dark:bg-zinc-900 focus:ring-3 focus:ring-blue-300 dark:focus:ring-blue-800"
+                                >
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-white">disable nomadnetwork.node</label>
+                        </div>
+                    </div>
                     <div class="p-1">
                         <div class="text-black dark:text-white">Interfaces</div>
                         <div class="text-sm text-gray-700 dark:text-gray-300">{{ onlineInterfaces.length }} Online, {{ offlineInterfaces.length }} Offline</div>
@@ -60,6 +82,8 @@ export default {
         return {
             config: null,
             autoReload: false,
+            disable_lxmf_delivery:false,
+            disable_nomadnetwork_node:false,
             reloadInterval: null,
             isShowingControls: true,
             interfaces: [],
@@ -389,6 +413,7 @@ export default {
                         `Path: ${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'} via ${entry.interface}`,
                         `Announced At: ${announce.updated_at}`,
                     ].filter((line) => line != null).join("\n");
+                    node.hidden = this.disable_lxmf_delivery;
 
                 }
 
@@ -409,6 +434,7 @@ export default {
                         `Path: ${entry.hops} ${entry.hops === 1 ? 'Hop' : 'Hops'} via ${entry.interface}`,
                         `Announced At: ${announce.updated_at}`,
                     ].filter((line) => line != null).join("\n");
+                    node.hidden = this.disable_nomadnetwork_node;
 
                 }
 
