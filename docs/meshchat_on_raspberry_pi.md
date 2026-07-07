@@ -90,3 +90,59 @@ sudo systemctl status reticulum-meshchat.service
 You should now be able to access MeshChat via your Pi's IP address.
 
 > Note: Don't forget to include the default port `8000`
+
+
+---
+
+###  STEP-BY-STEP UPGRADE GUIDE
+To upgrade your **Meshchat** installation on Raspberry Pi  follow these steps:
+
+####  1. **Stop Meshchat (if running as a service)**
+
+If you set it up with `systemd`, stop the service:
+
+```bash
+sudo systemctl stop reticulum-meshchat
+```
+
+---
+
+#### ⬇ 2. **Navigate to the Meshchat Directory**
+
+Open a console and go to the folder where Meshchat is installed. Common paths:
+
+```bash
+cd ~/reticulum-meshchat
+```
+
+or if you cloned it somewhere else, adjust the path accordingly.
+
+---
+
+####  3. **Pull the Latest Code from GitHub**
+
+Ensure you have no local changes, then update:
+
+```bash
+git pull origin master
+```
+
+
+---
+
+####  4. **Update Dependencies (if needed)**
+
+Check if the new version requires updated dependencies:
+
+```bash
+pip3 install -r requirements.txt --upgrade --break-system-packages
+```
+
+---
+
+####  5. **Restart Meshchat**
+
+
+```bash
+sudo systemctl start reticulum-meshchat
+```
