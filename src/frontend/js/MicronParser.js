@@ -462,7 +462,13 @@ class MicronParser {
                         state.formatting.italic = !state.formatting.italic;
                         break;
                     case 'F':
-                        // next 3 chars = fg color
+                        if (line[i+1] == "T" && line.length >= i+8) { // truecolor tags (`FTxxxxxx)
+                            let color = line.substr(i+2,6);
+                            state.fg_color = color;
+                            skip = 7;
+                            break;
+                        }
+                        // next 3 chars => bg color
                         if (line.length >= i+4) {
                             let color = line.substr(i+1,3);
                             state.fg_color = color;
@@ -474,12 +480,20 @@ class MicronParser {
                         state.fg_color = this.SELECTED_STYLES.plain.fg;
                         break;
                     case 'B':
+                        if (line[i+1] == "T" && line.length >= i+8) { // truecolor tags (`BTxxxxxx)
+                            let color = line.substr(i+2,6);
+                            state.bg_color = color;
+                            skip = 7;
+                            break;
+                        }
+                        // next 3 chars => bg color
                         if (line.length >= i+4) {
                             let color = line.substr(i+1,3);
                             state.bg_color = color;
                             skip = 3;
                         }
                         break;
+
                     case 'b':
                         // reset bg
                         state.bg_color = this.DEFAULT_BG;
