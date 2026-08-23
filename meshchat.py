@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+import multiprocessing
+
+# required for multiprocessing to work in frozen builds (e.g. lxmf stamp validation worker pools)
+# without it, worker processes re-run the app instead of bootstrapping, which hangs the pool
+# must run before other imports so worker processes exit into their bootstrap immediately
+multiprocessing.freeze_support()
+
 import argparse
 import io
 import json
