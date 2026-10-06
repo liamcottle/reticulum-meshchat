@@ -980,6 +980,10 @@ class ReticulumMeshChat:
         @routes.post("/api/v1/reticulum/enable-transport")
         async def index(request):
 
+            # ensure reticulum section exists
+            if "reticulum" not in self.reticulum.config:
+                self.reticulum.config["reticulum"] = {}
+
             # enable transport mode
             self.reticulum.config["reticulum"]["enable_transport"] = True
             self.reticulum.config.write()
@@ -991,6 +995,10 @@ class ReticulumMeshChat:
         # disable transport mode
         @routes.post("/api/v1/reticulum/disable-transport")
         async def index(request):
+
+            # ensure reticulum section exists
+            if "reticulum" not in self.reticulum.config:
+                self.reticulum.config["reticulum"] = {}
 
             # disable transport mode
             self.reticulum.config["reticulum"]["enable_transport"] = False
