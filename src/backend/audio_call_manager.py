@@ -1,11 +1,28 @@
 import asyncio
+import os
 import time
-from typing import List
+from typing import List, Optional, Set
 
 import RNS
 
 # todo optionally identity self over link
-# todo allowlist/denylist for incoming calls
+# Deny incoming calls: comma-separated hex hashes (identity or call/audio destination) in env:
+#   MESHCHAT_DENY_INCOMING_CALL_HASHES=e6631a6a6886dad4816135bb2aaaf382
+
+
+def _parse_incoming_call_denylist() -> Optional[Set[str]]:
+
+    raw = os.environ.get("MESHCHAT_DENY_INCOMING_CALL_HASHES", "").strip()
+    if not raw:
+        return None
+
+    denied: Set[str] = set()
+    for part in raw.replace(",", " ").split():
+        h = part.strip().lower().strip("<>").strip()
+        if h:
+            denied.add(h)
+
+    return denied if denied else None
 
 
 class CallFailedException(Exception):
@@ -101,8 +118,32 @@ class AudioCallManager:
     def register_outgoing_call_callback(self, callback):
         self.on_outgoing_call_callback = callback
 
+    def _should_deny_incoming_call(self, audio_call: AudioCall) -> bool:
+
+        deny = _parse_incoming_call_denylist()
+        if deny is None:
+            return False
+
+        # wait briefly for remote identify() after link comes up
+        for _ in range(50):
+            remote_identity = audio_call.get_remote_identity()
+            if remote_identity is not None:
+                id_hash = remote_identity.hash.hex().lower()
+                dest_hash = RNS.Destination.hash(remote_identity, "call", "audio").hex().lower()
+                if id_hash in deny or dest_hash in deny:
+                    return True
+                return False
+            time.sleep(0.1)
+
+        return False
+
     # handle incoming calls from audio call receiver
     def handle_incoming_call(self, audio_call: AudioCall):
+
+        if self._should_deny_incoming_call(audio_call):
+            print("[AudioCallManager] denied incoming call (matches MESHCHAT_DENY_INCOMING_CALL_HASHES)")
+            audio_call.hangup()
+            return
 
         # remember it
         self.audio_calls.append(audio_call)
