@@ -259,6 +259,12 @@ class ReticulumMeshChat:
         self.stop_propagation_node_sync()
         self.message_router.outbound_propagation_node = None
 
+    # restarting meshchat does nothing for reticulum config changes when connected to a shared instance (e.g: rnsd)
+    def restart_required_message(self):
+        if self.reticulum.is_connected_to_shared_instance:
+            return "The shared Reticulum instance must be restarted for this change to take effect."
+        return "MeshChat must be restarted for this change to take effect."
+
     # enables or disables the local lxmf propagation node
     def enable_local_propagation_node(self, enabled: bool = True):
         try:
@@ -765,11 +771,11 @@ class ReticulumMeshChat:
 
             if allow_overwriting_interface:
                 return web.json_response({
-                    "message": "Interface has been saved. Please restart MeshChat for these changes to take effect.",
+                    "message": f"Interface has been saved. {self.restart_required_message()}",
                 })
             else:
                 return web.json_response({
-                    "message": "Interface has been added. Please restart MeshChat for these changes to take effect.",
+                    "message": f"Interface has been added. {self.restart_required_message()}",
                 })
         
         # export interfaces
@@ -892,7 +898,7 @@ class ReticulumMeshChat:
                 self.reticulum.config.write()
 
                 return web.json_response({
-                    "message": "Interfaces imported successfully",
+                    "message": f"Interfaces imported successfully. {self.restart_required_message()}",
                 })
                 
             except Exception as e:
@@ -989,7 +995,7 @@ class ReticulumMeshChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Transport has been enabled. MeshChat must be restarted for this change to take effect.",
+                "message": f"Transport has been enabled. {self.restart_required_message()}",
             })
 
         # disable transport mode
@@ -1005,7 +1011,7 @@ class ReticulumMeshChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Transport has been disabled. MeshChat must be restarted for this change to take effect.",
+                "message": f"Transport has been disabled. {self.restart_required_message()}",
             })
 
         # get calls

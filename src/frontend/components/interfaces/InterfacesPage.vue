@@ -9,7 +9,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                     </svg>
                 </div>
-                <div class="ml-2 my-auto">Reticulum MeshChat must be restarted for any interface changes to take effect.</div>
+                <div v-if="isConnectedToSharedInstance" class="ml-2 my-auto">MeshChat is connected to a shared Reticulum instance (e.g. rnsd), which must be restarted for any interface changes to take effect.</div>
+                <div v-else class="ml-2 my-auto">Reticulum MeshChat must be restarted for any interface changes to take effect.</div>
                 <button v-if="isElectron" 
                     @click="relaunch" 
                     type="button" 
@@ -98,6 +99,7 @@ export default {
     },
     data() {
         return {
+            appInfo: null,
             interfaces: {},
             interfaceStats: {},
             reloadInterval: null,
@@ -108,6 +110,7 @@ export default {
     },
     mounted() {
 
+        this.getAppInfo();
         this.loadInterfaces();
         this.updateInterfaceStats();
 
@@ -118,6 +121,15 @@ export default {
 
     },
     methods: {
+        async getAppInfo() {
+            try {
+                const response = await window.axios.get("/api/v1/app/info");
+                this.appInfo = response.data.app_info;
+            } catch(e) {
+                // do nothing if failed to load app info
+                console.log(e);
+            }
+        },
         relaunch() {
             ElectronUtils.relaunch();
         },
@@ -250,6 +262,9 @@ export default {
         },
     },
     computed: {
+        isConnectedToSharedInstance() {
+            return this.appInfo?.is_connected_to_shared_instance === true;
+        },
         isElectron() {
             return ElectronUtils.isElectron();
         },

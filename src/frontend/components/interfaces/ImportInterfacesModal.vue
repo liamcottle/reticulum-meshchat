@@ -215,7 +215,7 @@ export default {
             try {
 
                 // import interfaces
-                await window.axios.post('/api/v1/reticulum/interfaces/import', {
+                const response = await window.axios.post('/api/v1/reticulum/interfaces/import', {
                     config: await this.selectedFile.text(),
                     selected_interface_names: this.selectedInterfaces,
                 });
@@ -224,7 +224,7 @@ export default {
                 this.dismiss();
 
                 // tell user interfaces were imported
-                DialogUtils.alert("Interfaces imported successfully. MeshChat must be restarted for these changes to take effect.");
+                DialogUtils.alert(response.data.message);
 
             } catch(e) {
                 const message = e.response?.data?.message || "Failed to import interfaces";
