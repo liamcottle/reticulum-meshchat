@@ -951,7 +951,7 @@ class ReticulumMeshChat:
                     "database_file_size": os.path.getsize(self.database_path),
                     "reticulum_config_path": self.reticulum.configpath,
                     "is_connected_to_shared_instance": self.reticulum.is_connected_to_shared_instance,
-                    "is_transport_enabled": self.reticulum.transport_enabled(),
+                    "is_transport_enabled": self.is_transport_enabled(),
                 },
             })
 
@@ -2380,6 +2380,14 @@ class ReticulumMeshChat:
             "type": "announced",
         }))
 
+    # when connected to a shared instance, transport runs in that instance, not in this process, so read the config
+    # file instead. it is what the shared instance started with, and what the settings toggle writes to
+    def is_transport_enabled(self):
+        if self.reticulum.is_connected_to_shared_instance:
+            reticulum_config = self.reticulum.config.get("reticulum", {})
+            return "enable_transport" in reticulum_config and reticulum_config.as_bool("enable_transport")
+        return self.reticulum.transport_enabled()
+
     # returns a dictionary of config
     def get_config_dict(self):
         return {
@@ -2387,7 +2395,7 @@ class ReticulumMeshChat:
             "identity_hash": self.identity.hexhash,
             "lxmf_address_hash": self.local_lxmf_destination.hexhash,
             "audio_call_address_hash": self.audio_call_manager.audio_call_receiver.destination.hexhash,
-            "is_transport_enabled": self.reticulum.transport_enabled(),
+            "is_transport_enabled": self.is_transport_enabled(),
             "auto_announce_enabled": self.config.auto_announce_enabled.get(),
             "auto_announce_interval_seconds": self.config.auto_announce_interval_seconds.get(),
             "last_announced_at": self.config.last_announced_at.get(),
