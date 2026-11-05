@@ -206,11 +206,12 @@
                                 <div class="ml-auto">
                                     <button 
                                         @click.stop="sendAnnounce" 
+                                        :disabled="isAnnouncing"
                                         type="button" 
                                         class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 
                                                dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500"
                                     >
-                                        Announce Now
+                                        {{ isAnnouncing ? "Announcing..." : (isAnnounced ? "Announced" : "Announce Now") }}
                                     </button>
                                 </div>
                             </div>
@@ -331,6 +332,9 @@ export default {
             isShowingAnnounceSection: true,
             isShowingCallsSection: true,
 
+            isAnnouncing: false,
+            isAnnounced: false,
+
             displayName: "Anonymous Peer",
             config: null,
             appInfo: null,
@@ -376,6 +380,10 @@ export default {
                 case 'announced': {
                     // we just announced, update config so we can show the new last updated at
                     this.getConfig();
+
+                    // show announced label for a moment
+                    this.isAnnounced = true;
+                    setTimeout(() => this.isAnnounced = false, 2000);
                     break;
                 }
                 case 'incoming_audio_call': {
@@ -404,11 +412,14 @@ export default {
         },
         async sendAnnounce() {
 
+            this.isAnnouncing = true;
             try {
                 await window.axios.get(`/api/v1/announce`);
             } catch(e) {
                 DialogUtils.alert("failed to announce");
                 console.log(e);
+            } finally {
+                this.isAnnouncing = false;
             }
 
             // fetch config so it updates last announced timestamp
