@@ -375,7 +375,7 @@ class ReticulumMeshChat:
                     interface["interface_enabled"] = "true"
 
             # save config
-            self.reticulum.config.write()
+            self.save_reticulum_config()
 
             return web.json_response({
                 "message": "Interface is now enabled",
@@ -398,7 +398,7 @@ class ReticulumMeshChat:
                     interface["interface_enabled"] = "false"
 
             # save config
-            self.reticulum.config.write()
+            self.save_reticulum_config()
 
             return web.json_response({
                 "message": "Interface is now disabled",
@@ -417,7 +417,7 @@ class ReticulumMeshChat:
                 del self.reticulum.config["interfaces"][interface_name]
 
             # save config
-            self.reticulum.config.write()
+            self.save_reticulum_config()
 
             return web.json_response({
                 "message": "Interface has been deleted",
@@ -761,7 +761,7 @@ class ReticulumMeshChat:
             self.reticulum.config["interfaces"] = interfaces
 
             # save config
-            self.reticulum.config.write()
+            self.save_reticulum_config()
 
             if allow_overwriting_interface:
                 return web.json_response({
@@ -889,7 +889,7 @@ class ReticulumMeshChat:
 
                 # update reticulum config with new interfaces
                 self.reticulum.config["interfaces"].update(interface_config)
-                self.reticulum.config.write()
+                self.save_reticulum_config()
 
                 return web.json_response({
                     "message": "Interfaces imported successfully",
@@ -986,7 +986,7 @@ class ReticulumMeshChat:
 
             # enable transport mode
             self.reticulum.config["reticulum"]["enable_transport"] = True
-            self.reticulum.config.write()
+            self.save_reticulum_config()
 
             return web.json_response({
                 "message": "Transport has been enabled. MeshChat must be restarted for this change to take effect.",
@@ -1002,7 +1002,7 @@ class ReticulumMeshChat:
 
             # disable transport mode
             self.reticulum.config["reticulum"]["enable_transport"] = False
-            self.reticulum.config.write()
+            self.save_reticulum_config()
 
             return web.json_response({
                 "message": "Transport has been disabled. MeshChat must be restarted for this change to take effect.",
@@ -2596,6 +2596,14 @@ class ReticulumMeshChat:
             return state_map[state]
         else:
             return "unknown"
+
+    # saves the reticulum config, dropping None values that rns copies into interface sections at runtime
+    # configobj would write them as the string "None", which rns can't parse on the next launch (issue #104)
+    def save_reticulum_config(self):
+        for interface in self.reticulum.config.get("interfaces", {}).values():
+            for key in [key for key, value in interface.items() if value is None]:
+                del interface[key]
+        self.reticulum.config.write()
 
     # convert database announce to a dictionary
     def convert_db_announce_to_dict(self, announce: database.Announce):
