@@ -147,6 +147,9 @@ class ReticulumMeshChat:
         # remember websocket clients
         self.websocket_clients: List[web.WebSocketResponse] = []
 
+        # remember in progress nomadnet file downloads, so they can be cancelled
+        self.nomadnet_file_downloaders = {}
+
         # register audio call identity
         self.audio_call_manager = AudioCallManager(identity=self.identity)
         self.audio_call_manager.register_incoming_call_callback(self.on_incoming_audio_call)
@@ -2243,6 +2246,7 @@ class ReticulumMeshChat:
 
             # handle successful file download
             def on_file_download_success(file_name, file_bytes):
+                self.nomadnet_file_downloaders.pop((destination_hash, file_path), None)
                 AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
@@ -2256,6 +2260,7 @@ class ReticulumMeshChat:
 
             # handle file download failure
             def on_file_download_failure(failure_reason):
+                self.nomadnet_file_downloaders.pop((destination_hash, file_path), None)
                 AsyncUtils.run_async(client.send_str(json.dumps({
                     "type": "nomadnet.file.download",
                     "nomadnet_file_download": {
@@ -2280,7 +2285,20 @@ class ReticulumMeshChat:
 
             # download the file
             downloader = NomadnetFileDownloader(destination_hash, file_path, on_file_download_success, on_file_download_failure, on_file_download_progress)
+            self.nomadnet_file_downloaders[(destination_hash, file_path)] = downloader
             AsyncUtils.run_async(downloader.download())
+
+        # handle cancelling a file download from a nomadnet node
+        elif _type == "nomadnet.file.download.cancel":
+
+            # get data from websocket client
+            destination_hash = bytes.fromhex(data["nomadnet_file_download"]["destination_hash"])
+            file_path = data["nomadnet_file_download"]["file_path"]
+
+            # cancel the download, if it is still in progress
+            downloader = self.nomadnet_file_downloaders.get((destination_hash, file_path))
+            if downloader is not None:
+                downloader.cancel()
 
         # handle downloading a page from a nomadnet node
         elif _type == "nomadnet.page.download":
@@ -3440,6 +3458,8 @@ class NomadnetDownloader:
         self.on_download_success = on_download_success
         self.on_download_failure = on_download_failure
         self.on_progress_update = on_progress_update
+        self.link = None
+        self.cancelled = False
 
     # setup link to destination and request download
     async def download(self, path_lookup_timeout: int = 15, link_establishment_timeout: int = 15):
@@ -3467,7 +3487,8 @@ class NomadnetDownloader:
 
         # if we still don't have a path, we can't establish a link, so bail out
         if not RNS.Transport.has_path(self.destination_hash):
-            self.on_download_failure("Could not find path to destination.")
+            if not self.cancelled:
+                self.on_download_failure("Could not find path to destination.")
             return
 
         # create destination to nomadnet node
@@ -3483,20 +3504,28 @@ class NomadnetDownloader:
         # create link to destination
         print("[NomadnetDownloader] establishing new link for request")
         link = RNS.Link(destination, established_callback=self.link_established)
+        self.link = link
 
         # determine when to timeout
         timeout_after_seconds = time.time() + link_establishment_timeout
 
         # wait until we have established a link, or give up after the configured timeout
-        while link.status is not RNS.Link.ACTIVE and time.time() < timeout_after_seconds:
+        while link.status is not RNS.Link.ACTIVE and time.time() < timeout_after_seconds and not self.cancelled:
             await asyncio.sleep(0.1)
 
         # if we still haven't established a link, bail out
-        if link.status is not RNS.Link.ACTIVE:
+        if link.status is not RNS.Link.ACTIVE and not self.cancelled:
             self.on_download_failure("Could not establish link to destination.")
 
     # link to destination was established, we should now request the download
     def link_established(self, link):
+
+        # download was cancelled while the link was being established
+        if self.cancelled:
+            return
+
+        # remember link, so the download can be cancelled
+        self.link = link
 
         # cache link for using in future requests
         nomadnet_cached_links[self.destination_hash] = link
@@ -3517,7 +3546,16 @@ class NomadnetDownloader:
 
     # handle failure
     def on_failed(self, request_receipt=None):
+        if self.cancelled:
+            return
         self.on_download_failure("request_failed")
+
+    # cancel the download by closing the link, which also cancels any incoming response resource
+    def cancel(self):
+        self.cancelled = True
+        if self.link is not None:
+            self.link.teardown()
+        self.on_download_failure("cancelled")
 
     # handle download progress
     def on_progress(self, request_receipt):
