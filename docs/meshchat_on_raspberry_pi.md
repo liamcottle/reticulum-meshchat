@@ -63,7 +63,8 @@ sudo nano /etc/systemd/system/reticulum-meshchat.service
 ```
 [Unit]
 Description=reticulum-meshchat
-After=network.target
+Wants=network-online.target
+After=network-online.target
 StartLimitIntervalSec=0
 
 [Service]
