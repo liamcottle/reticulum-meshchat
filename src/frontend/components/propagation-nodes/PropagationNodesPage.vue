@@ -3,7 +3,7 @@
 
         <!-- search -->
         <div v-if="propagationNodes.length > 0" class="flex bg-white dark:bg-zinc-800 p-1 border-b border-gray-300 dark:border-zinc-700">
-            <input v-model="searchTerm" type="text" :placeholder="`Search ${propagationNodes.length} Propagation Nodes...`" class="w-full bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
+            <SearchInput v-model="searchTerm" :placeholder="`Search ${propagationNodes.length} Propagation Nodes...`" class="w-full bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5" />
         </div>
 
         <!-- propagation nodes -->
@@ -77,9 +77,11 @@
 <script>
 import Utils from "../../js/Utils";
 import WebSocketConnection from "../../js/WebSocketConnection";
+import SearchInput from "../SearchInput.vue";
 
 export default {
     name: 'PropagationNodesPage',
+    components: {SearchInput},
     data() {
         return {
             searchTerm: "",
