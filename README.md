@@ -280,10 +280,6 @@ python3 meshchat.py --headless
 
 I build the vite app everytime without hot reload, since MeshChat expects everything over its own port, not the vite server port. I will attempt to fix this in the future.
 
-## TODO
-
-- [ ] button to forget announces
-
 # Notes
 
 **LXMF Router**
