@@ -14,7 +14,7 @@
 
             <!-- search -->
             <div v-if="conversations.length > 0" class="p-1 border-b border-gray-300 dark:border-zinc-700">
-                <input v-model="conversationsSearchTerm" type="text" :placeholder="`Search ${conversations.length} Conversations...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 block w-full p-2.5">
+                <SearchInput v-model="conversationsSearchTerm" :placeholder="`Search ${conversations.length} Conversations...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 block w-full p-2.5" />
             </div>
 
             <!-- peers -->
@@ -73,7 +73,7 @@
 
             <!-- search -->
             <div v-if="peersCount > 0" class="p-1 border-b border-gray-300 dark:border-zinc-700">
-                <input v-model="peersSearchTerm" type="text" :placeholder="`Search ${peersCount} recent announces...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 block w-full p-2.5">
+                <SearchInput v-model="peersSearchTerm" :placeholder="`Search ${peersCount} recent announces...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 block w-full p-2.5" />
             </div>
 
             <!-- peers -->
@@ -146,10 +146,11 @@
 <script>
 import Utils from "../../js/Utils";
 import MaterialDesignIcon from "../MaterialDesignIcon.vue";
+import SearchInput from "../SearchInput.vue";
 
 export default {
     name: 'MessagesSidebar',
-    components: {MaterialDesignIcon},
+    components: {SearchInput, MaterialDesignIcon},
     props: {
         peers: Object,
         conversations: Array,

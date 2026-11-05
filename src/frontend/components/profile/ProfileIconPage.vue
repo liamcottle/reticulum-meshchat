@@ -52,7 +52,7 @@
                 <div class="flex border-b border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 p-2 font-semibold">Select your Icon</div>
                 <div class="divide-y divide-gray-300 dark:divide-zinc-700 text-gray-900 dark:text-gray-100">
                     <div class="flex p-1">
-                        <input v-model="search" type="text" :placeholder="`Search ${iconNames.length} icons...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5">
+                        <SearchInput v-model="search" :placeholder="`Search ${iconNames.length} icons...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5" />
                     </div>
                     <div class="divide-y divide-gray-300 dark:divide-zinc-700">
                         <div @click="onIconClick(mdiIconName)" v-for="mdiIconName of searchedIconNames" class="flex space-x-2 p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700">
@@ -77,6 +77,7 @@ import LxmfUserIcon from "../LxmfUserIcon.vue";
 import DialogUtils from "../../js/DialogUtils";
 import ColourPickerDropdown from "../ColourPickerDropdown.vue";
 import MaterialDesignIcon from "../MaterialDesignIcon.vue";
+import SearchInput from "../SearchInput.vue";
 
 export default {
     name: 'ProfileIconPage',
@@ -84,6 +85,7 @@ export default {
         ColourPickerDropdown,
         LxmfUserIcon,
         MaterialDesignIcon,
+        SearchInput,
     },
     data() {
         return {

@@ -14,7 +14,7 @@
 
             <!-- search -->
             <div v-if="favourites.length > 0" class="p-1 border-b border-gray-300 dark:border-zinc-700">
-                <input v-model="favouritesSearchTerm" type="text" :placeholder="`Search ${favourites.length} Favourites...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 block w-full p-2.5">
+                <SearchInput v-model="favouritesSearchTerm" :placeholder="`Search ${favourites.length} Favourites...`" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 block w-full p-2.5" />
             </div>
 
             <!-- peers -->
@@ -96,12 +96,11 @@
         <div v-if="tab === 'announces'" class="flex-1 flex flex-col bg-white dark:bg-zinc-950 border-r dark:border-zinc-800 overflow-hidden">
             <!-- search -->
             <div v-if="nodesCount > 0" class="p-1 border-b border-gray-300 dark:border-zinc-800">
-                <input 
+                <SearchInput 
                     v-model="nodesSearchTerm" 
-                    type="text" 
                     :placeholder="`Search ${nodesCount} Nodes...`" 
                     class="bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400"
-                >
+                />
             </div>
             <!-- nodes -->
             <div class="flex h-full overflow-y-auto">
@@ -162,10 +161,11 @@ import MaterialDesignIcon from "../MaterialDesignIcon.vue";
 import DropDownMenu from "../DropDownMenu.vue";
 import IconButton from "../IconButton.vue";
 import DropDownMenuItem from "../DropDownMenuItem.vue";
+import SearchInput from "../SearchInput.vue";
 
 export default {
     name: 'NomadNetworkSidebar',
-    components: {DropDownMenuItem, IconButton, DropDownMenu, MaterialDesignIcon},
+    components: {SearchInput, DropDownMenuItem, IconButton, DropDownMenu, MaterialDesignIcon},
     props: {
         nodes: Object,
         favourites: Array,
