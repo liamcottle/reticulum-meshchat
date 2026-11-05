@@ -125,6 +125,12 @@
                 </svg>
             </div>
             <div class="my-auto">Downloading: {{ nodeFilePath }} ({{ nodeFileProgress }}%)</div>
+            <div class="my-auto ml-auto">
+                <button @click="cancelNomadNetFileDownload" type="button" class="my-auto inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500
+                    dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 
@@ -212,6 +218,8 @@ export default {
 
             isDownloadingNodeFile: false,
             nodeFilePath: null,
+            nodeFileDestinationHash: null,
+            nodeFileUrlPath: null,
             nodeFileProgress: 0,
 
             nomadnetPageDownloadCallbacks: {},
@@ -755,6 +763,8 @@ export default {
                     // update ui
                     this.isDownloadingNodeFile = true;
                     this.nodeFilePath = parsedUrl.path.split("/").pop();
+                    this.nodeFileDestinationHash = destinationHash;
+                    this.nodeFileUrlPath = parsedUrl.path;
                     this.nodeFileProgress = 0;
 
                     // start file download
@@ -771,8 +781,10 @@ export default {
                         // no longer downloading
                         this.isDownloadingNodeFile = false;
 
-                        // show error message
-                        DialogUtils.alert(`Failed to download file: ${failureReason}`);
+                        // show error message, unless the user cancelled the download
+                        if(failureReason !== "cancelled"){
+                            DialogUtils.alert(`Failed to download file: ${failureReason}`);
+                        }
 
                     }, (progress) => {
                         this.nodeFileProgress = Math.round(progress * 100);
@@ -941,6 +953,22 @@ export default {
                     "nomadnet_file_download": {
                         "destination_hash": destinationHash,
                         "file_path": filePath,
+                    },
+                }));
+
+            } catch(e) {
+                console.error(e);
+            }
+        },
+        cancelNomadNetFileDownload() {
+            try {
+
+                // ask reticulum to cancel the file download, the failure callback will update the ui
+                WebSocketConnection.send(JSON.stringify({
+                    "type": "nomadnet.file.download.cancel",
+                    "nomadnet_file_download": {
+                        "destination_hash": this.nodeFileDestinationHash,
+                        "file_path": this.nodeFileUrlPath,
                     },
                 }));
 
