@@ -442,6 +442,28 @@
                         },
                     },
                     {
+                        name: "Heltec LoRa32 v4",
+                        id: ROM.PRODUCT_H32_V4,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_C8,
+                                name: "868 MHz / 915 MHz / 923 MHz with PA",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_heltec32v4pa.zip",
+                        flash_config: {
+                            flash_size: "16MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_heltec32v4pa.boot_app0",
+                                "0x0": "rnode_firmware_heltec32v4pa.bootloader",
+                                "0x10000": "rnode_firmware_heltec32v4pa.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_heltec32v4pa.partitions",
+                            },
+                        },
+                    },
+                    {
                         name: "Heltec T114",
                         id: ROM.PRODUCT_HELTEC_T114,
                         platform: ROM.PLATFORM_NRF52,
