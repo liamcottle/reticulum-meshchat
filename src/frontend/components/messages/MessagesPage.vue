@@ -5,7 +5,8 @@
         :peers="peers"
         :selected-destination-hash="selectedPeer?.destination_hash"
         @conversation-click="onConversationClick"
-        @peer-click="onPeerClick"/>
+        @peer-click="onPeerClick"
+        @peer-forget="onPeerForget"/>
 
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
 
@@ -222,6 +223,26 @@ export default {
                     destinationHash: peer.destination_hash,
                 },
             });
+
+        },
+        onPeerForget: async function(peer) {
+
+            // ask user to confirm forgetting peer
+            if(!await DialogUtils.confirm("Forget this peer? Any conversation with them will show as Anonymous Peer until they announce again.")){
+                return;
+            }
+
+            // forget announces for this peer
+            try {
+                await window.axios.delete(`/api/v1/announces/${peer.destination_hash}`);
+            } catch(e) {
+                DialogUtils.alert("failed to forget peer");
+                console.log(e);
+                return;
+            }
+
+            // remove peer from list
+            delete this.peers[peer.destination_hash];
 
         },
         onConversationClick: function(conversation) {

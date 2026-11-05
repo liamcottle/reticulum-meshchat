@@ -1244,6 +1244,20 @@ class ReticulumMeshChat:
                 "announces": announces,
             })
 
+        # forget announces
+        @routes.delete("/api/v1/announces/{destination_hash}")
+        async def index(request):
+
+            # get path params
+            destination_hash = request.match_info.get("destination_hash", "")
+
+            # delete announces from db
+            database.Announce.delete().where(database.Announce.destination_hash == destination_hash).execute()
+
+            return web.json_response({
+                "message": "ok",
+            })
+
         # serve favourites
         @routes.get("/api/v1/favourites")
         async def index(request):
