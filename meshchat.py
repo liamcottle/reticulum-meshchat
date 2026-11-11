@@ -126,7 +126,12 @@ class ReticulumMeshChat:
         self.local_lxmf_destination = self.message_router.register_delivery_identity(
             identity=self.identity,
             display_name=self.config.display_name.get(),
+            stamp_cost=self.config.lxmf_inbound_stamp_cost.get(),
         )
+
+        # drop inbound messages without a valid stamp if enforcement is enabled
+        if self.config.lxmf_enforce_inbound_stamp_cost.get():
+            self.message_router.enforce_stamps()
 
         # set a callback for when an lxmf message is received
         self.message_router.register_delivery_callback(self.on_lxmf_delivery)
@@ -2141,6 +2146,20 @@ class ReticulumMeshChat:
             value = bool(data["show_suggested_community_interfaces"])
             self.config.show_suggested_community_interfaces.set(value)
 
+        if "lxmf_inbound_stamp_cost" in data:
+            value = int(data["lxmf_inbound_stamp_cost"])
+            if 0 <= value <= 254:
+                self.config.lxmf_inbound_stamp_cost.set(value)
+                self.message_router.set_inbound_stamp_cost(self.local_lxmf_destination.hash, value)
+
+        if "lxmf_enforce_inbound_stamp_cost" in data:
+            value = bool(data["lxmf_enforce_inbound_stamp_cost"])
+            self.config.lxmf_enforce_inbound_stamp_cost.set(value)
+            if value:
+                self.message_router.enforce_stamps()
+            else:
+                self.message_router.ignore_stamps()
+
         if "lxmf_preferred_propagation_node_destination_hash" in data:
 
             # update config value
@@ -2396,6 +2415,8 @@ class ReticulumMeshChat:
             "allow_auto_resending_failed_messages_with_attachments": self.config.allow_auto_resending_failed_messages_with_attachments.get(),
             "auto_send_failed_messages_to_propagation_node": self.config.auto_send_failed_messages_to_propagation_node.get(),
             "show_suggested_community_interfaces": self.config.show_suggested_community_interfaces.get(),
+            "lxmf_inbound_stamp_cost": self.config.lxmf_inbound_stamp_cost.get(),
+            "lxmf_enforce_inbound_stamp_cost": self.config.lxmf_enforce_inbound_stamp_cost.get(),
             "lxmf_local_propagation_node_enabled": self.config.lxmf_local_propagation_node_enabled.get(),
             "lxmf_local_propagation_node_address_hash": self.message_router.propagation_destination.hexhash,
             "lxmf_preferred_propagation_node_destination_hash": self.config.lxmf_preferred_propagation_node_destination_hash.get(),
@@ -3418,6 +3439,8 @@ class Config:
     auto_send_failed_messages_to_propagation_node = BoolConfig("auto_send_failed_messages_to_propagation_node", False)
     show_suggested_community_interfaces = BoolConfig("show_suggested_community_interfaces", True)
     lxmf_delivery_transfer_limit_in_bytes = IntConfig("lxmf_delivery_transfer_limit_in_bytes", 1000 * 1000 * 10)  # 10MB
+    lxmf_inbound_stamp_cost = IntConfig("lxmf_inbound_stamp_cost", 0)  # 0 = disabled, valid range 1-254
+    lxmf_enforce_inbound_stamp_cost = BoolConfig("lxmf_enforce_inbound_stamp_cost", False)
     lxmf_preferred_propagation_node_destination_hash = StringConfig("lxmf_preferred_propagation_node_destination_hash", None)
     lxmf_preferred_propagation_node_auto_sync_interval_seconds = IntConfig("lxmf_preferred_propagation_node_auto_sync_interval_seconds", 0)
     lxmf_preferred_propagation_node_last_synced_at = IntConfig("lxmf_preferred_propagation_node_last_synced_at", None)

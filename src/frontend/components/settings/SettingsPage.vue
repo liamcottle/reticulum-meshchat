@@ -91,6 +91,22 @@
                         <div class="text-sm text-gray-700 dark:text-gray-300">When enabled, messages that fail to send will be sent to the configured propagation node.</div>
                     </div>
 
+                    <div class="p-2">
+                        <label class="text-sm font-medium text-gray-900 dark:text-gray-100">Inbound Stamp Cost</label>
+                        <input v-model="config.lxmf_inbound_stamp_cost" @change="onLxmfInboundStampCostChange" type="number" min="0" max="254" class="bg-gray-50 dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 block w-full p-2.5 mt-1">
+                        <div class="text-sm text-gray-700 dark:text-gray-300">Senders must attach a proof of work stamp of this difficulty to message you, which deters automated spam. 0 disables it. Higher values take senders longer to compute. Peers learn your cost from your next announce.</div>
+                    </div>
+
+                    <div class="p-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input v-model="config.lxmf_enforce_inbound_stamp_cost" @change="onLxmfEnforceInboundStampCostChange" type="checkbox" class="w-4 h-4 border border-gray-300 dark:border-zinc-600 rounded bg-gray-50 dark:bg-zinc-700 focus:ring-3 focus:ring-blue-300 dark:focus:ring-blue-600">
+                            </div>
+                            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Require valid stamps</label>
+                        </div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">When enabled, messages without a valid stamp will be dropped. When disabled, your stamp cost is advertised but unstamped messages are still delivered.</div>
+                    </div>
+
                 </div>
             </div>
 
@@ -240,6 +256,16 @@ export default {
         async onAllowAutoResendingFailedMessagesWithAttachmentsChange() {
             await this.updateConfig({
                 "allow_auto_resending_failed_messages_with_attachments": this.config.allow_auto_resending_failed_messages_with_attachments,
+            });
+        },
+        async onLxmfInboundStampCostChange() {
+            await this.updateConfig({
+                "lxmf_inbound_stamp_cost": this.config.lxmf_inbound_stamp_cost,
+            });
+        },
+        async onLxmfEnforceInboundStampCostChange() {
+            await this.updateConfig({
+                "lxmf_enforce_inbound_stamp_cost": this.config.lxmf_enforce_inbound_stamp_cost,
             });
         },
         async onAutoSendFailedMessagesToPropagationNodeChange() {
